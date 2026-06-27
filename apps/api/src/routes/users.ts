@@ -1,0 +1,133 @@
+import { FastifyInstance } from 'fastify';
+import { v4 as uuidv4 } from 'uuid';
+import { db } from '../lib/db';
+import { users } from '../lib/schema';
+import { eq, and, like, desc } from 'drizzle-orm';
+import { createUserSchema, parseBody } from '../types';
+import bcrypt from 'bcryptjs';
+
+export async function userRoutes(app: FastifyInstance) {
+  const requireOwner = (request: any, reply: any) => {
+    if (request.user!.role !== 'owner' && request.user!.role !== 'admin') {
+      reply.status(403).send({ error: 'Only owners/admins can perform this action' });
+      return false;
+    }
+    return true;
+  };
+
+  // List users for current tenant (owner/admin only)
+  app.get('/users', { preHandler: [app.authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const { page = 1, limit = 20, search } = request.query as { page?: number; limit?: number; search?: string };
+    const tenantId = request.user!.tenantId;
+    const offset = (page - 1) * limit;
+
+    let query = db.select().from(users).where(eq(users.tenantId, tenantId)).orderBy(desc(users.createdAt));
+
+    if (search) {
+      query = db.select().from(users)
+        .where(and(eq(users.tenantId, tenantId), like(users.fullName, `%${search}%`)))
+        .orderBy(desc(users.createdAt));
+    }
+
+    const data = query.limit(limit).offset(offset).all();
+    const total = db.select().from(users).where(eq(users.tenantId, tenantId)).all().length;
+
+    const safeData = data.map(({ passwordHash, ...rest }) => rest);
+    return reply.send({ data: safeData, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+  });
+
+  // Create user (owner/admin only)
+  app.post('/users', { preHandler: [app.authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const body = parseBody(createUserSchema, request.body, reply);
+    if (!body) return;
+    const tenantId = request.user!.tenantId;
+
+    const existing = db.select().from(users)
+      .where(and(eq(users.tenantId, tenantId), eq(users.email, body.email)))
+      .get();
+    if (existing) {
+      return reply.status(409).send({ error: 'User with this email already exists' });
+    }
+
+    const id = uuidv4();
+    const passwordHash = await bcrypt.hash(body.password, 10);
+
+    db.insert(users).values({
+      id,
+      tenantId,
+      email: body.email,
+      phone: body.phone,
+      passwordHash,
+      fullName: body.fullName,
+      role: body.role,
+    }).run();
+
+    const user = db.select().from(users).where(eq(users.id, id)).get();
+    const { passwordHash: _, ...safeUser } = user!;
+    return reply.status(201).send(safeUser);
+  });
+
+  // Get user by ID (owner/admin only)
+  app.get('/users/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const { id } = request.params as { id: string };
+    const tenantId = request.user!.tenantId;
+
+    const user = db.select().from(users)
+      .where(and(eq(users.id, id), eq(users.tenantId, tenantId)))
+      .get();
+
+    if (!user) {
+      return reply.status(404).send({ error: 'User not found' });
+    }
+
+    const { passwordHash, ...safeUser } = user;
+    return reply.send(safeUser);
+  });
+
+  // Update user (owner/admin only)
+  app.put('/users/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const { id } = request.params as { id: string };
+    const tenantId = request.user!.tenantId;
+    const body = request.body as Partial<{ fullName: string; phone: string; role: string; isActive: boolean }>;
+
+    const existing = db.select().from(users)
+      .where(and(eq(users.id, id), eq(users.tenantId, tenantId)))
+      .get();
+    if (!existing) {
+      return reply.status(404).send({ error: 'User not found' });
+    }
+
+    db.update(users).set({
+      ...body,
+      updatedAt: new Date().toISOString(),
+    }).where(and(eq(users.id, id), eq(users.tenantId, tenantId))).run();
+
+    const updated = db.select().from(users).where(eq(users.id, id)).get();
+    const { passwordHash, ...safeUser } = updated!;
+    return reply.send(safeUser);
+  });
+
+  // Delete user (soft delete, owner/admin only)
+  app.delete('/users/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const { id } = request.params as { id: string };
+    const tenantId = request.user!.tenantId;
+
+    const existing = db.select().from(users)
+      .where(and(eq(users.id, id), eq(users.tenantId, tenantId)))
+      .get();
+    if (!existing) {
+      return reply.status(404).send({ error: 'User not found' });
+    }
+
+    db.update(users).set({ isActive: false, updatedAt: new Date().toISOString() })
+      .where(and(eq(users.id, id), eq(users.tenantId, tenantId)))
+      .run();
+
+    return reply.send({ message: 'User deactivated' });
+  });
+}
