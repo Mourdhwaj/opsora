@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
-import { foodPolls, foodPollOptions, foodVotes, mealAttendance, foodMenu, foodRatings, ingredientFormulas, tenantProfiles, notifications, properties } from '../lib/schema';
+import { foodPolls, foodPollOptions, foodVotes, mealAttendance, foodMenu, foodRatings, ingredientFormulas, tenantProfiles, notifications, properties, users } from '../lib/schema';
 import { eq, and, desc, count, sql } from 'drizzle-orm';
 import { createFoodPollSchema, createFoodRatingSchema, createMealAttendanceSchema, createIngredientFormulaSchema, parseBody } from '../types';
 
@@ -73,10 +73,12 @@ export async function foodRoutes(app: FastifyInstance) {
     const options = db.select().from(foodPollOptions).where(eq(foodPollOptions.pollId, id)).all();
     const totalVotes = options.reduce((sum, o) => sum + (o.voteCount || 0), 0);
 
-    // Check if current user has voted
+    // Check if current user has voted — userId is users.id, need to resolve tenantProfileId
     const userId = request.user!.userId;
+    const userRecord = db.select().from(users).where(eq(users.id, userId)).get();
+    const profileId = userRecord?.tenantProfileId || userId;
     const userVote = db.select().from(foodVotes)
-      .where(and(eq(foodVotes.pollId, id), eq(foodVotes.tenantProfileId, userId))).get();
+      .where(and(eq(foodVotes.pollId, id), eq(foodVotes.tenantProfileId, profileId))).get() || null;
 
     return reply.send({ ...poll, options, totalVotes, userVote: userVote || null });
   });
@@ -118,9 +120,12 @@ export async function foodRoutes(app: FastifyInstance) {
     if (poll.status !== 'published') return reply.status(400).send({ error: 'Poll is not accepting votes' });
     if (new Date(poll.deadline) < new Date()) return reply.status(400).send({ error: 'Voting deadline has passed' });
 
+    // Resolve tenantProfileId from userId
+    const voterUser = db.select().from(users).where(eq(users.id, userId)).get();
+    const voterProfileId = voterUser?.tenantProfileId || userId;
     // Check if already voted
     const existing = db.select().from(foodVotes)
-      .where(and(eq(foodVotes.pollId, id), eq(foodVotes.tenantProfileId, userId))).get();
+      .where(and(eq(foodVotes.pollId, id), eq(foodVotes.tenantProfileId, voterProfileId))).get();
     if (existing) return reply.status(400).send({ error: 'Already voted' });
 
     // Verify option exists
@@ -128,7 +133,7 @@ export async function foodRoutes(app: FastifyInstance) {
     if (!option) return reply.status(404).send({ error: 'Option not found' });
 
     db.insert(foodVotes).values({
-      id: uuidv4(), pollId: id, tenantProfileId: userId, selectedOptionId: optionId,
+      id: uuidv4(), pollId: id, tenantProfileId: voterProfileId, selectedOptionId: optionId,
     }).run();
 
     // Increment vote count

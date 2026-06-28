@@ -96,6 +96,7 @@ export const createRoomSchema = z.object({
   rentPerBed: z.number().min(0).default(5000),
   depositAmount: z.number().min(0).default(10000),
   amenities: z.string().optional().default('[]'),
+  gender: z.enum(['male', 'female']).optional(),
 });
 
 export const createBedSchema = z.object({
@@ -143,7 +144,7 @@ export const createPaymentSchema = z.object({
   waterCharge: z.number().min(0).default(0),
   foodCharge: z.number().min(0).default(0),
   maintenanceCharge: z.number().min(0).default(0),
-  paymentMethod: z.enum(['cash', 'upi', 'bank_transfer', 'card', 'other']).optional(),
+  paymentMethod: z.enum(['cash', 'upi_direct', 'neft_imps', 'cheque']).optional(),
   transactionId: z.string().optional(),
   notes: z.string().optional(),
 });

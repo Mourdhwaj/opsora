@@ -266,7 +266,7 @@ async function seed() {
         paidAmount,
         balanceAmount: 8000 - paidAmount,
         paymentStatus: isPaid ? 'paid' : paidAmount > 0 ? 'partial' : 'pending',
-        paymentMethod: isPaid ? (Math.random() > 0.5 ? 'upi' : 'bank_transfer') : null,
+        paymentMethod: isPaid ? (Math.random() > 0.5 ? 'upi_direct' : 'neft_imps') : null,
       }).run();
     }
   }

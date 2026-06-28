@@ -235,6 +235,7 @@ export async function roomRoutes(app: FastifyInstance) {
       rentPerBed: body.rentPerBed,
       depositAmount: body.depositAmount,
       amenities: body.amenities,
+      gender: body.gender || null,
     }).run();
 
     // Auto-create beds

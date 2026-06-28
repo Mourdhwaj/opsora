@@ -46,7 +46,7 @@ export async function paymentRoutes(app: FastifyInstance) {
 
     const totalAmount = body.rentAmount + body.electricityCharge + body.waterCharge +
       body.foodCharge + body.maintenanceCharge;
-    const balanceAmount = totalAmount - (body.rentAmount || 0);
+    const balanceAmount = totalAmount;
 
     const id = uuidv4();
     const receiptNumber = `RCP-${Date.now()}`;

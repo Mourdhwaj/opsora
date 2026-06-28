@@ -110,6 +110,7 @@ export const rooms = sqliteTable('rooms', {
   amenities: text('amenities').default('[]'),
   status: text('status').default('available'),
   floorPosition: text('floor_position'),
+  gender: text('gender'),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
 });
@@ -218,7 +219,6 @@ export const rentPayments = sqliteTable('rent_payments', {
 
   paymentMethod: text('payment_method'),
   transactionId: text('transaction_id'),
-  paymentGateway: text('payment_gateway'),
   paymentStatus: text('payment_status').default('pending'),
 
   receiptNumber: text('receipt_number').unique(),
