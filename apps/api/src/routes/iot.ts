@@ -1,3 +1,4 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
@@ -6,7 +7,7 @@ import { eq, and, desc } from 'drizzle-orm';
 import { createWaterTankSchema, createElectricityMeterSchema, parseBody } from '../types';
 
 export async function waterRoutes(app: FastifyInstance) {
-  app.get('/water-tanks', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/water-tanks', { preHandler: [authenticate] }, async (request, reply) => {
     const { propertyId } = request.query as { propertyId?: string };
     const tenantId = request.user!.tenantId;
     let conditions = [eq(waterTanks.tenantId, tenantId)];
@@ -19,7 +20,7 @@ export async function waterRoutes(app: FastifyInstance) {
     }));
   });
 
-  app.post('/water-tanks', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/water-tanks', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createWaterTankSchema, request.body, reply);
     if (!body) return;
     const id = uuidv4();
@@ -30,7 +31,7 @@ export async function waterRoutes(app: FastifyInstance) {
     return reply.status(201).send(db.select().from(waterTanks).where(eq(waterTanks.id, id)).get());
   });
 
-  app.get('/water-tanks/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/water-tanks/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tank = db.select().from(waterTanks).where(and(eq(waterTanks.id, id), eq(waterTanks.tenantId, request.user!.tenantId))).get();
     if (!tank) return reply.status(404).send({ error: 'Water tank not found' });
@@ -39,7 +40,25 @@ export async function waterRoutes(app: FastifyInstance) {
     return reply.send({ ...tank, readings, tankerOrders: orders });
   });
 
-  app.post('/water-tanks/:id/readings', { preHandler: [app.authenticate] }, async (request, reply) => {
+  // Update water tank settings (thresholds, name, capacity)
+  app.put('/water-tanks/:id', { preHandler: [authenticate] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as { name?: string; capacityLiters?: number; lowLevelAlert?: number; criticalLevelAlert?: number; overflowAlert?: boolean; location?: string; sensorId?: string };
+    const tank = db.select().from(waterTanks).where(and(eq(waterTanks.id, id), eq(waterTanks.tenantId, request.user!.tenantId))).get();
+    if (!tank) return reply.status(404).send({ error: 'Water tank not found' });
+    const updates: Record<string, any> = { updatedAt: new Date().toISOString() };
+    if (body.name !== undefined) updates.name = body.name;
+    if (body.capacityLiters !== undefined) updates.capacityLiters = body.capacityLiters;
+    if (body.lowLevelAlert !== undefined) updates.lowLevelAlert = body.lowLevelAlert;
+    if (body.criticalLevelAlert !== undefined) updates.criticalLevelAlert = body.criticalLevelAlert;
+    if (body.overflowAlert !== undefined) updates.overflowAlert = body.overflowAlert;
+    if (body.location !== undefined) updates.location = body.location;
+    if (body.sensorId !== undefined) updates.sensorId = body.sensorId;
+    db.update(waterTanks).set(updates).where(eq(waterTanks.id, id)).run();
+    return reply.send(db.select().from(waterTanks).where(eq(waterTanks.id, id)).get());
+  });
+
+  app.post('/water-tanks/:id/readings', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const body = request.body as { levelPercentage: number; levelLiters: number; temperature?: number; consumptionLiters?: number; flowRate?: number; rawData?: string };
     const tank = db.select().from(waterTanks).where(and(eq(waterTanks.id, id), eq(waterTanks.tenantId, request.user!.tenantId))).get();
@@ -55,7 +74,7 @@ export async function waterRoutes(app: FastifyInstance) {
     return reply.status(201).send({ id: readingId, isAnomaly, anomalyReason });
   });
 
-  app.get('/water-tanks/:id/readings', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/water-tanks/:id/readings', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const { hours = 24 } = request.query as { hours?: number };
     const tank = db.select().from(waterTanks).where(and(eq(waterTanks.id, id), eq(waterTanks.tenantId, request.user!.tenantId))).get();
@@ -67,7 +86,7 @@ export async function waterRoutes(app: FastifyInstance) {
 }
 
 export async function electricityRoutes(app: FastifyInstance) {
-  app.get('/electricity-meters', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/electricity-meters', { preHandler: [authenticate] }, async (request, reply) => {
     const { propertyId } = request.query as { propertyId?: string };
     const tenantId = request.user!.tenantId;
     let conditions = [eq(electricityMeters.tenantId, tenantId)];
@@ -80,7 +99,7 @@ export async function electricityRoutes(app: FastifyInstance) {
     }));
   });
 
-  app.post('/electricity-meters', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/electricity-meters', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createElectricityMeterSchema, request.body, reply);
     if (!body) return;
     const id = uuidv4();
@@ -90,7 +109,23 @@ export async function electricityRoutes(app: FastifyInstance) {
     return reply.status(201).send(db.select().from(electricityMeters).where(eq(electricityMeters.id, id)).get());
   });
 
-  app.post('/electricity-meters/:id/readings', { preHandler: [app.authenticate] }, async (request, reply) => {
+  // Update electricity meter settings (cost, alerts)
+  app.put('/electricity-meters/:id', { preHandler: [authenticate] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as { meterNumber?: string; costPerUnit?: number; fixedCharge?: number; highUsageAlert?: number; maxCapacityKw?: number };
+    const meter = db.select().from(electricityMeters).where(and(eq(electricityMeters.id, id), eq(electricityMeters.tenantId, request.user!.tenantId))).get();
+    if (!meter) return reply.status(404).send({ error: 'Meter not found' });
+    const updates: Record<string, any> = { updatedAt: new Date().toISOString() };
+    if (body.meterNumber !== undefined) updates.meterNumber = body.meterNumber;
+    if (body.costPerUnit !== undefined) updates.costPerUnit = body.costPerUnit;
+    if (body.fixedCharge !== undefined) updates.fixedCharge = body.fixedCharge;
+    if (body.highUsageAlert !== undefined) updates.highUsageAlert = body.highUsageAlert;
+    if (body.maxCapacityKw !== undefined) updates.maxCapacityKw = body.maxCapacityKw;
+    db.update(electricityMeters).set(updates).where(eq(electricityMeters.id, id)).run();
+    return reply.send(db.select().from(electricityMeters).where(eq(electricityMeters.id, id)).get());
+  });
+
+  app.post('/electricity-meters/:id/readings', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const body = request.body as { powerKw: number; voltage?: number; currentAmp?: number; frequency?: number; powerFactor?: number; totalKwh: number; dailyKwh?: number; rawData?: string };
     const meter = db.select().from(electricityMeters).where(and(eq(electricityMeters.id, id), eq(electricityMeters.tenantId, request.user!.tenantId))).get();
@@ -107,7 +142,7 @@ export async function electricityRoutes(app: FastifyInstance) {
     return reply.status(201).send({ id: readingId, isAnomaly, anomalyReason, estimatedCost });
   });
 
-  app.get('/electricity-meters/:id/readings', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/electricity-meters/:id/readings', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const meter = db.select().from(electricityMeters).where(and(eq(electricityMeters.id, id), eq(electricityMeters.tenantId, request.user!.tenantId))).get();
     if (!meter) return reply.status(404).send({ error: 'Meter not found' });
@@ -115,7 +150,7 @@ export async function electricityRoutes(app: FastifyInstance) {
       .orderBy(desc(electricityReadings.time)).limit(500).all());
   });
 
-  app.post('/tanker-orders', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/tanker-orders', { preHandler: [authenticate] }, async (request, reply) => {
     const body = request.body as { tankId: string; orderDate: string; supplierName?: string; supplierPhone?: string; orderedLiters: number; costPerTanker?: number };
     const tank = db.select().from(waterTanks).where(eq(waterTanks.id, body.tankId)).get();
     const id = uuidv4();
@@ -125,7 +160,7 @@ export async function electricityRoutes(app: FastifyInstance) {
     return reply.status(201).send({ id, message: 'Tanker order created' });
   });
 
-  app.patch('/tanker-orders/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.patch('/tanker-orders/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const body = request.body as { deliveredLiters?: number; actualAddedLiters?: number; status?: string; notes?: string };
     db.update(tankerOrders).set({ ...body, updatedAt: new Date().toISOString() }).where(eq(tankerOrders.id, id)).run();

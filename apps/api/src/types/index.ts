@@ -182,6 +182,16 @@ export const createElectricityMeterSchema = z.object({
   fixedCharge: z.number().min(0).default(0),
 });
 
+// =============================================================================
+// Pagination Validation
+// =============================================================================
+export const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export type PaginationInput = z.infer<typeof paginationSchema>;
+
 export function parseBody<T>(schema: z.ZodSchema<T>, body: unknown, reply: FastifyReply): T | null {
   const result = schema.safeParse(body);
   if (!result.success) {

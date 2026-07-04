@@ -1,3 +1,4 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { db } from '../lib/db';
 import { electricityReadings, electricityMeters, waterReadings, waterTanks } from '../lib/schema';
@@ -6,7 +7,7 @@ import { eq, and, desc, gte, lte } from 'drizzle-orm';
 export async function iotAnalyticsRoutes(app: FastifyInstance) {
   // ── Electricity consumption analytics ──────────────────────────────────
   // GET /iot/analytics/electricity?meterId=xxx&days=30
-  app.get('/iot/analytics/electricity', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/iot/analytics/electricity', { preHandler: [authenticate] }, async (request, reply) => {
     const { meterId, days = 30 } = request.query as { meterId?: string; days?: number };
     const tenantId = request.user!.tenantId;
 
@@ -81,7 +82,7 @@ export async function iotAnalyticsRoutes(app: FastifyInstance) {
   });
 
   // ── Get hourly readings for a specific day ─────────────────────────────
-  app.get('/iot/analytics/electricity/daily', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/iot/analytics/electricity/daily', { preHandler: [authenticate] }, async (request, reply) => {
     const { meterId, date } = request.query as { meterId?: string; date: string };
     const tenantId = request.user!.tenantId;
 
@@ -121,7 +122,7 @@ export async function iotAnalyticsRoutes(app: FastifyInstance) {
 
   // ── Water consumption analytics ────────────────────────────────────────
   // GET /iot/analytics/water?tankId=xxx&days=30
-  app.get('/iot/analytics/water', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/iot/analytics/water', { preHandler: [authenticate] }, async (request, reply) => {
     const { tankId, days = 30 } = request.query as { tankId?: string; days?: number };
     const tenantId = request.user!.tenantId;
 
@@ -187,7 +188,7 @@ export async function iotAnalyticsRoutes(app: FastifyInstance) {
   });
 
   // ── Get hourly readings for a specific day (water) ─────────────────────
-  app.get('/iot/analytics/water/daily', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/iot/analytics/water/daily', { preHandler: [authenticate] }, async (request, reply) => {
     const { tankId, date } = request.query as { tankId?: string; date: string };
     const tenantId = request.user!.tenantId;
 

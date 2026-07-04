@@ -22,6 +22,27 @@
       "when": 1782663292253,
       "tag": "0002_short_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1782664503123,
+      "tag": "0003_steep_galactus",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1782882000000,
+      "tag": "0004_add_food_charges",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1782884500000,
+      "tag": "0005_add_billing_configs",
+      "breakpoints": true
     }
   ]
 }

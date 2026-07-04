@@ -1,15 +1,33 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import {
   rentInvoices, paymentProofs, paymentVerifications, receipts,
   paymentReminders, paymentActivities, tenantProfiles, notifications, rooms, beds, users,
+  electricityReadings, mealAttendance, billingConfigs,
 } from '../lib/schema';
 import { eq, and, desc, count, sql } from 'drizzle-orm';
 import {
   createRentInvoiceSchema, uploadPaymentProofSchema, verifyPaymentSchema,
   createReminderSchema, generateBulkRemindersSchema, parseBody,
 } from '../types';
+
+
+// Default per-meal rates (₹) — fallback if no billing_configs row exists
+const DEFAULT_MEAL_RATES = { breakfast: 30, lunch: 50, dinner: 60 };
+
+// Helper: get or create billing config for a tenant
+const getMealRates = (tenantId: string) => {
+  let config = db.select().from(billingConfigs)
+    .where(eq(billingConfigs.tenantId, tenantId)).get();
+  if (!config) {
+    const id = uuidv4();
+    db.insert(billingConfigs).values({ id, tenantId }).run();
+    config = db.select().from(billingConfigs).where(eq(billingConfigs.id, id)).get()!;
+  }
+  return { breakfast: config.breakfastRate ?? DEFAULT_MEAL_RATES.breakfast, lunch: config.lunchRate ?? DEFAULT_MEAL_RATES.lunch, dinner: config.dinnerRate ?? DEFAULT_MEAL_RATES.dinner };
+};
 
 export async function paymentProofRoutes(app: FastifyInstance) {
 
@@ -32,14 +50,93 @@ export async function paymentProofRoutes(app: FastifyInstance) {
     return user?.tenantProfileId || null;
   };
 
-  // Helper: sanitize input to prevent stored XSS
-  const sanitize = (input: string): string => input.replace(/[<>]/g, (c) => c === '<' ? '&lt;' : '&gt;');
+  // Helper: batch-fetch meal attendance grouped by resident (avoids N+1)
+  const getMealsByResident = (tenantId: string, monthStart: string, monthEnd: string) => {
+    const allMeals = db.select().from(mealAttendance)
+      .where(and(eq(mealAttendance.tenantId, tenantId),
+        sql`${mealAttendance.date} >= ${monthStart} AND ${mealAttendance.date} <= ${monthEnd}`))
+      .all();
+    const map = new Map<string, typeof allMeals>();
+    for (const m of allMeals) {
+      const arr = map.get(m.tenantProfileId) || [];
+      arr.push(m);
+      map.set(m.tenantProfileId, arr);
+    }
+    return map;
+  };
 
-  // Generate monthly invoices for all active tenants
-  app.post('/payments-proof/invoices/generate', { preHandler: [app.authenticate] }, async (request, reply) => {
+  // Billing preview: calculate utility + food charges for all active residents
+  app.post('/payments-proof/billing/calculate', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const tenantId = request.user!.tenantId;
-    const { monthYear, dueDate } = request.body as { monthYear: string; dueDate: string };
+    const { monthYear } = request.body as { monthYear: string };
+    if (!monthYear) return reply.status(400).send({ error: 'monthYear is required' });
+
+    const [year, month] = monthYear.split('-').map(Number);
+    const monthStart = `${monthYear}-01`;
+    const monthEnd = `${monthYear}-${String(new Date(year, month, 0).getDate()).padStart(2, '0')}`;
+
+    // Sum electricity readings for the month across all meters
+    const allReadings = db.select().from(electricityReadings)
+      .where(and(eq(electricityReadings.tenantId, tenantId),
+        sql`${electricityReadings.time} >= ${monthStart} AND ${electricityReadings.time} <= ${monthEnd}`))
+      .all();
+    const totalElectricityCost = allReadings.reduce((sum, r) => sum + (r.estimatedCost || 0), 0);
+
+    // Get active residents count per property
+    const activeResidents = db.select().from(tenantProfiles)
+      .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active')))
+      .all();
+
+    if (activeResidents.length === 0) return reply.send({ residents: [], totalElectricityCost: 0 });
+
+    // Per-resident utility charge (split evenly)
+    const utilityPerResident = activeResidents.length > 0 ? Math.round(totalElectricityCost / activeResidents.length * 100) / 100 : 0;
+
+    // Fetch meal rates from billing config
+    const mealRates = getMealRates(tenantId);
+
+    // Batch fetch all meal attendance for the month (single query, not N+1)
+    const mealsByResident = getMealsByResident(tenantId, monthStart, monthEnd);
+
+    const preview = activeResidents.map(resident => {
+      const meals = mealsByResident.get(resident.id) || [];
+      const breakfastCount = meals.filter(m => m.breakfast === 'yes' && resident.breakfastOptIn).length;
+      const lunchCount = meals.filter(m => m.lunch === 'yes' && resident.lunchOptIn).length;
+      const dinnerCount = meals.filter(m => m.dinner === 'yes' && resident.dinnerOptIn).length;
+      const foodCharges = resident.foodOptIn
+        ? (breakfastCount * mealRates.breakfast) + (lunchCount * mealRates.lunch) + (dinnerCount * mealRates.dinner)
+        : 0;
+
+      return {
+        tenantProfileId: resident.id,
+        fullName: resident.fullName,
+        rentAmount: resident.rentAmount,
+        utilityCharges: utilityPerResident,
+        foodCharges,
+        mealBreakdown: { breakfast: breakfastCount, lunch: lunchCount, dinner: dinnerCount },
+        totalEstimated: resident.rentAmount + utilityPerResident + foodCharges,
+      };
+    });
+
+    const totalFoodCharges = preview.reduce((sum, r) => sum + r.foodCharges, 0);
+
+    return reply.send({
+      monthYear,
+      totalElectricityCost,
+      activeResidentCount: activeResidents.length,
+      utilityPerResident,
+      mealRates,
+      totalFoodCharges,
+      residents: preview,
+    });
+  });
+
+  // Generate monthly invoices for all active tenants (with billing engine)
+  app.post('/payments-proof/invoices/generate', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const tenantId = request.user!.tenantId;
+    const { monthYear, dueDate, includeUtility } = request.body as { monthYear: string; dueDate: string; includeUtility?: boolean };
 
     if (!monthYear || !dueDate) {
       return reply.status(400).send({ error: 'monthYear and dueDate are required' });
@@ -50,8 +147,30 @@ export async function paymentProofRoutes(app: FastifyInstance) {
       .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active')))
       .all();
 
+    // Calculate month date range (shared by utility + food calculations)
+    const [year, month] = monthYear.split('-').map(Number);
+    const monthStart = `${monthYear}-01`;
+    const monthEnd = `${monthYear}-${String(new Date(year, month, 0).getDate()).padStart(2, '0')}`;
+
+    // Calculate utility charges if requested
+    let utilityPerResident = 0;
+    if (includeUtility && residents.length > 0) {
+      const allReadings = db.select().from(electricityReadings)
+        .where(and(eq(electricityReadings.tenantId, tenantId),
+          sql`${electricityReadings.time} >= ${monthStart} AND ${electricityReadings.time} <= ${monthEnd}`))
+        .all();
+      const totalElectricityCost = allReadings.reduce((sum, r) => sum + (r.estimatedCost || 0), 0);
+      utilityPerResident = Math.round(totalElectricityCost / residents.length * 100) / 100;
+    }
+
     let generated = 0;
     const monthPrefix = monthYear.replace('-', '');
+
+    // Fetch meal rates from billing config
+    const rates = getMealRates(tenantId);
+
+    // Batch fetch all meal attendance for the month (single query, not N+1)
+    const mealsByResident = getMealsByResident(tenantId, monthStart, monthEnd);
 
     for (const resident of residents) {
       // Check if invoice already exists for this month
@@ -65,12 +184,24 @@ export async function paymentProofRoutes(app: FastifyInstance) {
       if (existing) continue;
 
       const invoiceNumber = `INV-${monthPrefix}-${String(generated + 1).padStart(4, '0')}`;
-      const totalAmount = resident.rentAmount;
+      const utilityCharges = utilityPerResident;
+
+      // Calculate food charges from pre-fetched meal attendance
+      let foodCharges = 0;
+      if (resident.foodOptIn) {
+        const meals = mealsByResident.get(resident.id) || [];
+        const breakfastCount = meals.filter(m => m.breakfast === 'yes' && resident.breakfastOptIn).length;
+        const lunchCount = meals.filter(m => m.lunch === 'yes' && resident.lunchOptIn).length;
+        const dinnerCount = meals.filter(m => m.dinner === 'yes' && resident.dinnerOptIn).length;
+        foodCharges = (breakfastCount * rates.breakfast) + (lunchCount * rates.lunch) + (dinnerCount * rates.dinner);
+      }
+
+      const totalAmount = resident.rentAmount + utilityCharges + foodCharges;
 
       db.insert(rentInvoices).values({
         id: uuidv4(), tenantId, propertyId: resident.propertyId,
         tenantProfileId: resident.id, invoiceNumber, monthYear,
-        rentAmount: resident.rentAmount, utilityCharges: 0,
+        rentAmount: resident.rentAmount, utilityCharges, foodCharges,
         lateFee: 0, discounts: 0, totalAmount, dueDate,
         status: 'pending',
       }).run();
@@ -78,25 +209,25 @@ export async function paymentProofRoutes(app: FastifyInstance) {
       // Log activity
       db.insert(paymentActivities).values({
         id: uuidv4(), tenantId, tenantProfileId: resident.id,
-        activityType: 'invoice_generated', description: `Invoice ${invoiceNumber} generated for ${monthYear}`,
+        activityType: 'invoice_generated', description: `Invoice ${invoiceNumber} generated for ${monthYear} (rent ₹${resident.rentAmount} + utility ₹${utilityCharges} + food ₹${foodCharges})`,
       }).run();
 
       // Notify tenant
       db.insert(notifications).values({
         id: uuidv4(), tenantId, tenantProfileId: resident.id,
         title: `Invoice Generated - ${monthYear}`,
-        message: `Your rent invoice of ₹${totalAmount.toLocaleString()} is due on ${dueDate}`,
+        message: `Your rent invoice of ₹${totalAmount.toLocaleString()} is due on ${dueDate}${utilityCharges > 0 ? ` (₹${utilityCharges} utility)` : ''}${foodCharges > 0 ? ` (₹${foodCharges} food)` : ''}`,
         type: 'payment_invoice', priority: 'normal',
       }).run();
 
       generated++;
     }
 
-    return reply.send({ message: `${generated} invoices generated`, count: generated });
+    return reply.send({ message: `${generated} invoices generated`, count: generated, utilityPerResident });
   });
 
   // List invoices (admin sees all, residents see only their own)
-  app.get('/payments-proof/invoices', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/invoices', { preHandler: [authenticate] }, async (request, reply) => {
     const { status, monthYear, page = 1, limit = 20 } = request.query as {
       status?: string; monthYear?: string; page?: number; limit?: number;
     };
@@ -121,12 +252,13 @@ export async function paymentProofRoutes(app: FastifyInstance) {
       return { ...inv, resident: profile ? { fullName: profile.fullName, phone: profile.phone } : null, roomNumber: room?.roomNumber || '—' };
     });
 
-    const total = db.select().from(rentInvoices).where(and(...conditions)).all().length;
+    const totalRow = db.select({ count: sql<number>`count(*)` }).from(rentInvoices).where(and(...conditions)).get();
+    const total = totalRow?.count ?? 0;
     return reply.send({ data: enriched, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Get single invoice (with full IDOR protection for all non-admin roles)
-  app.get('/payments-proof/invoices/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/invoices/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const invoice = db.select().from(rentInvoices)
@@ -165,7 +297,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   // ══════════════════════════════════════════════════════════════════════════
 
   // Upload payment proof
-  app.post('/payments-proof/proofs', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/payments-proof/proofs', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(uploadPaymentProofSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -215,7 +347,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   });
 
   // List my proofs
-  app.get('/payments-proof/proofs/my', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/proofs/my', { preHandler: [authenticate] }, async (request, reply) => {
     const profileId = resolveProfileId(request.user!.userId);
     if (!profileId) return reply.send([]);
     const data = db.select().from(paymentProofs)
@@ -233,7 +365,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   });
 
   // List all proofs (admin - verification queue)
-  app.get('/payments-proof/proofs', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/proofs', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { status, page = 1, limit = 20 } = request.query as {
       status?: string; page?: number; limit?: number;
@@ -262,12 +394,13 @@ export async function paymentProofRoutes(app: FastifyInstance) {
       };
     });
 
-    const total = db.select().from(paymentProofs).where(and(...conditions)).all().length;
+    const totalRow = db.select({ count: sql<number>`count(*)` }).from(paymentProofs).where(and(...conditions)).get();
+    const total = totalRow?.count ?? 0;
     return reply.send({ data: enriched, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Get proof detail (non-admin users can only see their own proofs)
-  app.get('/payments-proof/proofs/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/proofs/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const proof = db.select().from(paymentProofs)
@@ -305,7 +438,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   // ══════════════════════════════════════════════════════════════════════════
 
   // Verify payment proof (approve / reject / reupload)
-  app.post('/payments-proof/proofs/:id/verify', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/payments-proof/proofs/:id/verify', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { id } = request.params as { id: string };
     const body = parseBody(verifyPaymentSchema, request.body, reply);
@@ -401,7 +534,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   // MODULE 4: RECEIPTS
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.get('/payments-proof/receipts', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/receipts', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const data = db.select().from(receipts)
@@ -426,7 +559,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
     return reply.send(enriched);
   });
 
-  app.get('/payments-proof/receipts/my', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/receipts/my', { preHandler: [authenticate] }, async (request, reply) => {
     const profileId = resolveProfileId(request.user!.userId);
     if (!profileId) return reply.send([]);
     const myInvoices = db.select().from(rentInvoices)
@@ -446,7 +579,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   // MODULE 5: REMINDERS
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.post('/payments-proof/reminders', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/payments-proof/reminders', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createReminderSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -477,7 +610,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   });
 
   // Bulk reminders
-  app.post('/payments-proof/reminders/bulk', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/payments-proof/reminders/bulk', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(generateBulkRemindersSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -528,7 +661,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   });
 
   // Get reminders (owner only)
-  app.get('/payments-proof/reminders', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/reminders', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const data = db.select().from(paymentReminders)
@@ -541,7 +674,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   // MODULE 6: REVENUE DASHBOARD & ANALYTICS
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.get('/payments-proof/dashboard', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/dashboard', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const currentMonth = new Date().toISOString().slice(0, 7);
@@ -550,8 +683,9 @@ export async function paymentProofRoutes(app: FastifyInstance) {
       .where(eq(rentInvoices.tenantId, tenantId)).all();
     const currentInvoices = allInvoices.filter(i => i.monthYear === currentMonth);
 
-    const totalResidents = db.select().from(tenantProfiles)
-      .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active'))).all().length;
+    const totalResidentsRow = db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
+      .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active'))).get();
+    const totalResidents = totalResidentsRow?.count ?? 0;
 
     const projectedRevenue = currentInvoices.reduce((sum, i) => sum + i.totalAmount, 0);
     const collectedRevenue = currentInvoices.filter(i => i.status === 'paid')
@@ -561,9 +695,10 @@ export async function paymentProofRoutes(app: FastifyInstance) {
     const overdueRevenue = allInvoices.filter(i => i.status === 'overdue')
       .reduce((sum, i) => sum + i.totalAmount, 0);
 
-    const pendingProofs = db.select().from(paymentProofs)
+    const pendingProofsRow = db.select({ count: sql<number>`count(*)` }).from(paymentProofs)
       .where(and(eq(paymentProofs.tenantId, tenantId), eq(paymentProofs.status, 'pending')))
-      .all().length;
+      .get();
+    const pendingProofs = pendingProofsRow?.count ?? 0;
 
     const paidCount = currentInvoices.filter(i => i.status === 'paid').length;
     const collectionRate = totalResidents > 0 ? ((paidCount / totalResidents) * 100).toFixed(1) : '0';
@@ -591,7 +726,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   // MODULE 7: ACTIVITY LOG
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.get('/payments-proof/activities', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/activities', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { tenantProfileId, invoiceId } = request.query as { tenantProfileId?: string; invoiceId?: string };
     const tenantId = request.user!.tenantId;
@@ -607,7 +742,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   });
 
   // Get my activity (tenant)
-  app.get('/payments-proof/activities/my', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/activities/my', { preHandler: [authenticate] }, async (request, reply) => {
     const profileId = resolveProfileId(request.user!.userId);
     if (!profileId) return reply.send([]);
     const data = db.select().from(paymentActivities)
@@ -617,10 +752,46 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   });
 
   // ══════════════════════════════════════════════════════════════════════════
-  // MODULE 8: TENANT PORTAL
+  // MODULE 8: BILLING CONFIGURATION (Per-tenant meal rates)
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.get('/payments-proof/my-invoices', { preHandler: [app.authenticate] }, async (request, reply) => {
+  // Get billing config for current tenant
+  app.get('/payments-proof/billing-config', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const tenantId = request.user!.tenantId;
+    const config = getMealRates(tenantId);
+    return reply.send({ ...config, utilitySplitMethod: 'even' });
+  });
+
+  // Update billing config for current tenant
+  app.put('/payments-proof/billing-config', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const tenantId = request.user!.tenantId;
+    const body = request.body as { breakfastRate?: number; lunchRate?: number; dinnerRate?: number; utilitySplitMethod?: string };
+
+    let config = db.select().from(billingConfigs).where(eq(billingConfigs.tenantId, tenantId)).get();
+    if (!config) {
+      const id = uuidv4();
+      db.insert(billingConfigs).values({ id, tenantId }).run();
+      config = db.select().from(billingConfigs).where(eq(billingConfigs.id, id)).get()!;
+    }
+
+    const updates: Record<string, any> = { updatedAt: new Date().toISOString() };
+    if (body.breakfastRate !== undefined && body.breakfastRate >= 0) updates.breakfastRate = body.breakfastRate;
+    if (body.lunchRate !== undefined && body.lunchRate >= 0) updates.lunchRate = body.lunchRate;
+    if (body.dinnerRate !== undefined && body.dinnerRate >= 0) updates.dinnerRate = body.dinnerRate;
+    if (body.utilitySplitMethod !== undefined) updates.utilitySplitMethod = body.utilitySplitMethod;
+
+    db.update(billingConfigs).set(updates).where(eq(billingConfigs.id, config.id)).run();
+    const updated = getMealRates(tenantId);
+    return reply.send({ message: 'Billing config updated', ...updated });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MODULE 9: TENANT PORTAL
+  // ══════════════════════════════════════════════════════════════════════════
+
+  app.get('/payments-proof/my-invoices', { preHandler: [authenticate] }, async (request, reply) => {
     const profileId = resolveProfileId(request.user!.userId);
     if (!profileId) return reply.send([]);
     const data = db.select().from(rentInvoices)
@@ -629,7 +800,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
     return reply.send(data);
   });
 
-  app.get('/payments-proof/my-overview', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments-proof/my-overview', { preHandler: [authenticate] }, async (request, reply) => {
     const profileId = resolveProfileId(request.user!.userId);
     if (!profileId) return reply.send({ currentInvoice: null, latestProof: null, outstandingAmount: 0, totalPaid: 0, totalPending: 0 });
 

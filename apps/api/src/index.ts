@@ -18,6 +18,11 @@ import { allocationRoutes } from './routes/allocation';
 import { foodRoutes } from './routes/food';
 import { paymentProofRoutes } from './routes/payments-proof';
 import { staffPortalRoutes } from './routes/staff-portal';
+import multipart from '@fastify/multipart';
+import { uploadRoutes } from './routes/upload';
+import { db } from './lib/db';
+import { revokedTokens } from './lib/schema';
+import { eq, lt } from 'drizzle-orm';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -56,6 +61,12 @@ async function main() {
   await app.register(rateLimit, {
     max: 100,
     timeWindow: '1 minute',
+  });
+
+  await app.register(multipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB
+    },
   });
 
   // ── Per-IP rate limit for auth endpoints (brute force protection) ─────────
@@ -104,27 +115,24 @@ async function main() {
     });
   }, { prefix: '/auth/register' });
 
-  // ── Token blacklist (shared between auth routes and middleware) ─────────
-  const revokedTokens = new Set<string>();
-
-  // ── Auth decorator (with token revocation check) ────────────────────────
+  // ── Token blacklist (DB backed) ─────────
   app.decorate('authenticate', async function (request: any, reply: any) {
     try {
       await request.jwtVerify();
-      const authHeader = request.headers.authorization;
-      if (authHeader) {
-        const token = authHeader.replace('Bearer ', '');
-        if (revokedTokens.has(token)) {
-          return reply.status(401).send({ error: 'Token has been revoked' });
-        }
-      }
-    } catch {
-      reply.status(401).send({ error: 'Unauthorized' });
+    } catch (err) {
+      return reply.status(401).send({ error: 'Unauthorized' });
     }
   });
 
-  // Expose revokedTokens to routes via decorate
-  app.decorate('revokedTokens', revokedTokens);
+  // Scheduled cleanup for expired revoked tokens (runs every hour)
+  setInterval(() => {
+    try {
+      const now = Math.floor(Date.now() / 1000).toString();
+      db.delete(revokedTokens).where(lt(revokedTokens.expiresAt, now)).run();
+    } catch (err) {
+      console.error('Failed to cleanup revoked tokens', err);
+    }
+  }, 60 * 60 * 1000);
 
   // ── Health check ─────────────────────────────────────────────────────────
   app.get('/health', async () => ({
@@ -158,6 +166,7 @@ async function main() {
   await app.register(foodRoutes);
   await app.register(paymentProofRoutes);
   await app.register(staffPortalRoutes);
+  await app.register(uploadRoutes);
 
   // ── WebSocket for real-time updates (requires auth) ─────────────────────
   app.get('/ws', { websocket: true, preHandler: [app.authenticate] }, (socket, request) => {

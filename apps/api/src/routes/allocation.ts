@@ -1,3 +1,4 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { db } from '../lib/db';
 import { rooms, beds, tenantProfiles, properties, floors } from '../lib/schema';
@@ -6,7 +7,7 @@ import { eq, and, desc } from 'drizzle-orm';
 export async function allocationRoutes(app: FastifyInstance) {
   // ── Smart room suggestions for a new resident ──────────────────────────
   // POST /allocation/suggest  { gender, isCouple?, budget?, floorPreference?, propertyId? }
-  app.post('/allocation/suggest', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/allocation/suggest', { preHandler: [authenticate] }, async (request, reply) => {
     const { gender, isCouple = false, budget, floorPreference, propertyId } = request.body as {
       gender?: string; isCouple?: boolean; budget?: number; floorPreference?: number; propertyId?: string;
     };
@@ -117,7 +118,7 @@ export async function allocationRoutes(app: FastifyInstance) {
   });
 
   // ── Room detail with gender breakdown ──────────────────────────────────
-  app.get('/allocation/rooms', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/allocation/rooms', { preHandler: [authenticate] }, async (request, reply) => {
     const { propertyId, floorId } = request.query as { propertyId?: string; floorId?: string };
     const tenantId = request.user!.tenantId;
 

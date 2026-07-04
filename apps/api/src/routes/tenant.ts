@@ -1,3 +1,4 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
@@ -5,7 +6,7 @@ import {
   users, tenantProfiles, rentPayments, complaints, complaintComments, properties, rooms,
   notifications, staff, activityLogs,
 } from '../lib/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 
 /** Helper: look up the resident's tenantProfileId from the users table. */
 function getResidentProfile(userId: string, tenantId: string) {
@@ -20,7 +21,7 @@ function getResidentProfile(userId: string, tenantId: string) {
 
 export async function tenantPortalRoutes(app: FastifyInstance) {
   // ── Get my profile ──────────────────────────────────────────────────────
-  app.get('/tenant/me', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/tenant/me', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -53,7 +54,7 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
   });
 
   // ── Tenant dashboard overview ───────────────────────────────────────────
-  app.get('/tenant/dashboard', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/tenant/dashboard', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -89,22 +90,24 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
     const latestPayment = currentMonthPayments[0];
 
     // Open complaints count
-    const openComplaints = db.select().from(complaints)
+    const openComplaintsRow = db.select({ count: sql<number>`count(*)` }).from(complaints)
       .where(and(
         eq(complaints.tenantId, user.tenantId),
         eq(complaints.tenantProfileId, profile.id),
         eq(complaints.status, 'open'),
       ))
-      .all().length;
+      .get();
+    const openComplaints = openComplaintsRow?.count ?? 0;
 
-    const urgentComplaints = db.select().from(complaints)
+    const urgentComplaintsRow = db.select({ count: sql<number>`count(*)` }).from(complaints)
       .where(and(
         eq(complaints.tenantId, user.tenantId),
         eq(complaints.tenantProfileId, profile.id),
         eq(complaints.status, 'open'),
         eq(complaints.priority, 'urgent'),
       ))
-      .all().length;
+      .get();
+    const urgentComplaints = urgentComplaintsRow?.count ?? 0;
 
     // Recent payments (last 6 months)
     const recentPayments = db.select().from(rentPayments)
@@ -161,7 +164,7 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
   });
 
   // ── My payments (filtered by tenantProfileId) ──────────────────────────
-  app.get('/tenant/payments', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/tenant/payments', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -190,9 +193,10 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
       .limit(limit).offset(offset)
       .all();
 
-    const total = db.select().from(rentPayments)
+    const totalRow = db.select({ count: sql<number>`count(*)` }).from(rentPayments)
       .where(and(...conditions))
-      .all().length;
+      .get();
+    const total = totalRow?.count ?? 0;
 
     // Summary
     const allPayments = db.select().from(rentPayments)
@@ -218,7 +222,7 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
   });
 
   // ── My complaints (filtered by tenantProfileId) ────────────────────────
-  app.get('/tenant/complaints', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/tenant/complaints', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -247,15 +251,16 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
       .limit(limit).offset(offset)
       .all();
 
-    const total = db.select().from(complaints)
+    const totalRow = db.select({ count: sql<number>`count(*)` }).from(complaints)
       .where(and(...conditions))
-      .all().length;
+      .get();
+    const total = totalRow?.count ?? 0;
 
     return reply.send({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // ── Create complaint (auto-assign tenantProfileId) ─────────────────────
-  app.post('/tenant/complaints', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/tenant/complaints', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -295,7 +300,7 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
   });
 
   // ── My complaint detail (with thread) ─────────────────────────────────
-  app.get('/tenant/complaints/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/tenant/complaints/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -338,7 +343,7 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
   });
 
   // ── Reply to my complaint ───────────────────────────────────────────────
-  app.post('/tenant/complaints/:id/comments', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/tenant/complaints/:id/comments', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -387,7 +392,7 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
   });
 
   // ── Rate resolved complaint ─────────────────────────────────────────────
-  app.post('/tenant/complaints/:id/rate', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/tenant/complaints/:id/rate', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -418,8 +423,53 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
     return reply.send({ message: 'Rating submitted', rating: body.rating });
   });
 
+  // ── Update my profile (phone, occupation, emergency contact, foodOptIn) ──
+  app.patch('/tenant/me', { preHandler: [authenticate] }, async (request, reply) => {
+    const user = request.user!;
+    if (user.role !== 'resident') {
+      return reply.status(403).send({ error: 'Only residents can access this endpoint' });
+    }
+
+    const profile = getResidentProfile(user.userId, user.tenantId);
+    if (!profile) {
+      return reply.status(404).send({ error: 'Resident profile not found' });
+    }
+
+    const body = request.body as {
+      phone?: string;
+      occupation?: string;
+      gender?: string;
+      foodOptIn?: boolean;
+      emergencyName?: string;
+      emergencyPhone?: string;
+      emergencyRelation?: string;
+    };
+
+    const updates: Record<string, unknown> = {};
+    if (body.phone !== undefined) updates.phone = body.phone;
+    if (body.occupation !== undefined) updates.occupation = body.occupation;
+    if (body.gender !== undefined) updates.gender = body.gender;
+    if (body.foodOptIn !== undefined) updates.foodOptIn = body.foodOptIn ? 1 : 0;
+    if (body.emergencyName !== undefined) updates.emergencyName = body.emergencyName;
+    if (body.emergencyPhone !== undefined) updates.emergencyPhone = body.emergencyPhone;
+    if (body.emergencyRelation !== undefined) updates.emergencyRelation = body.emergencyRelation;
+
+    if (Object.keys(updates).length === 0) {
+      return reply.status(400).send({ error: 'No fields to update' });
+    }
+
+    db.update(tenantProfiles).set(updates).where(eq(tenantProfiles.id, profile.id)).run();
+
+    // Sync phone to users table
+    if (body.phone !== undefined) {
+      db.update(users).set({ phone: body.phone }).where(eq(users.id, user.userId)).run();
+    }
+
+    return reply.send({ message: 'Profile updated' });
+  });
+
   // ── Notifications for this resident ─────────────────────────────────────
-  app.get('/tenant/notifications', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/tenant/notifications', { preHandler: [authenticate] }, async (request, reply) => {
     const user = request.user!;
     if (user.role !== 'resident') {
       return reply.status(403).send({ error: 'Only residents can access this endpoint' });
@@ -440,13 +490,14 @@ export async function tenantPortalRoutes(app: FastifyInstance) {
       .limit(20)
       .all();
 
-    const unreadCount = db.select().from(notifications)
+    const unreadCountRow = db.select({ count: sql<number>`count(*)` }).from(notifications)
       .where(and(
         eq(notifications.tenantId, user.tenantId),
         eq(notifications.tenantProfileId, profile.id),
         eq(notifications.isRead, false),
       ))
-      .all().length;
+      .get();
+    const unreadCount = unreadCountRow?.count ?? 0;
 
     return reply.send({ notifications: notifs, unreadCount });
   });

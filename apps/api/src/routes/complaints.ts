@@ -1,19 +1,12 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import { complaints, complaintComments, properties, users, tenantProfiles } from '../lib/schema';
-import { eq, and, like, desc } from 'drizzle-orm';
+import { eq, and, like, desc, sql } from 'drizzle-orm';
 import { createComplaintSchema, parseBody } from '../types';
 
-// Helper: sanitize input to prevent stored XSS (escape 5 critical chars)
-function sanitize(input: string): string {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
-}
+import { sanitize } from '../lib/sanitize';
 
 // Helper: resolve tenantProfileId from JWT userId
 function resolveProfileId(userId: string): string | null {
@@ -23,7 +16,7 @@ function resolveProfileId(userId: string): string | null {
 
 export async function complaintRoutes(app: FastifyInstance) {
   // List complaints
-  app.get('/complaints', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/complaints', { preHandler: [authenticate] }, async (request, reply) => {
     const { page = 1, limit = 20, propertyId, status, priority, category } = request.query as {
       page?: number; limit?: number; propertyId?: string; status?: string;
       priority?: string; category?: string;
@@ -43,15 +36,14 @@ export async function complaintRoutes(app: FastifyInstance) {
       .limit(limit).offset(offset)
       .all();
 
-    const total = db.select().from(complaints)
-      .where(and(...conditions))
-      .all().length;
+    const total = db.select({ count: sql<number>`count(*)` }).from(complaints)
+      .where(and(...conditions)).get()?.count ?? 0;
 
     return reply.send({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Create complaint
-  app.post('/complaints', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/complaints', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createComplaintSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -84,7 +76,7 @@ export async function complaintRoutes(app: FastifyInstance) {
   });
 
   // Get complaint by ID with comments (with IDOR protection for residents)
-  app.get('/complaints/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/complaints/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 
@@ -112,7 +104,7 @@ export async function complaintRoutes(app: FastifyInstance) {
   });
 
   // Update complaint status
-  app.patch('/complaints/:id/status', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.patch('/complaints/:id/status', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as { status: string; assignedTo?: string; resolutionNotes?: string };
@@ -152,7 +144,7 @@ export async function complaintRoutes(app: FastifyInstance) {
   });
 
   // Add comment to complaint
-  app.post('/complaints/:id/comments', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/complaints/:id/comments', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as { comment: string; isInternal?: boolean };
@@ -178,7 +170,7 @@ export async function complaintRoutes(app: FastifyInstance) {
   });
 
   // Rate resolved complaint
-  app.post('/complaints/:id/rate', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/complaints/:id/rate', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as { rating: number; feedback?: string };

@@ -1,13 +1,14 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import { rentPayments, tenantProfiles } from '../lib/schema';
-import { eq, and, like, desc } from 'drizzle-orm';
+import { eq, and, like, desc, sql } from 'drizzle-orm';
 import { createPaymentSchema, parseBody } from '../types';
 
 export async function paymentRoutes(app: FastifyInstance) {
   // List payments
-  app.get('/payments', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments', { preHandler: [authenticate] }, async (request, reply) => {
     const { page = 1, limit = 20, propertyId, monthYear, status } = request.query as {
       page?: number; limit?: number; propertyId?: string; monthYear?: string; status?: string;
     };
@@ -25,15 +26,14 @@ export async function paymentRoutes(app: FastifyInstance) {
       .limit(limit).offset(offset)
       .all();
 
-    const total = db.select().from(rentPayments)
-      .where(and(...conditions))
-      .all().length;
+    const total = db.select({ count: sql<number>`count(*)` }).from(rentPayments)
+      .where(and(...conditions)).get()?.count ?? 0;
 
     return reply.send({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Create payment record
-  app.post('/payments', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/payments', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createPaymentSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -80,7 +80,7 @@ export async function paymentRoutes(app: FastifyInstance) {
   });
 
   // Record payment (mark as paid)
-  app.post('/payments/:id/pay', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/payments/:id/pay', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as { paidAmount: number; paymentMethod: string; transactionId?: string };
@@ -111,7 +111,7 @@ export async function paymentRoutes(app: FastifyInstance) {
   });
 
   // Get payment summary for a property
-  app.get('/payments/summary', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments/summary', { preHandler: [authenticate] }, async (request, reply) => {
     const { propertyId, monthYear } = request.query as { propertyId?: string; monthYear?: string };
     const tenantId = request.user!.tenantId;
 
@@ -142,7 +142,7 @@ export async function paymentRoutes(app: FastifyInstance) {
   });
 
   // Get payment by ID
-  app.get('/payments/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/payments/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 

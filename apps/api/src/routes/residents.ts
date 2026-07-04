@@ -1,13 +1,14 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import { tenantProfiles, beds, rooms, properties } from '../lib/schema';
-import { eq, and, like, desc } from 'drizzle-orm';
+import { eq, and, like, desc, sql } from 'drizzle-orm';
 import { createTenantProfileSchema, parseBody } from '../types';
 
 export async function residentRoutes(app: FastifyInstance) {
   // List residents
-  app.get('/residents', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/residents', { preHandler: [authenticate] }, async (request, reply) => {
     const { page = 1, limit = 20, search, propertyId, status } = request.query as {
       page?: number; limit?: number; search?: string; propertyId?: string; status?: string;
     };
@@ -25,15 +26,14 @@ export async function residentRoutes(app: FastifyInstance) {
       .limit(limit).offset(offset)
       .all();
 
-    const total = db.select().from(tenantProfiles)
-      .where(and(...conditions))
-      .all().length;
+    const total = db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
+      .where(and(...conditions)).get()?.count ?? 0;
 
     return reply.send({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Create resident (check-in)
-  app.post('/residents', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/residents', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createTenantProfileSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -106,7 +106,7 @@ export async function residentRoutes(app: FastifyInstance) {
   });
 
   // Get resident by ID
-  app.get('/residents/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/residents/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 
@@ -121,7 +121,7 @@ export async function residentRoutes(app: FastifyInstance) {
   });
 
   // Update resident
-  app.put('/residents/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.put('/residents/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as Partial<typeof createTenantProfileSchema._type>;
@@ -142,7 +142,7 @@ export async function residentRoutes(app: FastifyInstance) {
   });
 
   // Check-out resident
-  app.post('/residents/:id/checkout', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/residents/:id/checkout', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 

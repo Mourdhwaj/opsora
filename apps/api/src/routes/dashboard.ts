@@ -1,3 +1,4 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { db } from '../lib/db';
 import {
@@ -5,7 +6,7 @@ import {
   complaints, visitors, staff, waterTanks, waterReadings,
   electricityMeters, electricityReadings, activityLogs,
 } from '../lib/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 
 export async function dashboardRoutes(app: FastifyInstance) {
   const requireOwner = (request: any, reply: any) => {
@@ -17,7 +18,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
   };
 
   // Dashboard overview (owner/admin only)
-  app.get('/dashboard/overview', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/dashboard/overview', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const tenantId = request.user!.tenantId;
 
@@ -30,9 +31,9 @@ export async function dashboardRoutes(app: FastifyInstance) {
     const occupancyRate = totalBeds > 0 ? ((occupiedBeds / totalBeds) * 100).toFixed(1) : '0';
 
     // Active tenants
-    const activeTenants = db.select().from(tenantProfiles)
+    const activeTenants = db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
       .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active')))
-      .all().length;
+      .get()?.count ?? 0;
 
     // Payment stats for current month
     const currentMonth = new Date().toISOString().slice(0, 7);
@@ -45,13 +46,13 @@ export async function dashboardRoutes(app: FastifyInstance) {
     const totalPending = totalExpected - totalCollected;
 
     // Open complaints
-    const openComplaints = db.select().from(complaints)
+    const openComplaints = db.select({ count: sql<number>`count(*)` }).from(complaints)
       .where(and(eq(complaints.tenantId, tenantId), eq(complaints.status, 'open')))
-      .all().length;
+      .get()?.count ?? 0;
 
-    const urgentComplaints = db.select().from(complaints)
+    const urgentComplaints = db.select({ count: sql<number>`count(*)` }).from(complaints)
       .where(and(eq(complaints.tenantId, tenantId), eq(complaints.status, 'open'), eq(complaints.priority, 'urgent')))
-      .all().length;
+      .get()?.count ?? 0;
 
     // Water tanks
     const tanks = db.select().from(waterTanks)
@@ -72,8 +73,8 @@ export async function dashboardRoutes(app: FastifyInstance) {
       .where(eq(activityLogs.tenantId, tenantId))
       .orderBy(desc(activityLogs.createdAt)).limit(10).all();
 
-    const pendingVisitors = db.select().from(visitors)
-      .where(and(eq(visitors.tenantId, tenantId), eq(visitors.status, 'pending'))).all().length;
+    const pendingVisitors = db.select({ count: sql<number>`count(*)` }).from(visitors)
+      .where(and(eq(visitors.tenantId, tenantId), eq(visitors.status, 'pending'))).get()?.count ?? 0;
 
     return reply.send({
       properties: { total: totalProperties, totalBeds, occupiedBeds, vacantBeds, occupancyRate },
@@ -92,7 +93,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
   });
 
   // Occupancy trend (owner/admin only)
-  app.get('/dashboard/occupancy-trend', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/dashboard/occupancy-trend', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const { propertyId } = request.query as { propertyId?: string };
@@ -120,7 +121,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
   });
 
   // Property-level dashboard (owner/admin only)
-  app.get('/dashboard/property/:propertyId', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/dashboard/property/:propertyId', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { propertyId } = request.params as { propertyId: string };
     const tenantId = request.user!.tenantId;
@@ -131,11 +132,11 @@ export async function dashboardRoutes(app: FastifyInstance) {
 
     const propertyRooms = db.select().from(rooms).where(eq(rooms.propertyId, propertyId)).all();
     const propertyBeds = db.select().from(beds).where(eq(beds.propertyId, propertyId)).all();
-    const activeTenants = db.select().from(tenantProfiles)
-      .where(and(eq(tenantProfiles.propertyId, propertyId), eq(tenantProfiles.status, 'active'))).all().length;
-    const openComplaints = db.select().from(complaints)
-      .where(and(eq(complaints.propertyId, propertyId), eq(complaints.status, 'open'))).all().length;
-    const waterTanksCount = db.select().from(waterTanks).where(eq(waterTanks.propertyId, propertyId)).all().length;
+    const activeTenants = db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
+      .where(and(eq(tenantProfiles.propertyId, propertyId), eq(tenantProfiles.status, 'active'))).get()?.count ?? 0;
+    const openComplaints = db.select({ count: sql<number>`count(*)` }).from(complaints)
+      .where(and(eq(complaints.propertyId, propertyId), eq(complaints.status, 'open'))).get()?.count ?? 0;
+    const waterTanksCount = db.select({ count: sql<number>`count(*)` }).from(waterTanks).where(eq(waterTanks.propertyId, propertyId)).get()?.count ?? 0;
 
     return reply.send({ property, rooms: propertyRooms, beds: propertyBeds, activeTenants, openComplaints, waterTanks: waterTanksCount });
   });

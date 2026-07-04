@@ -1,8 +1,9 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import { users } from '../lib/schema';
-import { eq, and, like, desc } from 'drizzle-orm';
+import { eq, and, like, desc, sql } from 'drizzle-orm';
 import { createUserSchema, parseBody } from '../types';
 import bcrypt from 'bcryptjs';
 
@@ -16,7 +17,7 @@ export async function userRoutes(app: FastifyInstance) {
   };
 
   // List users for current tenant (owner/admin only)
-  app.get('/users', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/users', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { page = 1, limit = 20, search } = request.query as { page?: number; limit?: number; search?: string };
     const tenantId = request.user!.tenantId;
@@ -31,14 +32,14 @@ export async function userRoutes(app: FastifyInstance) {
     }
 
     const data = query.limit(limit).offset(offset).all();
-    const total = db.select().from(users).where(eq(users.tenantId, tenantId)).all().length;
+    const total = db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.tenantId, tenantId)).get()?.count ?? 0;
 
     const safeData = data.map(({ passwordHash, ...rest }) => rest);
     return reply.send({ data: safeData, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Create user (owner/admin only)
-  app.post('/users', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/users', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const body = parseBody(createUserSchema, request.body, reply);
     if (!body) return;
@@ -70,7 +71,7 @@ export async function userRoutes(app: FastifyInstance) {
   });
 
   // Get user by ID (owner/admin only)
-  app.get('/users/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/users/:id', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
@@ -88,7 +89,7 @@ export async function userRoutes(app: FastifyInstance) {
   });
 
   // Update user (owner/admin only)
-  app.put('/users/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.put('/users/:id', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
@@ -112,7 +113,7 @@ export async function userRoutes(app: FastifyInstance) {
   });
 
   // Delete user (soft delete, owner/admin only)
-  app.delete('/users/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.delete('/users/:id', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;

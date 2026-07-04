@@ -778,6 +778,7 @@ export const rentInvoices = sqliteTable('rent_invoices', {
   monthYear: text('month_year').notNull(),
   rentAmount: real('rent_amount').notNull(),
   utilityCharges: real('utility_charges').default(0),
+  foodCharges: real('food_charges').default(0),
   lateFee: real('late_fee').default(0),
   discounts: real('discounts').default(0),
   totalAmount: real('total_amount').notNull(),
@@ -875,4 +876,33 @@ export const paymentActivities = sqliteTable('payment_activities', {
   description: text('description').notNull(),
 
   createdAt: text('created_at').default(sql`(datetime('now'))`),
+});
+
+// =============================================================================
+// BILLING CONFIGS (Per-tenant configurable rates)
+// =============================================================================
+export const billingConfigs = sqliteTable('billing_configs', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+
+  breakfastRate: real('breakfast_rate').default(30),
+  lunchRate: real('lunch_rate').default(50),
+  dinnerRate: real('dinner_rate').default(60),
+
+  utilitySplitMethod: text('utility_split_method').default('even'), // 'even' | 'proportional'
+
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
+  updatedAt: text('updated_at').default(sql`(datetime('now'))`),
+}, (t) => [
+  uniqueIndex('idx_billing_configs_tenant').on(t.tenantId),
+]);
+
+// =============================================================================
+// REVOKED TOKENS (For DB-backed token blacklisting)
+// =============================================================================
+export const revokedTokens = sqliteTable('revoked_tokens', {
+  id: text('id').primaryKey(),
+  token: text('token').notNull().unique(),
+  expiresAt: text('expires_at').notNull(),
+  revokedAt: text('revoked_at').default(sql`(datetime('now'))`),
 });

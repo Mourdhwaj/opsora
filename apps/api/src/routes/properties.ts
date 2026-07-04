@@ -1,13 +1,14 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import { properties, floors, rooms, beds } from '../lib/schema';
-import { eq, and, like, desc } from 'drizzle-orm';
+import { eq, and, like, desc, sql } from 'drizzle-orm';
 import { createPropertySchema, createFloorSchema, createRoomSchema, createBedSchema, parseBody } from '../types';
 
 export async function propertyRoutes(app: FastifyInstance) {
   // List properties
-  app.get('/properties', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/properties', { preHandler: [authenticate] }, async (request, reply) => {
     const { page = 1, limit = 20, search } = request.query as { page?: number; limit?: number; search?: string };
     const tenantId = request.user!.tenantId;
     const offset = (page - 1) * limit;
@@ -25,12 +26,12 @@ export async function propertyRoutes(app: FastifyInstance) {
         .limit(limit).offset(offset).all();
     }
 
-    const total = db.select().from(properties).where(eq(properties.tenantId, tenantId)).all().length;
+    const total = db.select({ count: sql<number>`count(*)` }).from(properties).where(eq(properties.tenantId, tenantId)).get()?.count ?? 0;
     return reply.send({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Create property
-  app.post('/properties', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/properties', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createPropertySchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -58,7 +59,7 @@ export async function propertyRoutes(app: FastifyInstance) {
   });
 
   // Get property by ID with floors and rooms
-  app.get('/properties/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/properties/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 
@@ -86,7 +87,7 @@ export async function propertyRoutes(app: FastifyInstance) {
   });
 
   // Update property
-  app.put('/properties/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.put('/properties/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as Partial<typeof createPropertySchema._type>;
@@ -107,7 +108,7 @@ export async function propertyRoutes(app: FastifyInstance) {
   });
 
   // Delete property
-  app.delete('/properties/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.delete('/properties/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 
@@ -136,7 +137,7 @@ export async function propertyRoutes(app: FastifyInstance) {
 // =============================================================================
 export async function floorRoutes(app: FastifyInstance) {
   // List floors for a property
-  app.get('/properties/:propertyId/floors', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/properties/:propertyId/floors', { preHandler: [authenticate] }, async (request, reply) => {
     const { propertyId } = request.params as { propertyId: string };
     const tenantId = request.user!.tenantId;
 
@@ -149,7 +150,7 @@ export async function floorRoutes(app: FastifyInstance) {
   });
 
   // Create floor
-  app.post('/floors', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/floors', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createFloorSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -168,7 +169,7 @@ export async function floorRoutes(app: FastifyInstance) {
   });
 
   // Update floor
-  app.put('/floors/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.put('/floors/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as Partial<typeof createFloorSchema._type>;
@@ -182,7 +183,7 @@ export async function floorRoutes(app: FastifyInstance) {
   });
 
   // Delete floor
-  app.delete('/floors/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.delete('/floors/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 
@@ -196,7 +197,7 @@ export async function floorRoutes(app: FastifyInstance) {
 // =============================================================================
 export async function roomRoutes(app: FastifyInstance) {
   // List rooms for a property or floor
-  app.get('/rooms', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/rooms', { preHandler: [authenticate] }, async (request, reply) => {
     const { propertyId, floorId, page = 1, limit = 50 } = request.query as {
       propertyId?: string; floorId?: string; page?: number; limit?: number;
     };
@@ -216,7 +217,7 @@ export async function roomRoutes(app: FastifyInstance) {
   });
 
   // Create room with beds
-  app.post('/rooms', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/rooms', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createRoomSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -257,7 +258,7 @@ export async function roomRoutes(app: FastifyInstance) {
   });
 
   // Get room with beds
-  app.get('/rooms/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/rooms/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 
@@ -273,7 +274,7 @@ export async function roomRoutes(app: FastifyInstance) {
   });
 
   // Update room
-  app.put('/rooms/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.put('/rooms/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as Partial<typeof createRoomSchema._type>;
@@ -287,7 +288,7 @@ export async function roomRoutes(app: FastifyInstance) {
   });
 
   // Delete room
-  app.delete('/rooms/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.delete('/rooms/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 

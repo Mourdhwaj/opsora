@@ -1,3 +1,4 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,15 +7,16 @@ import { tenants, users } from '../lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { loginSchema, registerTenantSchema, createUserSchema, parseBody } from '../types';
 
-// Helper: sanitize input to prevent stored XSS (escape 5 critical chars)
-function sanitize(input: string): string {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
+// Authentication hook for protected routes
+async function authenticateHook(request: any, reply: any) {
+  try {
+    await request.jwtVerify();
+  } catch (err) {
+    return reply.status(401).send({ error: 'Unauthorized' });
+  }
 }
+
+import { sanitize } from '../lib/sanitize';
 
 export async function authRoutes(app: FastifyInstance) {
   // Register a new tenant (organization)
@@ -99,7 +101,7 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   // Get current user profile
-  app.get('/auth/me', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/auth/me', { preHandler: [authenticateHook] }, async (request, reply) => {
     const user = db.select().from(users).where(eq(users.id, request.user!.userId)).get();
     if (!user) {
       return reply.status(404).send({ error: 'User not found' });
@@ -110,11 +112,22 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   // Logout (revoke token)
-  app.post('/auth/logout', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/auth/logout', { preHandler: [authenticate] }, async (request, reply) => {
     const authHeader = request.headers.authorization;
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
-      app.revokedTokens.add(token);
+      try {
+        const decoded = app.jwt.decode(token) as { exp: number };
+        const expiresAt = decoded?.exp || Math.floor(Date.now() / 1000) + 86400;
+        
+        db.insert(require('../lib/schema').revokedTokens).values({
+          id: uuidv4(),
+          token,
+          expiresAt: expiresAt.toString(),
+        }).run();
+      } catch (err) {
+        app.log.error(err);
+      }
     }
     return reply.send({ message: 'Logged out successfully' });
   });

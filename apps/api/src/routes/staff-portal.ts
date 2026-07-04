@@ -1,3 +1,4 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
@@ -68,7 +69,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // DASHBOARD
   // ═══════════════════════════════════════════════════════════════════════════
-  app.get('/staff/dashboard', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/staff/dashboard', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const userId = request.user!.userId;
@@ -204,7 +205,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // CREATE TICKET (staff can create new complaints)
   // ═══════════════════════════════════════════════════════════════════════════
-  app.post('/staff/tickets', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/staff/tickets', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const userId = request.user!.userId;
@@ -247,7 +248,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // TICKET LIST (ServiceNow-style with filters, sorting, pagination)
   // ═══════════════════════════════════════════════════════════════════════════
-  app.get('/staff/tickets', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/staff/tickets', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const userId = request.user!.userId;
@@ -331,7 +332,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // TICKET DETAIL (with full thread, SLA, metadata)
   // ═══════════════════════════════════════════════════════════════════════════
-  app.get('/staff/tickets/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/staff/tickets/:id', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
@@ -410,7 +411,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // ADD REPLY (public comment visible to resident)
   // ═══════════════════════════════════════════════════════════════════════════
-  app.post('/staff/tickets/:id/reply', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/staff/tickets/:id/reply', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
@@ -467,7 +468,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // ADD WORK NOTE (internal note, not visible to resident)
   // ═══════════════════════════════════════════════════════════════════════════
-  app.post('/staff/tickets/:id/work-note', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/staff/tickets/:id/work-note', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
@@ -525,7 +526,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // UPDATE TICKET STATUS
   // ═══════════════════════════════════════════════════════════════════════════
-  app.patch('/staff/tickets/:id/status', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.patch('/staff/tickets/:id/status', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
@@ -605,7 +606,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // ASSIGN TICKET
   // ═══════════════════════════════════════════════════════════════════════════
-  app.patch('/staff/tickets/:id/assign', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.patch('/staff/tickets/:id/assign', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
@@ -659,7 +660,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // STAFF LIST (for assignment dropdown)
   // ═══════════════════════════════════════════════════════════════════════════
-  app.get('/staff/list', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/staff/list', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const tenantId = request.user!.tenantId;
 
@@ -691,7 +692,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // STAFF PROFILE
   // ═══════════════════════════════════════════════════════════════════════════
-  app.get('/staff/profile', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/staff/profile', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const userId = request.user!.userId;
@@ -755,7 +756,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // CHECK-IN / CHECK-OUT (Attendance)
   // ═══════════════════════════════════════════════════════════════════════════
-  app.post('/staff/checkin', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/staff/checkin', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const userId = request.user!.userId;
@@ -794,7 +795,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
     return reply.send({ message: 'Checked in successfully' });
   });
 
-  app.post('/staff/checkout', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/staff/checkout', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const userId = request.user!.userId;
@@ -826,7 +827,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
   // ═══════════════════════════════════════════════════════════════════════════
   // MY TASKS
   // ═══════════════════════════════════════════════════════════════════════════
-  app.get('/staff/tasks', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/staff/tasks', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const tenantId = request.user!.tenantId;
     const userId = request.user!.userId;
@@ -846,7 +847,7 @@ export async function staffPortalRoutes(app: FastifyInstance) {
     return reply.send(myTasks);
   });
 
-  app.patch('/staff/tasks/:id/complete', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.patch('/staff/tasks/:id/complete', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;

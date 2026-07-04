@@ -1,8 +1,9 @@
+import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import { foodPolls, foodPollOptions, foodVotes, mealAttendance, foodMenu, foodRatings, ingredientFormulas, tenantProfiles, notifications, properties, users } from '../lib/schema';
-import { eq, and, desc, count, sql } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { createFoodPollSchema, createFoodRatingSchema, createMealAttendanceSchema, createIngredientFormulaSchema, parseBody } from '../types';
 
 export async function foodRoutes(app: FastifyInstance) {
@@ -12,7 +13,7 @@ export async function foodRoutes(app: FastifyInstance) {
   // ══════════════════════════════════════════════════════════════════════════
 
   // Create poll with options
-  app.post('/food/polls', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/food/polls', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createFoodPollSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -44,7 +45,7 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   // List polls
-  app.get('/food/polls', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/polls', { preHandler: [authenticate] }, async (request, reply) => {
     const { status, page = 1, limit = 20 } = request.query as { status?: string; page?: number; limit?: number };
     const tenantId = request.user!.tenantId;
     let conditions = [eq(foodPolls.tenantId, tenantId)];
@@ -60,12 +61,13 @@ export async function foodRoutes(app: FastifyInstance) {
       return { ...poll, options, totalVotes };
     });
 
-    const total = db.select().from(foodPolls).where(and(...conditions)).all().length;
+    const totalRow = db.select({ count: sql<number>`count(*)` }).from(foodPolls).where(and(...conditions)).get();
+    const total = totalRow?.count ?? 0;
     return reply.send({ data: enriched, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Get poll detail
-  app.get('/food/polls/:id', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/polls/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const poll = db.select().from(foodPolls).where(eq(foodPolls.id, id)).get();
     if (!poll) return reply.status(404).send({ error: 'Poll not found' });
@@ -84,7 +86,7 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   // Publish poll
-  app.post('/food/polls/:id/publish', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/food/polls/:id/publish', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const poll = db.select().from(foodPolls).where(eq(foodPolls.id, id)).get();
     if (!poll) return reply.status(404).send({ error: 'Poll not found' });
@@ -110,7 +112,7 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   // Vote on poll
-  app.post('/food/polls/:id/vote', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/food/polls/:id/vote', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const { optionId } = request.body as { optionId: string };
     const userId = request.user!.userId;
@@ -144,16 +146,17 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   // Get poll results
-  app.get('/food/polls/:id/results', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/polls/:id/results', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const poll = db.select().from(foodPolls).where(eq(foodPolls.id, id)).get();
     if (!poll) return reply.status(404).send({ error: 'Poll not found' });
 
     const options = db.select().from(foodPollOptions).where(eq(foodPollOptions.pollId, id)).all();
     const totalVotes = options.reduce((sum, o) => sum + (o.voteCount || 0), 0);
-    const totalResidents = db.select().from(tenantProfiles)
+    const totalResidentsRow = db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
       .where(and(eq(tenantProfiles.tenantId, poll.tenantId), eq(tenantProfiles.status, 'active')))
-      .all().length;
+      .get();
+    const totalResidents = totalResidentsRow?.count ?? 0;
     const participationRate = totalResidents > 0 ? ((totalVotes / totalResidents) * 100).toFixed(1) : '0';
 
     const winner = options.reduce((max, o) => (o.voteCount || 0) > (max.voteCount || 0) ? o : max, options[0]);
@@ -162,7 +165,7 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   // Finalize poll
-  app.post('/food/polls/:id/finalize', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/food/polls/:id/finalize', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const { optionId, reason } = request.body as { optionId?: string; reason?: string };
     const poll = db.select().from(foodPolls).where(eq(foodPolls.id, id)).get();
@@ -202,7 +205,7 @@ export async function foodRoutes(app: FastifyInstance) {
   // ══════════════════════════════════════════════════════════════════════════
 
   // Confirm attendance
-  app.post('/food/attendance', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/food/attendance', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createMealAttendanceSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -234,15 +237,15 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   // Get attendance summary for a date
-  app.get('/food/attendance', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/attendance', { preHandler: [authenticate] }, async (request, reply) => {
     const { date } = request.query as { date: string };
     const tenantId = request.user!.tenantId;
 
     const records = db.select().from(mealAttendance)
-      .where(and(eq(mealAttendance.tenantId, tenantId), eq(mealAttendance.date, date))).all();
-
-    const totalResidents = db.select().from(tenantProfiles)
-      .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active'))).all().length;
+      .where(and(eq(mealAttendance.tenantId, tenantId), eq(mealAttendance.date, date))).all();    const totalResidentsRow = db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
+      .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active')))
+      .get();
+    const totalResidents = totalResidentsRow?.count ?? 0;
 
     // Calculate confirmed, maybe, and predicted attendance
     const breakfastYes = records.filter(r => r.breakfast === 'yes').length;
@@ -265,7 +268,7 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   // Get my attendance
-  app.get('/food/attendance/my', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/attendance/my', { preHandler: [authenticate] }, async (request, reply) => {
     const userId = request.user!.userId;
     const records = db.select().from(mealAttendance)
       .where(eq(mealAttendance.tenantProfileId, userId))
@@ -277,7 +280,7 @@ export async function foodRoutes(app: FastifyInstance) {
   // MODULE 4: COOK DASHBOARD
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.get('/food/cook/today', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/cook/today', { preHandler: [authenticate] }, async (request, reply) => {
     const today = new Date().toISOString().slice(0, 10);
     const tenantId = request.user!.tenantId;
 
@@ -311,7 +314,7 @@ export async function foodRoutes(app: FastifyInstance) {
     });
   });
 
-  app.get('/food/cook/date/:date', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/cook/date/:date', { preHandler: [authenticate] }, async (request, reply) => {
     const { date } = request.params as { date: string };
     const tenantId = request.user!.tenantId;
 
@@ -347,7 +350,7 @@ export async function foodRoutes(app: FastifyInstance) {
   // MODULE 5: INGREDIENT CALCULATOR
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.get('/food/ingredients', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/ingredients', { preHandler: [authenticate] }, async (request, reply) => {
     const { mealType, date } = request.query as { mealType?: string; date?: string };
     const tenantId = request.user!.tenantId;
 
@@ -366,9 +369,9 @@ export async function foodRoutes(app: FastifyInstance) {
     const expectedCount = Math.round(predictedCount) || 0;
 
     // If no attendance data, estimate from active residents
-    const activeCount = expectedCount || db.select().from(tenantProfiles)
+    const activeCount = expectedCount || (db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
       .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active')))
-      .all().length;
+      .get()?.count ?? 0);
 
     // Get formulas
     let formulaConditions = [eq(ingredientFormulas.tenantId, tenantId)];
@@ -384,7 +387,7 @@ export async function foodRoutes(app: FastifyInstance) {
     return reply.send({ date: queryDate, mealType, expectedAttendance: activeCount, ingredients });
   });
 
-  app.post('/food/ingredients', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/food/ingredients', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createIngredientFormulaSchema, request.body, reply);
     if (!body) return;
 
@@ -396,7 +399,7 @@ export async function foodRoutes(app: FastifyInstance) {
     return reply.status(201).send({ id, message: 'Formula created' });
   });
 
-  app.get('/food/ingredients/formulas', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/ingredients/formulas', { preHandler: [authenticate] }, async (request, reply) => {
     const formulas = db.select().from(ingredientFormulas)
       .where(eq(ingredientFormulas.tenantId, request.user!.tenantId)).all();
     return reply.send(formulas);
@@ -406,7 +409,7 @@ export async function foodRoutes(app: FastifyInstance) {
   // MODULE 6: FOOD FEEDBACK
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.post('/food/ratings', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.post('/food/ratings', { preHandler: [authenticate] }, async (request, reply) => {
     const body = parseBody(createFoodRatingSchema, request.body, reply);
     if (!body) return;
 
@@ -425,7 +428,7 @@ export async function foodRoutes(app: FastifyInstance) {
     return reply.status(201).send({ id, message: 'Rating submitted' });
   });
 
-  app.get('/food/ratings', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/ratings', { preHandler: [authenticate] }, async (request, reply) => {
     const { menuId } = request.query as { menuId?: string };
     let conditions = [eq(foodRatings.tenantId, request.user!.tenantId)];
     if (menuId) conditions.push(eq(foodRatings.foodMenuId, menuId));
@@ -435,7 +438,7 @@ export async function foodRoutes(app: FastifyInstance) {
     return reply.send(data);
   });
 
-  app.get('/food/ratings/summary', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/ratings/summary', { preHandler: [authenticate] }, async (request, reply) => {
     const tenantId = request.user!.tenantId;
     const allRatings = db.select().from(foodRatings)
       .where(eq(foodRatings.tenantId, tenantId)).all();
@@ -465,7 +468,7 @@ export async function foodRoutes(app: FastifyInstance) {
   // MODULE 7: FOOD ANALYTICS
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.get('/food/analytics', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/analytics', { preHandler: [authenticate] }, async (request, reply) => {
     const tenantId = request.user!.tenantId;
 
     const allRatings = db.select().from(foodRatings).where(eq(foodRatings.tenantId, tenantId)).all();
@@ -502,8 +505,9 @@ export async function foodRoutes(app: FastifyInstance) {
       .map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count);
 
     // Participation rate
-    const totalResidents = db.select().from(tenantProfiles)
-      .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active'))).all().length;
+    const totalResidentsRow = db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
+      .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active'))).get();
+    const totalResidents = totalResidentsRow?.count ?? 0;
     const participationRate = totalResidents > 0 ? ((allVotes.length / (allPolls.length * totalResidents)) * 100) : 0;
 
     // Waste estimation
@@ -523,7 +527,7 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   // Attendance trends over past 30 days
-  app.get('/food/analytics/attendance-trends', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/analytics/attendance-trends', { preHandler: [authenticate] }, async (request, reply) => {
     const tenantId = request.user!.tenantId;
     const days = parseInt((request.query as any).days || '30', 10);
 
@@ -565,7 +569,7 @@ export async function foodRoutes(app: FastifyInstance) {
     return reply.send({ days, data: Object.values(byDate) });
   });
 
-  app.get('/food/analytics/recommendations', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/analytics/recommendations', { preHandler: [authenticate] }, async (request, reply) => {
     const tenantId = request.user!.tenantId;
     const allRatings = db.select().from(foodRatings).where(eq(foodRatings.tenantId, tenantId)).all();
     const allMenus = db.select().from(foodMenu).where(eq(foodMenu.tenantId, tenantId)).all();
@@ -600,7 +604,7 @@ export async function foodRoutes(app: FastifyInstance) {
   // MODULE 8: MENU (finalized menus)
   // ══════════════════════════════════════════════════════════════════════════
 
-  app.get('/food/menus', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/menus', { preHandler: [authenticate] }, async (request, reply) => {
     const { date } = request.query as { date?: string };
     let conditions = [eq(foodMenu.tenantId, request.user!.tenantId)];
     if (date) conditions.push(eq(foodMenu.date, date));
@@ -610,7 +614,7 @@ export async function foodRoutes(app: FastifyInstance) {
     return reply.send(data);
   });
 
-  app.get('/food/menus/upcoming', { preHandler: [app.authenticate] }, async (request, reply) => {
+  app.get('/food/menus/upcoming', { preHandler: [authenticate] }, async (request, reply) => {
     const today = new Date().toISOString().slice(0, 10);
     const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
 
