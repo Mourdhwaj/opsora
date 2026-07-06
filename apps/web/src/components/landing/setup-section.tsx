@@ -31,7 +31,7 @@ export function SetupSection() {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-sm font-semibold uppercase tracking-widest text-[var(--color-primary-light)] mb-3">Getting Started</p>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)]">
-            <BlurText text="Live in 3 simple steps." delay={0.1} />
+            <BlurText text="Live in 3 simple steps." as="span" delay={0.1} />
           </h2>
         </div>
 

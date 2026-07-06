@@ -98,6 +98,7 @@ export function HeroSection() {
                 <p className="text-base sm:text-lg text-[var(--color-text-secondary)] leading-relaxed max-w-xl">
                   <BlurText
                     text="Stop chasing payments on WhatsApp. Opsora automates rent collection, splits utilities, and handles complaints so you can rest."
+                    as="span"
                     delay={0.8}
                   />
                 </p>

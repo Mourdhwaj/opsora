@@ -15,7 +15,7 @@ export function CtaSection() {
 
           <div className="relative">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] mb-4">
-              <BlurText text="Stop managing. Start growing." delay={0.1} />
+              <BlurText text="Stop managing. Start growing." as="span" delay={0.1} />
             </h2>
             <p className="text-base text-[var(--color-text-secondary)] mb-8 max-w-lg mx-auto leading-relaxed">
               Join 15+ PG owners who automated their operations with Opsora. Free for up to 10 beds.

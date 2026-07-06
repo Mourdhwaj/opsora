@@ -33,7 +33,7 @@ export function ProblemSection() {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-sm font-semibold uppercase tracking-widest text-[var(--color-primary-light)] mb-3">The Problem</p>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] leading-tight">
-            <BlurText text="Running a PG shouldn't feel like a second job." delay={0.1} />
+            <BlurText text="Running a PG shouldn't feel like a second job." as="span" delay={0.1} />
           </h2>
         </div>
 

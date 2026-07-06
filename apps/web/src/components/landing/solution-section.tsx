@@ -41,10 +41,10 @@ export function SolutionSection() {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-sm font-semibold uppercase tracking-widest text-[var(--color-success)] mb-3">The Solution</p>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] leading-tight">
-            <BlurText text="One platform. Zero spreadsheets." delay={0.1} />
+            <BlurText text="One platform. Zero spreadsheets." as="span" delay={0.1} />
           </h2>
           <p className="mt-4 text-base text-[var(--color-text-secondary)] leading-relaxed">
-            <BlurText text="Opsora replaces your WhatsApp chaos with a single command center for your PG or hostel." delay={0.3} />
+            <BlurText text="Opsora replaces your WhatsApp chaos with a single command center for your PG or hostel." as="span" delay={0.3} />
           </p>
         </div>
 
