@@ -339,3 +339,92 @@ export interface OccupancyTrend {
   collected: number;
   collectionRate: string;
 }
+
+// ── Allocation & Room Layout ────────────────────────────────────────────────────
+export interface AllocationBed {
+  id: string;
+  bedNumber: string;
+  roomId: string;
+  propertyId: string;
+  status: 'vacant' | 'occupied' | 'maintenance';
+  occupant: {
+    id: string;
+    fullName: string;
+    gender: string;
+    phone: string;
+  } | null;
+}
+
+export interface AllocationRoom {
+  id: string;
+  roomNumber: string;
+  roomType: string;
+  sharingType: string;
+  rentPerBed: number;
+  depositAmount: number;
+  floorId: string;
+  floorNumber: number;
+  floorName: string;
+  gender: string;
+  status: string;
+  totalBeds: number;
+  vacantBeds: number;
+  beds: AllocationBed[];
+  genderBreakdown: { male: number; female: number; other: number };
+}
+
+export interface RoomAssignment {
+  roomId: string;
+  roomNumber: string;
+  floorNumber: number;
+  floorName: string;
+  roomType: string;
+  totalBeds: number;
+  vacantBeds: number;
+  rentPerBed: number;
+  depositAmount: number;
+  currentGenders: string[];
+  occupants: { name: string; gender: string }[];
+  vacantBedIds: { bedId: string; bedNumber: string }[];
+  assignedBeds: number;
+}
+
+export interface RoomCombination {
+  maleRooms: RoomAssignment[];
+  femaleRooms: RoomAssignment[];
+  coupleRooms: RoomAssignment[];
+  totalRooms: number;
+  totalBeds: number;
+  avgRent: number;
+  score: number;
+  partialAllocation?: {
+    type: 'male-only' | 'female-only';
+    message: string;
+    malesAllocated: boolean;
+    femalesAllocated: boolean;
+  };
+}
+
+export interface GroupCheckinResident {
+  fullName: string;
+  phone: string;
+  email?: string;
+  gender: 'male' | 'female' | 'other';
+  dateOfBirth?: string;
+  bloodGroup?: string;
+  aadhaarNumber?: string;
+  panNumber?: string;
+  occupation?: string;
+  companyName?: string;
+  emergencyName?: string;
+  emergencyPhone?: string;
+  emergencyRelation?: string;
+  bedId: string;
+  roomId: string;
+  roomNumber: string;
+  bedNumber: string;
+  rentAmount: number;
+  depositPaid: number;
+  foodPreference: string;
+  mealPlan: string;
+}

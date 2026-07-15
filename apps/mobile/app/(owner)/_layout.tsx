@@ -68,6 +68,8 @@ export default function OwnerLayout() {
         <Tabs.Screen name="food" options={{ title: 'Food', tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 22 }}>🍽️</Text> }} />
         <Tabs.Screen name="iot/water" options={{ title: 'Water', tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 22 }}>💧</Text> }} />
         <Tabs.Screen name="iot/electricity" options={{ title: 'Electricity', tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 22 }}>⚡</Text> }} />
+        <Tabs.Screen name="rooms" options={{ title: 'Rooms', tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 22 }}>🛏️</Text> }} />
+        <Tabs.Screen name="check-in" options={{ title: 'Group Check-in', href: false as any }} />
         <Tabs.Screen name="more" options={{ title: 'More', tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 22 }}>⚙️</Text> }} />
         <Tabs.Screen name="complaints/[id]" options={{ href: false as any, title: 'Issue Detail' }} />
         <Tabs.Screen name="payments/[id]" options={{ href: false as any, title: 'Payment Detail' }} />
@@ -115,6 +117,8 @@ const ownerItems = [
   { icon: '💰', label: 'Payments', route: '/(owner)/payments' },
   { icon: '🎫', label: 'Issues', route: '/(owner)/complaints' },
   { icon: '🍽️', label: 'Food & Meals', route: '/(owner)/food' },
+  { icon: '🛏️', label: 'Room Layout', route: '/(owner)/rooms' },
+  { icon: '👥', label: 'Group Check-in', route: '/(owner)/check-in' },
   { icon: '💧', label: 'Water IoT', route: '/(owner)/iot/water' },
   { icon: '⚡', label: 'Electricity', route: '/(owner)/iot/electricity' },
   { icon: '⚙️', label: 'Settings', route: '/(owner)/more' },
