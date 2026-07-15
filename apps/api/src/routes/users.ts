@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import { users, archivedUsers } from '../lib/schema';
 import { eq, and, like, desc, sql } from 'drizzle-orm';
-import { createUserSchema, parseBody } from '../types';
+import { createUserSchema, updateUserSchema, parseBody } from '../types';
 import bcrypt from 'bcryptjs';
 
 export async function userRoutes(app: FastifyInstance) {
@@ -91,9 +91,10 @@ export async function userRoutes(app: FastifyInstance) {
   // Update user (owner/admin only)
   app.put('/users/:id', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
+    const body = parseBody(updateUserSchema, request.body, reply);
+    if (!body) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
-    const body = request.body as Partial<{ fullName: string; phone: string; role: string; isActive: boolean }>;
 
     const existing = db.select().from(users)
       .where(and(eq(users.id, id), eq(users.tenantId, tenantId)))
@@ -102,10 +103,17 @@ export async function userRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'User not found' });
     }
 
-    db.update(users).set({
-      ...body,
-      updatedAt: new Date().toISOString(),
-    }).where(and(eq(users.id, id), eq(users.tenantId, tenantId))).run();
+    // Build update object with only provided fields (never allow passwordHash, tenantId, or id)
+    const allowedUpdates: Record<string, unknown> = {};
+    if (body.fullName !== undefined) allowedUpdates.fullName = body.fullName;
+    if (body.phone !== undefined) allowedUpdates.phone = body.phone;
+    if (body.role !== undefined) allowedUpdates.role = body.role;
+    if (body.isActive !== undefined) allowedUpdates.isActive = body.isActive;
+    allowedUpdates.updatedAt = new Date().toISOString();
+
+    db.update(users).set(allowedUpdates)
+      .where(and(eq(users.id, id), eq(users.tenantId, tenantId)))
+      .run();
 
     const updated = db.select().from(users).where(eq(users.id, id)).get();
     const { passwordHash, ...safeUser } = updated!;

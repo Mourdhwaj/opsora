@@ -13,3 +13,4 @@ dist/
 *.mobileprovision
 *.orig.*
 web-build/
+playwright-browsers/

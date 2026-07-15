@@ -16,7 +16,7 @@ export default function MoreScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.pageTitle}>More</Text>
+      <Text style={styles.pageTitle}>Settings</Text>
 
       <Card style={styles.profileCard}>
         <View style={styles.avatar}>
@@ -29,9 +29,10 @@ export default function MoreScreen() {
 
       <Card style={styles.menuCard}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem} onPress={() => {}}>
+          <TouchableOpacity key={index} style={styles.menuItem} onPress={() => item.route ? router.push(item.route) : Alert.alert('Coming Soon', 'This feature is under development.')}>
             <Text style={styles.menuIcon}>{item.icon}</Text>
             <Text style={styles.menuText}>{item.label}</Text>
+            <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
         ))}
       </Card>
@@ -44,10 +45,9 @@ export default function MoreScreen() {
 }
 
 const menuItems = [
-  { icon: '📁', label: 'Archive' },
-  { icon: '🔔', label: 'Notifications' },
-  { icon: '👥', label: 'Staff Portal' },
-  { icon: '⚙️', label: 'Settings' },
+  { icon: '📁', label: 'Archive', route: '/(owner)/archive' },
+  { icon: '🔔', label: 'Notifications', route: '' },
+  { icon: '👥', label: 'Staff Management', route: '' },
 ];
 
 const styles = StyleSheet.create({
@@ -62,7 +62,8 @@ const styles = StyleSheet.create({
   menuCard: { marginBottom: 16 },
   menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
   menuIcon: { fontSize: 20, marginRight: 12 },
-  menuText: { fontSize: 16, color: '#374151' },
+  menuText: { fontSize: 16, color: '#374151', flex: 1 },
+  menuArrow: { fontSize: 20, color: '#9ca3af' },
   logoutButton: { backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#ef4444' },
   logoutText: { color: '#ef4444', fontSize: 16, fontWeight: '600' },
 });

@@ -9,7 +9,7 @@ export default function StaffResidents() {
   const [search, setSearch] = useState('');
   const { data: residents, isLoading, refetch } = useQuery<TenantProfile[]>({
     queryKey: ['staff-residents'],
-    queryFn: () => api.get('/staff-portal/residents').then(r => r.data || r),
+    queryFn: () => api.get('/staff-portal/residents').then(r => r.data?.data || r.data || []),
   });
 
   if (isLoading) return <LoadingSkeleton />;
@@ -25,7 +25,7 @@ export default function StaffResidents() {
       <Text style={styles.pageTitle}>Residents</Text>
       <TextInput style={styles.search} placeholder="Search..." value={search} onChangeText={setSearch} placeholderTextColor="#9ca3af" />
       {filtered.length === 0 ? (
-        <EmptyState title="No residents found" />
+        <EmptyState title="No residents found" message="Residents will appear here" icon="👥" />
       ) : (
         filtered.map((r) => (
           <Card key={r.id} style={styles.card}>

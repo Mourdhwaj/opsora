@@ -32,8 +32,11 @@ export async function paymentRoutes(app: FastifyInstance) {
     return reply.send({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
-  // Create payment record
+  // Create payment record (owner/admin/staff only)
   app.post('/payments', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin', 'staff'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners, admins, or staff can create payments' });
+    }
     const body = parseBody(createPaymentSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -79,8 +82,11 @@ export async function paymentRoutes(app: FastifyInstance) {
     return reply.status(201).send(payment);
   });
 
-  // Record payment (mark as paid)
+  // Record payment (mark as paid) - owner/admin/staff only
   app.post('/payments/:id/pay', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin', 'staff'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners, admins, or staff can record payments' });
+    }
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as { paidAmount: number; paymentMethod: string; transactionId?: string };

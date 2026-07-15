@@ -4,3 +4,7 @@ export { Input } from './Input';
 export { Badge, StatusBadge } from './Badge';
 export { LoadingSkeleton, EmptyState } from './LoadingSkeleton';
 export { Header } from './Header';
+export { BottomSheet } from './BottomSheet';
+export { FilterBar } from './FilterBar';
+export { SearchBar } from './SearchBar';
+export { ErrorState } from './ErrorState';

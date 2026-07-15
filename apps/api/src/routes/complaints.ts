@@ -103,8 +103,12 @@ export async function complaintRoutes(app: FastifyInstance) {
     return reply.send({ ...complaint, comments });
   });
 
-  // Update complaint status
+  // Update complaint status (owner/admin/staff only)
   app.patch('/complaints/:id/status', { preHandler: [authenticate] }, async (request, reply) => {
+    const role = request.user!.role;
+    if (!['owner', 'admin', 'staff'].includes(role)) {
+      return reply.status(403).send({ error: 'Only owners, admins, or staff can update complaint status' });
+    }
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as { status: string; assignedTo?: string; resolutionNotes?: string };

@@ -16,7 +16,8 @@ export function Badge({ label, color = '#6b7280' }: BadgeProps) {
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  return <Badge label={status} color={getStatusColor(status)} />;
+  const label = status?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || status;
+  return <Badge label={label} color={getStatusColor(status)} />;
 }
 
 const styles = StyleSheet.create({

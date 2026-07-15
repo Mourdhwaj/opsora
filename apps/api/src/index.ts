@@ -136,6 +136,17 @@ async function main() {
     } catch (err) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
+
+    // Check if token has been revoked (logout)
+    const authHeader = request.headers.authorization;
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const revoked = db.select().from(revokedTokens)
+        .where(eq(revokedTokens.token, token)).get();
+      if (revoked) {
+        return reply.status(401).send({ error: 'Token has been revoked' });
+      }
+    }
   });
 
   // Scheduled cleanup for expired revoked tokens (runs every hour)

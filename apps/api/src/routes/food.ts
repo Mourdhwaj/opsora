@@ -12,8 +12,11 @@ export async function foodRoutes(app: FastifyInstance) {
   // MODULE 1: MENU POLLING
   // ══════════════════════════════════════════════════════════════════════════
 
-  // Create poll with options
+  // Create poll with options (owner/admin/staff only)
   app.post('/food/polls', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin', 'staff'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners, admins, or staff can create polls' });
+    }
     const body = parseBody(createFoodPollSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -85,8 +88,11 @@ export async function foodRoutes(app: FastifyInstance) {
     return reply.send({ ...poll, options, totalVotes, userVote: userVote || null });
   });
 
-  // Publish poll
+  // Publish poll (owner/admin/staff only)
   app.post('/food/polls/:id/publish', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin', 'staff'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners, admins, or staff can publish polls' });
+    }
     const { id } = request.params as { id: string };
     const poll = db.select().from(foodPolls).where(eq(foodPolls.id, id)).get();
     if (!poll) return reply.status(404).send({ error: 'Poll not found' });
@@ -164,8 +170,11 @@ export async function foodRoutes(app: FastifyInstance) {
     return reply.send({ poll, options, totalVotes, totalResidents, participationRate, winner });
   });
 
-  // Finalize poll
+  // Finalize poll (owner/admin only)
   app.post('/food/polls/:id/finalize', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners or admins can finalize polls' });
+    }
     const { id } = request.params as { id: string };
     const { optionId, reason } = request.body as { optionId?: string; reason?: string };
     const poll = db.select().from(foodPolls).where(eq(foodPolls.id, id)).get();
@@ -388,6 +397,9 @@ export async function foodRoutes(app: FastifyInstance) {
   });
 
   app.post('/food/ingredients', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners or admins can create ingredient formulas' });
+    }
     const body = parseBody(createIngredientFormulaSchema, request.body, reply);
     if (!body) return;
 

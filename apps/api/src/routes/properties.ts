@@ -30,8 +30,11 @@ export async function propertyRoutes(app: FastifyInstance) {
     return reply.send({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
-  // Create property
+  // Create property (owner/admin only)
   app.post('/properties', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners or admins can create properties' });
+    }
     const body = parseBody(createPropertySchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -86,8 +89,11 @@ export async function propertyRoutes(app: FastifyInstance) {
     return reply.send({ ...property, floors: propertyFloors, rooms: propertyRooms, beds: propertyBeds });
   });
 
-  // Update property
+  // Update property (owner/admin only)
   app.put('/properties/:id', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners or admins can update properties' });
+    }
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as Partial<typeof createPropertySchema._type>;
@@ -107,8 +113,11 @@ export async function propertyRoutes(app: FastifyInstance) {
     return reply.send(updated);
   });
 
-  // Delete property
+  // Delete property (owner only)
   app.delete('/properties/:id', { preHandler: [authenticate] }, async (request, reply) => {
+    if (request.user!.role !== 'owner') {
+      return reply.status(403).send({ error: 'Only owners can delete properties' });
+    }
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 
@@ -149,8 +158,11 @@ export async function floorRoutes(app: FastifyInstance) {
     return reply.send(data);
   });
 
-  // Create floor
+  // Create floor (owner/admin only)
   app.post('/floors', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners or admins can create floors' });
+    }
     const body = parseBody(createFloorSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -216,8 +228,11 @@ export async function roomRoutes(app: FastifyInstance) {
     return reply.send(data);
   });
 
-  // Create room with beds
+  // Create room with beds (owner/admin only)
   app.post('/rooms', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners or admins can create rooms' });
+    }
     const body = parseBody(createRoomSchema, request.body, reply);
     if (!body) return;
     const tenantId = request.user!.tenantId;
@@ -382,8 +397,11 @@ export async function roomRoutes(app: FastifyInstance) {
     return reply.send({ ...room, beds: roomBeds });
   });
 
-  // Update room
+  // Update room (owner/admin only)
   app.put('/rooms/:id', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!['owner', 'admin'].includes(request.user!.role)) {
+      return reply.status(403).send({ error: 'Only owners or admins can update rooms' });
+    }
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
     const body = request.body as Partial<typeof createRoomSchema._type>;
@@ -396,8 +414,11 @@ export async function roomRoutes(app: FastifyInstance) {
     return reply.send(updated);
   });
 
-  // Delete room
+  // Delete room (owner only)
   app.delete('/rooms/:id', { preHandler: [authenticate] }, async (request, reply) => {
+    if (request.user!.role !== 'owner') {
+      return reply.status(403).send({ error: 'Only owners can delete rooms' });
+    }
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
 

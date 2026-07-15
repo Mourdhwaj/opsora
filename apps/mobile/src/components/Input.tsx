@@ -9,9 +9,10 @@ interface InputProps {
   keyboardType?: KeyboardTypeOptions;
   multiline?: boolean;
   error?: string;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 }
 
-export function Input({ label, value, onChangeText, placeholder, secureTextEntry, keyboardType, multiline, error }: InputProps) {
+export function Input({ label, value, onChangeText, placeholder, secureTextEntry, keyboardType, multiline, error, autoCapitalize }: InputProps) {
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -24,6 +25,7 @@ export function Input({ label, value, onChangeText, placeholder, secureTextEntry
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         multiline={multiline}
+        autoCapitalize={autoCapitalize}
       />
       {error && <Text style={styles.error}>{error}</Text>}
     </View>

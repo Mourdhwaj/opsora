@@ -261,6 +261,18 @@ export type CreateMealAttendanceInput = z.infer<typeof createMealAttendanceSchem
 export type CreateIngredientFormulaInput = z.infer<typeof createIngredientFormulaSchema>;
 
 // =============================================================================
+// User Update Types
+// =============================================================================
+export const updateUserSchema = z.object({
+  fullName: z.string().min(2).optional(),
+  phone: z.string().optional(),
+  role: z.enum(['owner', 'admin', 'staff', 'resident']).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+// =============================================================================
 // Payment Proof Verification Types
 // =============================================================================
 export const createRentInvoiceSchema = z.object({
