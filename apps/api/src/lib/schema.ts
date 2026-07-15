@@ -60,10 +60,6 @@ export const properties = sqliteTable('properties', {
   longitude: real('longitude'),
   propertyType: text('property_type').notNull().default('pg'),
   totalFloors: integer('total_floors').notNull().default(1),
-  totalRooms: integer('total_rooms').notNull().default(0),
-  totalBeds: integer('total_beds').notNull().default(0),
-  occupiedBeds: integer('occupied_beds').notNull().default(0),
-  vacantBeds: integer('vacant_beds').notNull().default(0),
   wifiSsid: text('wifi_ssid'),
   wifiPassword: text('wifi_password'),
   amenities: text('amenities').default('[]'),
@@ -81,9 +77,6 @@ export const floors = sqliteTable('floors', {
   propertyId: text('property_id').notNull().references(() => properties.id, { onDelete: 'cascade' }),
   floorNumber: integer('floor_number').notNull(),
   floorName: text('floor_name'),
-  totalRooms: integer('total_rooms').notNull().default(0),
-  totalBeds: integer('total_beds').notNull().default(0),
-  occupiedBeds: integer('occupied_beds').notNull().default(0),
   layoutData: text('layout_data'),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
@@ -100,17 +93,13 @@ export const rooms = sqliteTable('rooms', {
   roomNumber: text('room_number').notNull(),
   roomType: text('room_type').notNull().default('shared'),
   sharingType: integer('sharing_type').default(2),
-  totalBeds: integer('total_beds').notNull().default(2),
-  occupiedBeds: integer('occupied_beds').notNull().default(0),
-  vacantBeds: integer('vacant_beds').notNull().default(2),
-  reservedBeds: integer('reserved_beds').notNull().default(0),
-  blockedBeds: integer('blocked_beds').notNull().default(0),
   rentPerBed: real('rent_per_bed').notNull().default(5000),
   depositAmount: real('deposit_amount').notNull().default(10000),
   amenities: text('amenities').default('[]'),
   status: text('status').default('available'),
   floorPosition: text('floor_position'),
-  gender: text('gender'),
+
+  gender: text('gender').notNull().default('mixed'),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
 });
@@ -127,7 +116,6 @@ export const beds = sqliteTable('beds', {
   bedNumber: text('bed_number').notNull(),
   bedType: text('bed_type').default('standard'),
   status: text('status').default('vacant'),
-  currentTenantId: text('current_tenant_id'),
   rentAmount: real('rent_amount').notNull().default(5000),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
@@ -170,7 +158,7 @@ export const tenantProfiles = sqliteTable('tenant_profiles', {
 
   rentAmount: real('rent_amount').notNull(),
   depositPaid: real('deposit_paid').notNull().default(0),
-  depositBalance: real('deposit_balance').notNull().default(0),
+
 
   status: text('status').default('active'),
 
@@ -181,10 +169,7 @@ export const tenantProfiles = sqliteTable('tenant_profiles', {
   policeVerificationUrl: text('police_verification_url'),
   photoUrl: text('photo_url'),
 
-  foodOptIn: integer('food_opt_in', { mode: 'boolean' }).default(true),
-  breakfastOptIn: integer('breakfast_opt_in', { mode: 'boolean' }).default(true),
-  lunchOptIn: integer('lunch_opt_in', { mode: 'boolean' }).default(false),
-  dinnerOptIn: integer('dinner_opt_in', { mode: 'boolean' }).default(true),
+  mealPreferences: text('meal_preferences').default('{"breakfast":true,"lunch":false,"dinner":true}'),
   dietaryPreference: text('dietary_preference'),
 
   createdAt: text('created_at').default(sql`(datetime('now'))`),
@@ -895,6 +880,58 @@ export const billingConfigs = sqliteTable('billing_configs', {
   updatedAt: text('updated_at').default(sql`(datetime('now'))`),
 }, (t) => [
   uniqueIndex('idx_billing_configs_tenant').on(t.tenantId),
+]);
+
+// =============================================================================
+// ARCHIVED USERS (Soft-deleted user accounts)
+// =============================================================================
+export const archivedUsers = sqliteTable('archived_users', {
+  id: text('id').primaryKey(),
+  originalId: text('original_id').notNull(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  email: text('email').notNull(),
+  phone: text('phone'),
+  passwordHash: text('password_hash').notNull(),
+  fullName: text('full_name').notNull(),
+  role: text('role').notNull(),
+  avatarUrl: text('avatar_url'),
+  archivedAt: text('archived_at').notNull(),
+  archivedBy: text('archived_by'),
+  reason: text('reason'),
+  originalData: text('original_data').notNull(),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
+}, (t) => [
+  uniqueIndex('idx_archived_users_tenant_original').on(t.tenantId, t.originalId),
+  index('idx_archived_users_tenant').on(t.tenantId),
+]);
+
+// =============================================================================
+// ARCHIVED RESIDENTS (Checked-out resident profiles)
+// =============================================================================
+export const archivedResidents = sqliteTable('archived_residents', {
+  id: text('id').primaryKey(),
+  originalId: text('original_id').notNull(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  propertyId: text('property_id'),
+  roomId: text('room_id'),
+  bedId: text('bed_id'),
+  fullName: text('full_name').notNull(),
+  phone: text('phone').notNull(),
+  email: text('email'),
+  gender: text('gender'),
+  occupation: text('occupation'),
+  moveInDate: text('move_in_date'),
+  moveOutDate: text('move_out_date'),
+  rentAmount: real('rent_amount'),
+  depositPaid: real('deposit_paid'),
+  archivedAt: text('archived_at').notNull(),
+  archivedBy: text('archived_by'),
+  reason: text('reason'),
+  originalData: text('original_data').notNull(),
+  createdAt: text('created_at').default(sql`(datetime('now'))`),
+}, (t) => [
+  uniqueIndex('idx_archived_residents_tenant_original').on(t.tenantId, t.originalId),
+  index('idx_archived_residents_tenant').on(t.tenantId),
 ]);
 
 // =============================================================================

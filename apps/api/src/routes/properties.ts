@@ -2,8 +2,8 @@ import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
-import { properties, floors, rooms, beds } from '../lib/schema';
-import { eq, and, like, desc, sql } from 'drizzle-orm';
+import { properties, floors, rooms, beds, tenantProfiles, rentPayments } from '../lib/schema';
+import { eq, and, like, desc, sql, inArray } from 'drizzle-orm';
 import { createPropertySchema, createFloorSchema, createRoomSchema, createBedSchema, parseBody } from '../types';
 
 export async function propertyRoutes(app: FastifyInstance) {
@@ -231,12 +231,10 @@ export async function roomRoutes(app: FastifyInstance) {
       roomNumber: body.roomNumber,
       roomType: body.roomType,
       sharingType: body.sharingType,
-      totalBeds: body.totalBeds,
-      vacantBeds: body.totalBeds,
       rentPerBed: body.rentPerBed,
       depositAmount: body.depositAmount,
       amenities: body.amenities,
-      gender: body.gender || null,
+      gender: body.gender || 'mixed',
     }).run();
 
     // Auto-create beds
@@ -255,6 +253,117 @@ export async function roomRoutes(app: FastifyInstance) {
     const room = db.select().from(rooms).where(eq(rooms.id, id)).get();
     const roomBeds = db.select().from(beds).where(eq(beds.roomId, id)).all();
     return reply.status(201).send({ ...room, beds: roomBeds });
+  });
+
+  // Get all rooms with bed-level tenant info (MUST be before /rooms/:id)
+  app.get('/rooms/with-tenants', { preHandler: [authenticate] }, async (request, reply) => {
+    const { propertyId, floorId } = request.query as { propertyId?: string; floorId?: string };
+    const tenantId = request.user!.tenantId;
+
+    let roomConditions = [eq(rooms.tenantId, tenantId)];
+    if (propertyId) roomConditions.push(eq(rooms.propertyId, propertyId));
+    if (floorId) roomConditions.push(eq(rooms.floorId, floorId));
+
+    const allRooms = db.select().from(rooms)
+      .where(and(...roomConditions)).all();
+
+    const bedConditions = [eq(beds.tenantId, tenantId)];
+    if (propertyId) bedConditions.push(eq(beds.propertyId, propertyId));
+    const allBeds = db.select().from(beds)
+      .where(and(...bedConditions)).all();
+
+    const profileConditions = [eq(tenantProfiles.tenantId, tenantId)];
+    if (propertyId) profileConditions.push(eq(tenantProfiles.propertyId, propertyId));
+    const allProfiles = db.select().from(tenantProfiles)
+      .where(and(...profileConditions)).all();
+
+    // Build tenant lookup: bedId -> profile name
+    const tenantByBed = new Map<string, string>();
+    for (const profile of allProfiles) {
+      if (profile.bedId) {
+        tenantByBed.set(profile.bedId, profile.fullName);
+      }
+    }
+
+    // Enrich rooms with bed tenant info
+    // Build tenant lookup: bedId -> profile id (for clicking through to tenant detail)
+    const tenantProfileIdByBed = new Map<string, string>();
+    for (const profile of allProfiles) {
+      if (profile.bedId) {
+        tenantProfileIdByBed.set(profile.bedId, profile.id);
+      }
+    }
+
+    // Enrich rooms with bed tenant info
+    const enriched = allRooms.map((room) => {
+      const roomBeds = allBeds
+        .filter((b) => b.roomId === room.id)
+        .map((bed) => ({
+          ...bed,
+          tenantName: tenantByBed.get(bed.id) || null,
+          tenantProfileId: tenantProfileIdByBed.get(bed.id) || null,
+        }));
+      return { ...room, beds: roomBeds };
+    });
+
+    return reply.send(enriched);
+  });
+
+  // Get room details with beds, tenant profiles, and rent payment status
+  // MUST be before /rooms/:id to avoid Fastify catching 'details' as an :id param
+  app.get('/rooms/:id/details', { preHandler: [authenticate] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const tenantId = request.user!.tenantId;
+
+    const room = db.select().from(rooms)
+      .where(and(eq(rooms.id, id), eq(rooms.tenantId, tenantId)))
+      .get();
+    if (!room) {
+      return reply.status(404).send({ error: 'Room not found' });
+    }
+
+    const roomBeds = db.select().from(beds).where(eq(beds.roomId, id)).all();
+
+    // Get tenant profiles for this room
+    const roomProfiles = db.select().from(tenantProfiles)
+      .where(and(eq(tenantProfiles.roomId, id), eq(tenantProfiles.tenantId, tenantId)))
+      .all();
+
+    // Get latest rent payment per tenant profile (batch query, not N+1)
+    const profileIds = roomProfiles.map((p) => p.id);
+    const allPayments = profileIds.length > 0
+      ? db.select().from(rentPayments)
+          .where(inArray(rentPayments.tenantProfileId, profileIds))
+          .orderBy(desc(rentPayments.monthYear))
+          .all()
+      : [];
+
+    // Group payments by tenantProfileId and pick the latest
+    const paymentByProfile = new Map<string, typeof allPayments[0]>();
+    for (const p of allPayments) {
+      if (!paymentByProfile.has(p.tenantProfileId)) {
+        paymentByProfile.set(p.tenantProfileId, p);
+      }
+    }
+
+    const profiles = roomProfiles.map((profile) => {
+      const latestPayment = paymentByProfile.get(profile.id) || null;
+      return {
+        ...profile,
+        latestPayment: latestPayment ? {
+          monthYear: latestPayment.monthYear,
+          rentAmount: latestPayment.rentAmount,
+          totalAmount: latestPayment.totalAmount,
+          paidAmount: latestPayment.paidAmount,
+          balanceAmount: latestPayment.balanceAmount,
+          paymentStatus: latestPayment.paymentStatus,
+          dueDate: latestPayment.dueDate,
+          paidDate: latestPayment.paidDate,
+        } : null,
+      };
+    });
+
+    return reply.send({ ...room, beds: roomBeds, tenants: profiles });
   });
 
   // Get room with beds

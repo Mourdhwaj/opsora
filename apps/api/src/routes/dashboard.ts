@@ -20,43 +20,70 @@ export async function dashboardRoutes(app: FastifyInstance) {
   // Dashboard overview (owner/admin only)
   app.get('/dashboard/overview', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
-    const tenantId = request.user!.tenantId;
+    const user = request.user as { userId: string; tenantId: string; email: string; role: string };
+    const tenantId = user.tenantId;
+    const { propertyId } = request.query as { propertyId?: string };
 
-    // Property stats
-    const allProperties = db.select().from(properties).where(eq(properties.tenantId, tenantId)).all();
-    const totalProperties = allProperties.length;
-    const totalBeds = allProperties.reduce((s, p) => s + p.totalBeds, 0);
-    const occupiedBeds = allProperties.reduce((s, p) => s + p.occupiedBeds, 0);
+    // Property stats — calculated from actual beds/tenants, scoped by propertyId if provided
+    const totalProperties = db.select({ count: sql<number>`count(*)` }).from(properties)
+      .where(eq(properties.tenantId, tenantId)).get()?.count ?? 0;
+
+    const bedConditions = [eq(beds.tenantId, tenantId)];
+    if (propertyId) bedConditions.push(eq(beds.propertyId, propertyId));
+    const totalBeds = db.select({ count: sql<number>`count(*)` }).from(beds)
+      .where(and(...bedConditions)).get()?.count ?? 0;
+    const occupiedBeds = db.select({ count: sql<number>`count(*)` }).from(beds)
+      .where(and(...bedConditions, eq(beds.status, 'occupied'))).get()?.count ?? 0;
     const vacantBeds = totalBeds - occupiedBeds;
     const occupancyRate = totalBeds > 0 ? ((occupiedBeds / totalBeds) * 100).toFixed(1) : '0';
 
     // Active tenants
+    const tenantConditions = [eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active')];
+    if (propertyId) tenantConditions.push(eq(tenantProfiles.propertyId, propertyId));
     const activeTenants = db.select({ count: sql<number>`count(*)` }).from(tenantProfiles)
-      .where(and(eq(tenantProfiles.tenantId, tenantId), eq(tenantProfiles.status, 'active')))
+      .where(and(...tenantConditions))
       .get()?.count ?? 0;
 
-    // Payment stats for current month
+    // Payment stats — current month AND all-time
     const currentMonth = new Date().toISOString().slice(0, 7);
+    const monthPayConditions = [eq(rentPayments.tenantId, tenantId), eq(rentPayments.monthYear, currentMonth)];
+    if (propertyId) monthPayConditions.push(eq(rentPayments.propertyId, propertyId));
     const monthPayments = db.select().from(rentPayments)
-      .where(and(eq(rentPayments.tenantId, tenantId), eq(rentPayments.monthYear, currentMonth)))
+      .where(and(...monthPayConditions))
       .all();
 
-    const totalExpected = monthPayments.reduce((s, p) => s + p.totalAmount, 0);
-    const totalCollected = monthPayments.reduce((s, p) => s + p.paidAmount, 0);
+    const allPayConditions = [eq(rentPayments.tenantId, tenantId)];
+    if (propertyId) allPayConditions.push(eq(rentPayments.propertyId, propertyId));
+    const allPayments = db.select().from(rentPayments)
+      .where(and(...allPayConditions))
+      .all();
+
+    const totalExpected = monthPayments.reduce((s, p) => s + (p.totalAmount || 0), 0);
+    const totalCollected = monthPayments.reduce((s, p) => s + (p.paidAmount || 0), 0);
     const totalPending = totalExpected - totalCollected;
 
+    // All-time totals for revenue card
+    const allTimeExpected = allPayments.reduce((s, p) => s + (p.totalAmount || 0), 0);
+    const allTimeCollected = allPayments.reduce((s, p) => s + (p.paidAmount || 0), 0);
+
     // Open complaints
+    const complaintConditions = [eq(complaints.tenantId, tenantId), eq(complaints.status, 'open')];
+    if (propertyId) complaintConditions.push(eq(complaints.propertyId, propertyId));
     const openComplaints = db.select({ count: sql<number>`count(*)` }).from(complaints)
-      .where(and(eq(complaints.tenantId, tenantId), eq(complaints.status, 'open')))
+      .where(and(...complaintConditions))
       .get()?.count ?? 0;
 
+    const urgentConditions = [eq(complaints.tenantId, tenantId), eq(complaints.status, 'open'), eq(complaints.priority, 'urgent')];
+    if (propertyId) urgentConditions.push(eq(complaints.propertyId, propertyId));
     const urgentComplaints = db.select({ count: sql<number>`count(*)` }).from(complaints)
-      .where(and(eq(complaints.tenantId, tenantId), eq(complaints.status, 'open'), eq(complaints.priority, 'urgent')))
+      .where(and(...urgentConditions))
       .get()?.count ?? 0;
 
     // Water tanks
+    const tankConditions = [eq(waterTanks.tenantId, tenantId), eq(waterTanks.isActive, true)];
+    if (propertyId) tankConditions.push(eq(waterTanks.propertyId, propertyId));
     const tanks = db.select().from(waterTanks)
-      .where(and(eq(waterTanks.tenantId, tenantId), eq(waterTanks.isActive, true)))
+      .where(and(...tankConditions))
       .all();
 
     const waterStatus = tanks.map(tank => {
@@ -69,9 +96,30 @@ export async function dashboardRoutes(app: FastifyInstance) {
       };
     });
 
-    const recentActivity = db.select().from(activityLogs)
+    const rawActivity = db.select().from(activityLogs)
       .where(eq(activityLogs.tenantId, tenantId))
       .orderBy(desc(activityLogs.createdAt)).limit(10).all();
+
+    // Enrich activity with entityName by looking up the entity
+    const recentActivity = rawActivity.map((log) => {
+      let entityName = log.entityId || '';
+      try {
+        if (log.entityType === 'resident' || log.entityType === 'tenant') {
+          const profile = db.select().from(tenantProfiles).where(eq(tenantProfiles.id, log.entityId || '')).get();
+          entityName = profile?.fullName || log.entityId || '';
+        } else if (log.entityType === 'property') {
+          const prop = db.select().from(properties).where(eq(properties.id, log.entityId || '')).get();
+          entityName = prop?.name || log.entityId || '';
+        } else if (log.entityType === 'complaint') {
+          const comp = db.select().from(complaints).where(eq(complaints.id, log.entityId || '')).get();
+          entityName = comp?.title || log.entityId || '';
+        } else if (log.entityType === 'payment') {
+          const payment = db.select().from(rentPayments).where(eq(rentPayments.id, log.entityId || '')).get();
+          entityName = payment ? `Room payment - ${payment.monthYear}` : log.entityId || '';
+        }
+      } catch { entityName = log.entityId || ''; }
+      return { ...log, entityName: entityName || log.action.replace(/_/g, ' ') };
+    });
 
     const pendingVisitors = db.select({ count: sql<number>`count(*)` }).from(visitors)
       .where(and(eq(visitors.tenantId, tenantId), eq(visitors.status, 'pending'))).get()?.count ?? 0;
@@ -84,6 +132,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
         collectionRate: totalExpected > 0 ? ((totalCollected / totalExpected) * 100).toFixed(1) : '0',
         paidCount: monthPayments.filter(p => p.paymentStatus === 'paid').length,
         pendingCount: monthPayments.filter(p => p.paymentStatus === 'pending').length,
+        allTimeCollected, allTimeExpected,
       },
       complaints: { open: openComplaints, urgent: urgentComplaints },
       water: waterStatus,
@@ -93,38 +142,59 @@ export async function dashboardRoutes(app: FastifyInstance) {
   });
 
   // Occupancy trend (owner/admin only)
+  // Single source of truth: rentPayments table
+  // Each payment record = one occupied bed for that month
   app.get('/dashboard/occupancy-trend', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
-    const tenantId = request.user!.tenantId;
+    const user = request.user as { userId: string; tenantId: string; email: string; role: string };
+    const tenantId = user.tenantId;
     const { propertyId } = request.query as { propertyId?: string };
 
-    const conditions = [eq(rentPayments.tenantId, tenantId)];
-    if (propertyId) conditions.push(eq(rentPayments.propertyId, propertyId));
+    // Total beds (the denominator for occupancy)
+    const bedConditions = [eq(beds.tenantId, tenantId)];
+    if (propertyId) bedConditions.push(eq(beds.propertyId, propertyId));
+    const totalBedsCount = db.select({ count: sql<number>`count(*)` }).from(beds)
+      .where(and(...bedConditions)).get()?.count ?? 0;
 
-    const payments = db.select().from(rentPayments).where(and(...conditions)).orderBy(rentPayments.monthYear).all();
-    const monthlyData = new Map<string, { expected: number; collected: number; count: number }>();
+    // All payments — grouped by monthYear
+    // Each unique tenantProfileId per month = 1 occupied bed
+    const payConditions = [eq(rentPayments.tenantId, tenantId)];
+    if (propertyId) payConditions.push(eq(rentPayments.propertyId, propertyId));
+    const payments = db.select().from(rentPayments).where(and(...payConditions)).all();
+
+    // Build monthly data from payments (single source of truth)
+    const monthlyData = new Map<string, { occupied: Set<string>; expected: number; collected: number }>();
+
     for (const p of payments) {
-      const existing = monthlyData.get(p.monthYear) || { expected: 0, collected: 0, count: 0 };
-      existing.expected += p.totalAmount;
-      existing.collected += p.paidAmount;
-      existing.count += 1;
+      const existing = monthlyData.get(p.monthYear) || { occupied: new Set<string>(), expected: 0, collected: 0 };
+      // Each payment = 1 occupied bed for that tenant
+      if (p.tenantProfileId) existing.occupied.add(p.tenantProfileId);
+      existing.expected += p.totalAmount || 0;
+      existing.collected += (p.paidAmount || 0);
       monthlyData.set(p.monthYear, existing);
     }
 
-    return reply.send(Array.from(monthlyData.entries())
-      .sort(([a], [b]) => a.localeCompare(b)).slice(-12)
-      .map(([month, d]) => ({
-        month, expected: d.expected, collected: d.collected,
-        collectionRate: d.expected > 0 ? ((d.collected / d.expected) * 100).toFixed(1) : '0',
-        tenantCount: d.count,
-      })));
+    // Convert to array sorted by month
+    const result = Array.from(monthlyData.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, data]) => ({
+        month,
+        occupied: data.occupied.size,  // unique tenants that month = occupied beds
+        vacant: Math.max(0, totalBedsCount - data.occupied.size),
+        expected: data.expected,
+        collected: data.collected,
+        collectionRate: data.expected > 0 ? ((data.collected / data.expected) * 100).toFixed(1) : '0',
+      }));
+
+    return reply.send(result.slice(-12));
   });
 
   // Property-level dashboard (owner/admin only)
   app.get('/dashboard/property/:propertyId', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { propertyId } = request.params as { propertyId: string };
-    const tenantId = request.user!.tenantId;
+    const user = request.user as { userId: string; tenantId: string; email: string; role: string };
+    const tenantId = user.tenantId;
 
     const property = db.select().from(properties)
       .where(and(eq(properties.id, propertyId), eq(properties.tenantId, tenantId))).get();

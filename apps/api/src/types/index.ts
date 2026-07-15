@@ -90,13 +90,13 @@ export const createRoomSchema = z.object({
   propertyId: z.string().uuid(),
   floorId: z.string().uuid(),
   roomNumber: z.string().min(1),
-  roomType: z.enum(['single', 'double', 'triple', 'shared']).default('shared'),
+  roomType: z.enum(['shared', 'single', 'couple']).default('shared'),
   sharingType: z.number().int().min(1).default(2),
   totalBeds: z.number().int().min(1).default(2),
   rentPerBed: z.number().min(0).default(5000),
   depositAmount: z.number().min(0).default(10000),
   amenities: z.string().optional().default('[]'),
-  gender: z.enum(['male', 'female']).optional(),
+  gender: z.enum(['male', 'female', 'mixed']).default('mixed'),
 });
 
 export const createBedSchema = z.object({
@@ -109,9 +109,9 @@ export const createBedSchema = z.object({
 });
 
 export const createTenantProfileSchema = z.object({
-  propertyId: z.string().uuid(),
-  roomId: z.string().uuid(),
-  bedId: z.string().uuid(),
+  propertyId: z.string().uuid().optional(),
+  roomId: z.string().uuid().optional(),
+  bedId: z.string().uuid().optional(),
   fullName: z.string().min(2),
   phone: z.string().min(10),
   email: z.string().email().optional(),
@@ -126,10 +126,7 @@ export const createTenantProfileSchema = z.object({
   moveInDate: z.string(),
   rentAmount: z.number().min(0),
   depositPaid: z.number().min(0).default(0),
-  foodOptIn: z.boolean().default(true),
-  breakfastOptIn: z.boolean().default(true),
-  lunchOptIn: z.boolean().default(false),
-  dinnerOptIn: z.boolean().default(true),
+  mealPreferences: z.string().optional().default('{"breakfast":true,"lunch":false,"dinner":true}'),
 });
 
 export const createPaymentSchema = z.object({

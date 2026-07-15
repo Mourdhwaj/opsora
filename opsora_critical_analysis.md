@@ -437,3 +437,5 @@ Before showing to ANY client, verify:
 **The #3 thing killing this:** No mobile experience. Indian PG owners live on their phones.
 
 Fix these three, and you have a demo. Fix all of it, and you have a product.
+
+

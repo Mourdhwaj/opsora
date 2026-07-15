@@ -43,6 +43,13 @@
       "when": 1782884500000,
       "tag": "0005_add_billing_configs",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1783762643335,
+      "tag": "0006_sweet_mentallo",
+      "breakpoints": true
     }
   ]
 }

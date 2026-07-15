@@ -18,6 +18,8 @@ import { allocationRoutes } from './routes/allocation';
 import { foodRoutes } from './routes/food';
 import { paymentProofRoutes } from './routes/payments-proof';
 import { staffPortalRoutes } from './routes/staff-portal';
+import { archiveRoutes } from './routes/archive';
+import { batchPropertyRoutes } from './routes/properties-batch';
 import multipart from '@fastify/multipart';
 import { uploadRoutes } from './routes/upload';
 import { db } from './lib/db';
@@ -134,6 +136,29 @@ async function main() {
     }
   }, 60 * 60 * 1000);
 
+  // ── Root route ────────────────────────────────────────────────────────────
+  app.get('/', async () => ({
+    name: 'Opsora API',
+    description: 'Multi-tenant PG/Hostel Management SaaS',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      auth: '/auth/login, /auth/register',
+      users: '/users',
+      properties: '/properties',
+      residents: '/residents',
+      payments: '/payments',
+      complaints: '/complaints',
+      dashboard: '/dashboard',
+      iot: '/iot/water, /iot/electricity',
+      food: '/food',
+      staff: '/staff-portal',
+      websocket: `ws://localhost:${PORT}/ws`,
+    },
+    documentation: 'See /health for server status',
+  }));
+
   // ── Health check ─────────────────────────────────────────────────────────
   app.get('/health', async () => ({
     status: 'ok',
@@ -167,11 +192,77 @@ async function main() {
   await app.register(paymentProofRoutes);
   await app.register(staffPortalRoutes);
   await app.register(uploadRoutes);
+  await app.register(archiveRoutes);
+  await app.register(batchPropertyRoutes);
 
-  // ── WebSocket for real-time updates (requires auth) ─────────────────────
+  // WebSocket connection tracking
+interface WebSocketClient {
+  socket: WebSocket;
+  userId: string;
+  tenantId: string;
+  role: string;
+}
+
+// Store active WebSocket connections
+const wss: Map<string, WebSocketClient[]> = new Map();
+
+// Helper to add a client
+function addWsClient(client: WebSocketClient) {
+  if (!wss.has(client.tenantId)) {
+    wss.set(client.tenantId, []);
+  }
+  const tenants = wss.get(client.tenantId)!;
+  tenants.push(client);
+}
+
+// Helper to remove a client
+function removeWsClient(socket: WebSocket) {
+  for (const [tenantId, clients] of wss.entries()) {
+    const index = clients.findIndex(c => c.socket === socket);
+    if (index !== -1) {
+      clients.splice(index, 1);
+      // Clean up empty tenant arrays
+      if (clients.length === 0) {
+        wss.delete(tenantId);
+      }
+      break;
+    }
+  }
+}
+
+// Helper to broadcast to a tenant
+function broadcastToTenant(tenantId: string, message: any) {
+  const clients = wss.get(tenantId);
+  if (clients) {
+    const data = JSON.stringify(message);
+    clients.forEach(client => {
+      if (client.socket.readyState === WebSocket.OPEN) {
+        client.socket.send(data);
+      }
+    });
+  }
+}
+
+// Helper to broadcast to specific users in a tenant
+function broadcastToUsers(tenantId: string, userIds: string[], message: any) {
+  const clients = wss.get(tenantId);
+  if (clients) {
+    const data = JSON.stringify(message);
+    clients.forEach(client => {
+      if (userIds.includes(client.userId) && client.socket.readyState === WebSocket.OPEN) {
+        client.socket.send(data);
+      }
+    });
+  }
+}
+
+// ── WebSocket for real-time updates (requires auth) ─────────────────────
   app.get('/ws', { websocket: true, preHandler: [app.authenticate] }, (socket, request) => {
     const user = request.user as { userId: string; tenantId: string; email: string; role: string };
     app.log.info(`WebSocket client connected: ${user.email} (${user.role})`);
+
+    const client: WebSocketClient = { socket, userId: user.userId, tenantId: user.tenantId, role: user.role };
+    addWsClient(client);
 
     socket.on('message', (message) => {
       try {
@@ -190,6 +281,12 @@ async function main() {
 
     socket.on('close', () => {
       app.log.info(`WebSocket client disconnected: ${user.email}`);
+      removeWsClient(socket);
+    });
+
+    socket.on('error', (error) => {
+      app.log.error(`WebSocket error: ${error}`);
+      removeWsClient(socket);
     });
   });
 

@@ -86,10 +86,6 @@ async function seed() {
     pincode: '560095',
     propertyType: 'pg',
     totalFloors: 5,
-    totalRooms: 50,
-    totalBeds: 100,
-    occupiedBeds: 62,
-    vacantBeds: 38,
     amenities: JSON.stringify(['wifi', 'food', 'laundry', 'parking']),
   }).run();
   console.log('  ✅ Created property: Sunshine PG - Koramangala (5 floors × 10 rooms × 2 beds)');
@@ -106,9 +102,6 @@ async function seed() {
       propertyId,
       floorNumber: f + 1,
       floorName: `Floor ${f + 1}`,
-      totalRooms: 10,
-      totalBeds: 20,
-      occupiedBeds: floorOccupancy[f],
     }).run();
   }
   console.log('  ✅ Created 5 floors');
@@ -138,9 +131,6 @@ async function seed() {
         roomNumber,
         roomType: 'shared',
         sharingType: 2,
-        totalBeds: bedsPerRoom,
-        occupiedBeds: actualOccupied,
-        vacantBeds: bedsPerRoom - actualOccupied,
         rentPerBed: 7000 + f * 1000,
         depositAmount: 15000,
       }).run();
@@ -228,12 +218,12 @@ async function seed() {
       moveInDate: '2026-01-15',
       rentAmount: 7000 + (i % 5) * 1000,
       depositPaid: 15000,
-      depositBalance: 0,
       status: 'active',
-      foodOptIn: true,
-      breakfastOptIn: true,
-      lunchOptIn: i % 3 !== 0,
-      dinnerOptIn: true,
+      mealPreferences: JSON.stringify({
+        breakfast: true,
+        lunch: i % 3 !== 0,
+        dinner: true,
+      }),
     }).run();
   }
   console.log(`  ✅ Created ${residents.length} tenant profiles`);
@@ -428,6 +418,37 @@ async function seed() {
     }).run();
   }
   console.log('  ✅ Created 3 visitors');
+
+  // ── Activity Logs (Recent Activity for Dashboard) ────────────────────────
+  // Use correct entity IDs so dashboard enrichment can look up entity names
+  const activityData = [
+    { action: 'checked_in', entityType: 'resident', entityId: tenantProfileIds[0], actorName: 'Rajesh Kumar', hoursAgo: 2 },
+    { action: 'payment_received', entityType: 'payment', entityId: null, actorName: 'System', hoursAgo: 5 },
+    { action: 'complaint_created', entityType: 'complaint', entityId: null, actorName: 'Amit Patel', hoursAgo: 8 },
+    { action: 'bed_allocated', entityType: 'bed', entityId: bedIds[0], actorName: 'Rajesh Kumar', hoursAgo: 12 },
+    { action: 'payment_received', entityType: 'payment', entityId: null, actorName: 'System', hoursAgo: 18 },
+    { action: 'complaint_resolved', entityType: 'complaint', entityId: null, actorName: 'Priya Sharma', hoursAgo: 24 },
+    { action: 'resident_checked_out', entityType: 'resident', entityId: tenantProfileIds[1], actorName: 'Rajesh Kumar', hoursAgo: 36 },
+    { action: 'payment_received', entityType: 'payment', entityId: null, actorName: 'System', hoursAgo: 48 },
+    { action: 'property_updated', entityType: 'property', entityId: propertyId, actorName: 'Rajesh Kumar', hoursAgo: 72 },
+    { action: 'staff_added', entityType: 'staff', entityId: null, actorName: 'Rajesh Kumar', hoursAgo: 96 },
+  ];
+
+  for (const a of activityData) {
+    const createdAt = new Date(Date.now() - a.hoursAgo * 3600000).toISOString();
+    db.insert(schema.activityLogs).values({
+      id: uuidv4(),
+      tenantId,
+      actorType: a.action.includes('system') ? 'system' : 'user',
+      actorId: ownerId,
+      actorName: a.actorName,
+      action: a.action,
+      entityType: a.entityType,
+      entityId: a.entityId,
+      createdAt,
+    }).run();
+  }
+  console.log('  ✅ Created 10 activity log entries');
 
   console.log('\n🎉 Seed complete!');
   console.log('\n📋 Login credentials:');

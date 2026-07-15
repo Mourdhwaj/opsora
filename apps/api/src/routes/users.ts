@@ -2,7 +2,7 @@ import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
-import { users } from '../lib/schema';
+import { users, archivedUsers } from '../lib/schema';
 import { eq, and, like, desc, sql } from 'drizzle-orm';
 import { createUserSchema, parseBody } from '../types';
 import bcrypt from 'bcryptjs';
@@ -112,11 +112,13 @@ export async function userRoutes(app: FastifyInstance) {
     return reply.send(safeUser);
   });
 
-  // Delete user (soft delete, owner/admin only)
+  // Delete user (archive + soft delete, owner/admin only)
   app.delete('/users/:id', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
     const { id } = request.params as { id: string };
+    const { reason } = (request.body as any) || {};
     const tenantId = request.user!.tenantId;
+    const userId = request.user!.userId;
 
     const existing = db.select().from(users)
       .where(and(eq(users.id, id), eq(users.tenantId, tenantId)))
@@ -125,10 +127,29 @@ export async function userRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'User not found' });
     }
 
+    // Archive the user data before deactivation
+    const { passwordHash: _, ...safeData } = existing;
+    db.insert(archivedUsers).values({
+      id: uuidv4(),
+      originalId: id,
+      tenantId,
+      email: existing.email,
+      phone: existing.phone,
+      passwordHash: existing.passwordHash,
+      fullName: existing.fullName,
+      role: existing.role,
+      avatarUrl: existing.avatarUrl,
+      archivedAt: new Date().toISOString(),
+      archivedBy: userId,
+      reason: reason || null,
+      originalData: JSON.stringify(safeData),
+    }).run();
+
+    // Soft-delete the user
     db.update(users).set({ isActive: false, updatedAt: new Date().toISOString() })
       .where(and(eq(users.id, id), eq(users.tenantId, tenantId)))
       .run();
 
-    return reply.send({ message: 'User deactivated' });
+    return reply.send({ message: 'User archived and deactivated' });
   });
 }
