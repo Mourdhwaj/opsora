@@ -403,6 +403,7 @@ export default function GroupCheckinScreen() {
               fetchSuggestions();
             } else if (step === 1) {
               if (totalAssigned < totalPeople) { Alert.alert('Error', `Assign beds for all ${totalPeople} residents`); return; }
+              setCurrentResidentIndex(0);
               setStep(2);
             } else if (step < STEPS.length - 1) {
               setStep(step + 1);
