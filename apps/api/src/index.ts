@@ -26,6 +26,18 @@ import { db } from './lib/db';
 import { revokedTokens } from './lib/schema';
 import { eq, lt } from 'drizzle-orm';
 
+// JWT User type declaration
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    user: {
+      userId: string;
+      tenantId: string;
+      email: string;
+      role: string;
+    };
+  }
+}
+
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 const JWT_SECRET = process.env.JWT_SECRET;

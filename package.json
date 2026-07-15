@@ -16,6 +16,8 @@
     "db:seed": "cd apps/api && npx tsx src/lib/seed.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "playwright": "^1.61.1",
     "turbo": "^2.0.0",
     "typescript": "^5.4.0"
   },

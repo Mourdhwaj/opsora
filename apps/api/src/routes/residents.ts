@@ -98,6 +98,129 @@ export async function residentRoutes(app: FastifyInstance) {
     return reply.status(201).send(profile);
   });
 
+  // ── Group Check-in (multiple residents in one transaction) ─────────────────
+  // POST /residents/checkin-group  { propertyId, moveInDate, residents: [{ fullName, phone, email?, gender, dateOfBirth?, bloodGroup?, aadhaarNumber?, panNumber?, passportNumber?, occupation?, companyName?, collegeName?, workAddress?, emergencyName?, emergencyPhone?, emergencyRelation?, bedId, rentAmount, depositPaid, foodPreference?, mealPlan?, specialDietary? }] }
+  app.post('/residents/checkin-group', { preHandler: [authenticate] }, async (request, reply) => {
+    const body = request.body as {
+      propertyId: string;
+      moveInDate: string;
+      residents: Array<{
+        fullName: string;
+        phone: string;
+        email?: string;
+        gender: 'male' | 'female' | 'other';
+        dateOfBirth?: string;
+        bloodGroup?: string;
+        aadhaarNumber?: string;
+        panNumber?: string;
+        passportNumber?: string;
+        occupation?: string;
+        companyName?: string;
+        collegeName?: string;
+        workAddress?: string;
+        emergencyName?: string;
+        emergencyPhone?: string;
+        emergencyRelation?: string;
+        bedId: string;
+        rentAmount: number;
+        depositPaid: number;
+        foodPreference?: string;
+        mealPlan?: string;
+        specialDietary?: string;
+      }>;
+    };
+
+    const tenantId = request.user!.tenantId;
+    const { propertyId, moveInDate, residents } = body;
+
+    if (!propertyId || !moveInDate || !residents || residents.length === 0) {
+      return reply.status(400).send({ error: 'Missing required fields' });
+    }
+
+    // Verify all beds are vacant and belong to the property
+    const bedIds = residents.map(r => r.bedId);
+    const bedRecords = db.select().from(beds)
+      .where(and(eq(beds.propertyId, propertyId), inArray(beds.id, bedIds)))
+      .all();
+
+    if (bedRecords.length !== bedIds.length) {
+      return reply.status(400).send({ error: 'Some beds not found in this property' });
+    }
+
+    const occupiedBeds = bedRecords.filter(b => b.status !== 'vacant');
+    if (occupiedBeds.length > 0) {
+      return reply.status(400).send({ error: 'Some beds are not available', beds: occupiedBeds.map(b => b.bedNumber) });
+    }
+
+    // Verify gender rules for each bed's room
+    const roomIds = [...new Set(bedRecords.map(b => b.roomId))];
+    const roomRecords = db.select().from(rooms).where(inArray(rooms.id, roomIds)).all();
+    const roomGenderMap = new Map(roomRecords.map(r => [r.id, r.gender]));
+
+    for (const resident of residents) {
+      const bed = bedRecords.find(b => b.id === resident.bedId);
+      if (!bed) continue;
+      const roomGender = roomGenderMap.get(bed.roomId);
+      if (roomGender === 'male' && resident.gender !== 'male') {
+        return reply.status(400).send({ error: `Bed ${bed.bedNumber} is in a male-only room` });
+      }
+      if (roomGender === 'female' && resident.gender !== 'female') {
+        return reply.status(400).send({ error: `Bed ${bed.bedNumber} is in a female-only room` });
+      }
+    }
+
+    const createdResidents: any[] = [];
+
+    // Transaction: create all residents and update bed statuses
+    db.transaction(() => {
+      for (const resident of residents) {
+        const id = uuidv4();
+        db.insert(tenantProfiles).values({
+          id,
+          tenantId,
+          propertyId,
+          roomId: bedRecords.find(b => b.id === resident.bedId)?.roomId || null,
+          bedId: resident.bedId,
+          fullName: resident.fullName,
+          phone: resident.phone,
+          email: resident.email,
+          dateOfBirth: resident.dateOfBirth,
+          gender: resident.gender,
+          bloodGroup: resident.bloodGroup,
+          aadhaarNumber: resident.aadhaarNumber,
+          panNumber: resident.panNumber,
+          passportNumber: resident.passportNumber,
+          occupation: resident.occupation,
+          companyName: resident.companyName,
+          collegeName: resident.collegeName,
+          workAddress: resident.workAddress,
+          emergencyName: resident.emergencyName,
+          emergencyPhone: resident.emergencyPhone,
+          emergencyRelation: resident.emergencyRelation,
+          moveInDate,
+          rentAmount: resident.rentAmount,
+          depositPaid: resident.depositPaid,
+          mealPreferences: JSON.stringify({
+            preference: resident.foodPreference || 'vegetarian',
+            plan: resident.mealPlan || 'both',
+            specialDietary: resident.specialDietary || '',
+          }),
+          status: 'active',
+        }).run();
+
+        db.update(beds).set({
+          status: 'occupied',
+          updatedAt: new Date().toISOString(),
+        }).where(eq(beds.id, resident.bedId)).run();
+
+        const profile = db.select().from(tenantProfiles).where(eq(tenantProfiles.id, id)).get();
+        createdResidents.push(profile);
+      }
+    });
+
+    return reply.status(201).send({ residents: createdResidents });
+  });
+
   // Get resident details with room/bed info, payment history, and complaints
   app.get('/residents/:id/details', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
