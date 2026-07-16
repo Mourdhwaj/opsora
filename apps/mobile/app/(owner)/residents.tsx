@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, RefreshControl, ScrollView } 
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { User, Plus } from 'lucide-react-native';
-import { Card, LoadingSkeleton, EmptyState, SearchBar, FilterChips, TimeFilter, LoadMoreButton, BottomSheet, StatusBadge, PageHeader } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, FilterChips, TimeFilter, LoadMoreButton, BottomSheet, StatusBadge, PageHeader } from '../../src/components';
 import { ResidentCheckinForm } from '../../src/components/forms/ResidentCheckinForm';
 import { api } from '../../src/services/api';
 import { formatDate, getTimeParams } from '../../src/lib/utils';
@@ -35,7 +35,7 @@ export default function ResidentsList() {
 
   const timeParams = getTimeParams(timeFilter);
 
-  const { data, isLoading, refetch, isFetching } = useQuery<{ data: TenantProfile[]; total: number }>({
+  const { data, isLoading, error, refetch, isFetching } = useQuery<{ data: TenantProfile[]; total: number }>({
     queryKey: ['residents', statusFilter, timeFilter, page],
     queryFn: () => {
       const params: any = { page, limit: PAGE_SIZE };
@@ -61,6 +61,7 @@ export default function ResidentsList() {
   const remaining = total - page * PAGE_SIZE;
 
   if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message="Failed to load residents" onRetry={refetch} />;
 
   return (
     <View style={styles.wrapper}>

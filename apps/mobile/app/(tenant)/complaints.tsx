@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Card, LoadingSkeleton, EmptyState, StatusBadge, SearchBar, FilterBar, BottomSheet } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, StatusBadge, SearchBar, FilterBar, BottomSheet } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatDate, getPriorityColor, getCategoryIcon } from '../../src/lib/utils';
 import type { Complaint } from '../../src/types';
@@ -33,7 +33,7 @@ export default function TenantComplaints() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data: complaints, isLoading, refetch } = useQuery<Complaint[]>({
+  const { data: complaints, isLoading, error, refetch } = useQuery<Complaint[]>({
     queryKey: ['tenant-complaints', statusFilter],
     queryFn: () => {
       const params: any = {};
@@ -68,6 +68,7 @@ export default function TenantComplaints() {
   );
 
   if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message="Failed to load complaints" onRetry={refetch} />;
 
   return (
     <View style={styles.wrapper}>

@@ -2,7 +2,7 @@ import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Alert, TextInput } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, LoadingSkeleton, EmptyState, SearchBar, BottomSheet } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, BottomSheet } from '../../src/components';
 import { api } from '../../src/services/api';
 import { timeAgo } from '../../src/lib/utils';
 
@@ -16,7 +16,7 @@ export default function StaffTasks() {
   const [completionNotes, setCompletionNotes] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: tasks, isLoading, refetch } = useQuery({
+  const { data: tasks, isLoading, error, refetch } = useQuery({
     queryKey: ['staff-tasks'],
     queryFn: () => api.get('/staff/tasks').then(r => r.data?.data || r.data || []),
   });
@@ -53,6 +53,7 @@ export default function StaffTasks() {
   };
 
   if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message="Failed to load tasks" onRetry={refetch} />;
 
   return (
     <View style={styles.wrapper}>

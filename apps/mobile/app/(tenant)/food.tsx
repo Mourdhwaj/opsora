@@ -2,7 +2,7 @@ import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, LoadingSkeleton, EmptyState, FilterBar } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, FilterBar } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatDate, timeAgo } from '../../src/lib/utils';
 import type { FoodMenu } from '../../src/types';
@@ -14,12 +14,12 @@ export default function TenantFood() {
   const [attendance, setAttendance] = useState<Record<string, 'yes' | 'maybe' | 'no'>>({});
   const queryClient = useQueryClient();
 
-  const { data: menus, isLoading: menusLoading, refetch: refetchMenus } = useQuery<FoodMenu[]>({
+  const { data: menus, isLoading: menusLoading, error: menusError, refetch: refetchMenus } = useQuery<FoodMenu[]>({
     queryKey: ['tenant-food'],
     queryFn: () => api.get('/food/menus').then(r => r.data?.data || r.data || []),
   });
 
-  const { data: polls, isLoading: pollsLoading, refetch: refetchPolls } = useQuery({
+  const { data: polls, isLoading: pollsLoading, error: pollsError, refetch: refetchPolls } = useQuery({
     queryKey: ['tenant-polls'],
     queryFn: () => api.get('/food/polls', { params: { status: 'active' } }).then(r => r.data?.data || r.data || []),
   });
@@ -65,6 +65,7 @@ export default function TenantFood() {
   }
 
   if (isLoading) return <LoadingSkeleton />;
+  if (menusError || pollsError) return <ErrorState message="Failed to load food data" onRetry={() => { refetchMenus(); refetchPolls(); }} />;
 
   return (
     <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => { refetchMenus(); refetchPolls(); }} />}>

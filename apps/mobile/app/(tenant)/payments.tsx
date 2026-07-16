@@ -1,13 +1,13 @@
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Card, LoadingSkeleton, EmptyState, StatusBadge } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, StatusBadge } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatCurrency, formatDate } from '../../src/lib/utils';
 import { theme } from '../../src/lib/theme';
 import type { RentPayment } from '../../src/types';
 
 export default function TenantPayments() {
-  const { data: payments, isLoading, refetch } = useQuery<RentPayment[]>({
+  const { data: payments, isLoading, error, refetch } = useQuery<RentPayment[]>({
     queryKey: ['tenant-payments'],
     queryFn: () => api.get('/tenant/payments').then(r => r.data?.data || r.data || []),
   });
@@ -16,6 +16,7 @@ export default function TenantPayments() {
   const totalPending = (payments || []).filter(p => p.paymentStatus !== 'paid').reduce((s, p) => s + p.balanceAmount, 0);
 
   if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message="Failed to load payments" onRetry={refetch} />;
 
   return (
     <View style={styles.wrapper}>

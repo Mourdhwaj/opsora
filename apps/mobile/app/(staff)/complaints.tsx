@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Card, LoadingSkeleton, EmptyState, SearchBar, FilterBar, StatusBadge } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, FilterBar, StatusBadge } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatDate, getPriorityColor, getCategoryIcon, timeAgo } from '../../src/lib/utils';
 import type { Complaint } from '../../src/types';
@@ -30,7 +30,7 @@ export default function StaffComplaints() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data: complaints, isLoading, refetch } = useQuery<Complaint[]>({
+  const { data: complaints, isLoading, error, refetch } = useQuery<Complaint[]>({
     queryKey: ['staff-complaints', statusFilter, priorityFilter],
     queryFn: () => {
       const params: any = { limit: 100 };
@@ -62,6 +62,7 @@ export default function StaffComplaints() {
   );
 
   if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message="Failed to load complaints" onRetry={refetch} />;
 
   return (
     <View style={styles.wrapper}>

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, RefreshControl, ScrollView } 
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { CreditCard } from 'lucide-react-native';
-import { Card, LoadingSkeleton, EmptyState, SearchBar, FilterChips, TimeFilter, LoadMoreButton, PageHeader, StatusBadge } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, FilterChips, TimeFilter, LoadMoreButton, PageHeader, StatusBadge } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatCurrency, formatDate, getTimeParams } from '../../src/lib/utils';
 import { theme } from '../../src/lib/theme';
@@ -34,7 +34,7 @@ export default function PaymentsList() {
 
   const timeParams = getTimeParams(timeFilter);
 
-  const { data, isLoading, refetch, isFetching } = useQuery<{ data: RentPayment[]; total: number }>({
+  const { data, isLoading, error, refetch, isFetching } = useQuery<{ data: RentPayment[]; total: number }>({
     queryKey: ['payments', statusFilter, timeFilter, page],
     queryFn: () => {
       const params: any = { page, limit: PAGE_SIZE };
@@ -62,6 +62,7 @@ export default function PaymentsList() {
   const remaining = total - page * PAGE_SIZE;
 
   if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message="Failed to load payments" onRetry={refetch} />;
 
   return (
     <View style={styles.wrapper}>

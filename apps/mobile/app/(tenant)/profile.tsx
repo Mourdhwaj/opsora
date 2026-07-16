@@ -2,7 +2,7 @@ import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, LoadingSkeleton, BottomSheet, Input, Button } from '../../src/components';
+import { Card, LoadingSkeleton, ErrorState, BottomSheet, Input, Button } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatDate } from '../../src/lib/utils';
 import { useAuth } from '../../src/services/auth';
@@ -16,7 +16,7 @@ export default function TenantProfile() {
   const [emergencyName, setEmergencyName] = useState('');
   const [emergencyPhone, setEmergencyPhone] = useState('');
 
-  const { data: profile, isLoading, refetch } = useQuery({
+  const { data: profile, isLoading, error, refetch } = useQuery({
     queryKey: ['tenant-profile'],
     queryFn: () => api.get('/tenant/me').then(r => r.data || r),
   });
@@ -48,6 +48,7 @@ export default function TenantProfile() {
   }
 
   if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message="Failed to load profile" onRetry={refetch} />;
 
   return (
     <View style={styles.wrapper}>

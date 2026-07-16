@@ -2,18 +2,19 @@ import { theme } from '../../src/lib/theme';
 import { useState } from 'react';
 import { ScrollView, View, Text, TextInput, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Card, LoadingSkeleton, EmptyState } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState } from '../../src/components';
 import { api } from '../../src/services/api';
 import type { TenantProfile } from '../../src/types';
 
 export default function StaffResidents() {
   const [search, setSearch] = useState('');
-  const { data: residents, isLoading, refetch } = useQuery<TenantProfile[]>({
+  const { data: residents, isLoading, error, refetch } = useQuery<TenantProfile[]>({
     queryKey: ['staff-residents'],
     queryFn: () => api.get('/staff-portal/residents').then(r => r.data?.data || r.data || []),
   });
 
   if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message="Failed to load residents" onRetry={refetch} />;
 
   const filtered = (residents || []).filter(r =>
     r.fullName.toLowerCase().includes(search.toLowerCase()) ||
