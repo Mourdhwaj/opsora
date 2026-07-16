@@ -49,7 +49,8 @@ export function timeAgo(dateString: string): string {
   return formatDate(dateString);
 }
 
-export function getPriorityColor(priority: string): string {
+export function getPriorityColor(priority?: string): string {
+  if (!priority) return '#6b7280';
   const colors: Record<string, string> = {
     urgent: '#ef4444',
     high: '#f97316',
@@ -59,7 +60,8 @@ export function getPriorityColor(priority: string): string {
   return colors[priority.toLowerCase()] || '#6b7280';
 }
 
-export function getCategoryIcon(category: string): string {
+export function getCategoryIcon(category?: string): string {
+  if (!category) return '📋';
   const icons: Record<string, string> = {
     maintenance: '🔧',
     plumbing: '🚿',

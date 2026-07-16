@@ -74,7 +74,7 @@ export default function ComplaintDetail() {
   const currentStatus = complaint?.status;
   const nextStatuses = STATUSES.filter(s => s !== currentStatus);
   const CategoryIcon = CATEGORY_ICONS[complaint?.category?.toLowerCase()] || ClipboardList;
-  const priorityColor = getPriorityColor(complaint?.priority);
+  const priorityColor = complaint?.priority ? getPriorityColor(complaint.priority) : '#6b7280';
 
   return (
     <View style={s.wrapper}>

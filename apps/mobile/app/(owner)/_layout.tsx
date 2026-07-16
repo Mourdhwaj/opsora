@@ -69,9 +69,7 @@ export default function OwnerLayout() {
       <Tabs.Screen name="check-in" options={{ href: false }} />
       <Tabs.Screen name="archive" options={{ href: false }} />
       <Tabs.Screen name="iot/water" options={{ href: false }} />
-      <Tabs.Screen name="iot/water/[id]" options={{ href: false }} />
       <Tabs.Screen name="iot/electricity" options={{ href: false }} />
-      <Tabs.Screen name="iot/electricity/[id]" options={{ href: false }} />
     </Tabs>
   );
 }
