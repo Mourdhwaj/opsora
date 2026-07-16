@@ -124,7 +124,7 @@ export default function RoomsScreen() {
                         <View
                           key={bed.id}
                           style={[styles.bedDot, {
-                            backgroundColor: bed.status === 'occupied' ? '#3b82f6'
+                            backgroundColor: bed.status === 'occupied' ? 'theme.colors.primary'
                               : bed.status === 'maintenance' ? '#9ca3af' : '#22c55e'
                           }]}
                         />
@@ -158,7 +158,7 @@ export default function RoomsScreen() {
             {selectedRoom.beds.map((bed) => (
               <View key={bed.id} style={styles.bedRow}>
                 <View style={[styles.bedDotLarge, {
-                  backgroundColor: bed.status === 'occupied' ? '#3b82f6'
+                  backgroundColor: bed.status === 'occupied' ? 'theme.colors.primary'
                     : bed.status === 'maintenance' ? '#9ca3af' : '#22c55e'
                 }]} />
                 <View style={{ flex: 1 }}>
@@ -170,7 +170,7 @@ export default function RoomsScreen() {
                   )}
                 </View>
                 <Text style={[styles.bedStatus, {
-                  color: bed.status === 'occupied' ? '#3b82f6'
+                  color: bed.status === 'occupied' ? 'theme.colors.primary'
                     : bed.status === 'maintenance' ? '#9ca3af' : '#22c55e'
                 }]}>{bed.status}</Text>
               </View>

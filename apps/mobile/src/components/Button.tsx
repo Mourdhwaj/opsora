@@ -1,3 +1,4 @@
+import { theme } from "../../lib/theme";
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, type ViewStyle } from 'react-native';
 
 interface ButtonProps {
@@ -27,11 +28,11 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
 
 const styles = StyleSheet.create({
   base: { paddingVertical: 14, paddingHorizontal: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  primary: { backgroundColor: '#3b82f6' },
+  primary: { backgroundColor: 'theme.colors.primary' },
   secondary: { backgroundColor: '#6b7280' },
-  outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#3b82f6' },
+  outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: 'theme.colors.primary' },
   danger: { backgroundColor: '#ef4444' },
   disabled: { opacity: 0.5 },
   text: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  outlineText: { color: '#3b82f6' },
+  outlineText: { color: 'theme.colors.primary' },
 });

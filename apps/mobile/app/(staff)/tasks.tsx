@@ -1,3 +1,4 @@
+import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Alert, TextInput } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -176,12 +177,12 @@ function formatStatus(s: string): string {
 }
 
 function getStatusColor(s: string): string {
-  const m: Record<string, string> = { pending: '#f59e0b', in_progress: '#3b82f6', completed: '#22c55e' };
+  const m: Record<string, string> = { pending: '#f59e0b', in_progress: 'theme.colors.primary', completed: '#22c55e' };
   return m[s] || '#6b7280';
 }
 
 function getPriorityColor(p: string): string {
-  const m: Record<string, string> = { urgent: '#dc2626', high: '#f97316', medium: '#eab308', low: '#3b82f6' };
+  const m: Record<string, string> = { urgent: '#dc2626', high: '#f97316', medium: '#eab308', low: 'theme.colors.primary' };
   return m[p] || '#6b7280';
 }
 
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#f9fafb' },
   tabRow: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 8, gap: 6 },
   tab: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: '#f3f4f6' },
-  tabActive: { backgroundColor: '#3b82f6' },
+  tabActive: { backgroundColor: 'theme.colors.primary' },
   tabText: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
   tabTextActive: { color: '#fff' },
   card: { marginBottom: 10 },
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
   notesText: { fontSize: 13, color: '#374151' },
   actions: { flexDirection: 'row', gap: 8 },
   startBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#eff6ff', alignItems: 'center' },
-  startText: { fontSize: 13, fontWeight: '600', color: '#3b82f6' },
+  startText: { fontSize: 13, fontWeight: '600', color: 'theme.colors.primary' },
   completeBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#f0fdf4', alignItems: 'center' },
   completeText: { fontSize: 13, fontWeight: '600', color: '#16a34a' },
   sheetLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },

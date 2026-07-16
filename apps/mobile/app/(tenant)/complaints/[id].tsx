@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   star: { fontSize: 32, color: '#d1d5db' },
   starActive: { color: '#f59e0b' },
   feedbackInput: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, padding: 12, fontSize: 14, color: '#111827', minHeight: 60, textAlignVertical: 'top', marginBottom: 12 },
-  rateBtn: { backgroundColor: '#3b82f6', paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
+  rateBtn: { backgroundColor: 'theme.colors.primary', paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   rateBtnDisabled: { backgroundColor: '#d1d5db' },
   rateBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
 });

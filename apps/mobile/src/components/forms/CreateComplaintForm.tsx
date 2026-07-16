@@ -1,3 +1,4 @@
+import { theme } from "../../lib/theme";
 import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -86,8 +87,8 @@ export function CreateComplaintForm({ onClose }: CreateComplaintFormProps) {
 }
 
 function getPriorityColor(p: string): string {
-  const colors: Record<string, string> = { urgent: '#ef4444', high: '#f97316', medium: '#eab308', low: '#3b82f6' };
-  return colors[p] || '#3b82f6';
+  const colors: Record<string, string> = { urgent: '#ef4444', high: '#f97316', medium: '#eab308', low: 'theme.colors.primary' };
+  return colors[p] || 'theme.colors.primary';
 }
 
 const styles = StyleSheet.create({
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 6 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   chip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb' },
-  chipActive: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
+  chipActive: { backgroundColor: 'theme.colors.primary', borderColor: 'theme.colors.primary' },
   chipText: { fontSize: 12, fontWeight: '500', color: '#6b7280', textTransform: 'capitalize' },
   chipTextActive: { color: '#fff' },
   actions: { flexDirection: 'row', gap: 12, marginTop: 8 },

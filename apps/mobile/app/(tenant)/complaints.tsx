@@ -1,3 +1,4 @@
+import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#f9fafb' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, paddingBottom: 0 },
   pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827' },
-  addButton: { backgroundColor: '#3b82f6', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  addButton: { backgroundColor: 'theme.colors.primary', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   addButtonText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   formTitle: { fontSize: 20, fontWeight: '800', color: '#111827', marginBottom: 16 },
   label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 6 },
@@ -161,10 +162,10 @@ const styles = StyleSheet.create({
   inputPlaceholder: { fontSize: 16, color: '#9ca3af' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   chip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb' },
-  chipActive: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
+  chipActive: { backgroundColor: 'theme.colors.primary', borderColor: 'theme.colors.primary' },
   chipText: { fontSize: 12, fontWeight: '500', color: '#6b7280', textTransform: 'capitalize' },
   chipTextActive: { color: '#fff' },
-  submitBtn: { backgroundColor: '#3b82f6', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  submitBtn: { backgroundColor: 'theme.colors.primary', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   submitText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   card: { marginHorizontal: 16, marginBottom: 10 },
   complaintHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },

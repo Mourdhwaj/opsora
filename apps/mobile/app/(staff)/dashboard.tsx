@@ -1,3 +1,4 @@
+import { theme } from "../../src/lib/theme";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -36,7 +37,7 @@ export default function StaffDashboard() {
       <Text style={styles.pageTitle}>Staff Dashboard</Text>
 
       <View style={styles.metricsRow}>
-        <MetricBox label="My Tasks" value={data?.myTasks || 0} color="#3b82f6" />
+        <MetricBox label="My Tasks" value={data?.myTasks || 0} color="theme.colors.primary" />
         <MetricBox label="Open Tickets" value={data?.openTickets || 0} color="#ef4444" />
         <MetricBox label="In Progress" value={data?.inProgressTickets || 0} color="#eab308" />
         <MetricBox label="Resolved Today" value={data?.resolvedToday || 0} color="#22c55e" />

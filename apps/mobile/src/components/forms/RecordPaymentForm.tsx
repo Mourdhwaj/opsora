@@ -1,3 +1,4 @@
+import { theme } from "../../lib/theme";
 import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 6 },
   methodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   methodChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb' },
-  methodChipActive: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
+  methodChipActive: { backgroundColor: 'theme.colors.primary', borderColor: 'theme.colors.primary' },
   methodChipText: { fontSize: 13, fontWeight: '500', color: '#6b7280', textTransform: 'capitalize' },
   methodChipTextActive: { color: '#fff' },
   actions: { flexDirection: 'row', gap: 12, marginTop: 8 },

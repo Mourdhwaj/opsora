@@ -109,7 +109,7 @@ export default function PropertyDetail() {
               <View style={styles.roomHeader}>
                 <Text style={styles.roomNumber}>Room {room.roomNumber}</Text>
                 <Text style={[styles.roomStatus, {
-                  color: room.status === 'available' ? '#22c55e' : room.status === 'occupied' ? '#3b82f6' : '#6b7280'
+                  color: room.status === 'available' ? '#22c55e' : room.status === 'occupied' ? 'theme.colors.primary' : '#6b7280'
                 }]}>{room.status}</Text>
               </View>
               <View style={styles.roomInfo}>
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   viewLayoutBtn: { backgroundColor: '#f0f9ff', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#bae6fd' },
   viewLayoutBtnText: { color: '#0369a1', fontSize: 13, fontWeight: '600' },
   occupancyBadge: { fontSize: 12, fontWeight: '700', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6, overflow: 'hidden' },
-  addBtn: { backgroundColor: '#3b82f6', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  addBtn: { backgroundColor: 'theme.colors.primary', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
   addBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
   emptyCard: { alignItems: 'center', padding: 24 },
   emptyText: { fontSize: 14, color: '#9ca3af' },

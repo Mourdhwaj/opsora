@@ -23,15 +23,15 @@ export function getStatusColor(status: string): string {
     partial: '#f97316',
     overdue: '#ef4444',
     vacant: '#6b7280',
-    occupied: '#3b82f6',
+    occupied: 'theme.colors.primary',
     open: '#f97316',
-    'in_progress': '#3b82f6',
+    'in_progress': 'theme.colors.primary',
     resolved: '#22c55e',
     closed: '#6b7280',
     urgent: '#ef4444',
     high: '#f97316',
     medium: '#eab308',
-    low: '#3b82f6',
+    low: 'theme.colors.primary',
   };
   return colors[status.toLowerCase()] || '#6b7280';
 }
@@ -59,7 +59,7 @@ export function getPriorityColor(priority?: string): string {
     urgent: '#ef4444',
     high: '#f97316',
     medium: '#eab308',
-    low: '#3b82f6',
+    low: 'theme.colors.primary',
   };
   return colors[priority.toLowerCase()] || '#6b7280';
 }

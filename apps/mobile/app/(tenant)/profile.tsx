@@ -1,3 +1,4 @@
+import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -120,12 +121,12 @@ const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#f9fafb' },
   container: { flex: 1, padding: 16 },
   profileCard: { alignItems: 'center', padding: 24, marginBottom: 16 },
-  avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#3b82f6', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'theme.colors.primary', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   avatarText: { color: '#fff', fontSize: 36, fontWeight: '700' },
   name: { fontSize: 22, fontWeight: '800', color: '#111827' },
   email: { fontSize: 14, color: '#6b7280', marginTop: 4 },
-  editBtn: { marginTop: 12, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#3b82f6' },
-  editBtnText: { color: '#3b82f6', fontSize: 13, fontWeight: '600' },
+  editBtn: { marginTop: 12, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: 'theme.colors.primary' },
+  editBtnText: { color: 'theme.colors.primary', fontSize: 13, fontWeight: '600' },
   detailsCard: { marginBottom: 16 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },

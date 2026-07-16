@@ -1,3 +1,4 @@
+import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 16 },
   tabRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   tab: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
-  tabActive: { backgroundColor: '#3b82f6' },
+  tabActive: { backgroundColor: 'theme.colors.primary' },
   tabText: { fontSize: 13, fontWeight: '600', color: '#6b7280', textTransform: 'capitalize' },
   tabTextActive: { color: '#fff' },
   card: { marginBottom: 12 },
