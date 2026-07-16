@@ -133,7 +133,7 @@ export default function TenantComplaints() {
       {filtered.length === 0 ? (
         <EmptyState title="No complaints" message="Submit your first complaint" />
       ) : (
-        <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 32 }} refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}>
           {filtered.map((complaint) => (
             <TouchableOpacity key={complaint.id} onPress={() => router.push(`/(tenant)/complaints/${complaint.id}`)}>
               <Card style={styles.card}>

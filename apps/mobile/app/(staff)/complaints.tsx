@@ -76,6 +76,7 @@ export default function StaffComplaints() {
           data={filtered}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
           keyExtractor={(item) => item.id}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
           renderItem={({ item: c }) => (
             <TouchableOpacity onPress={() => router.push(`/(staff)/complaints/${c.id}`)} activeOpacity={0.7}>
             <Card style={styles.card}>

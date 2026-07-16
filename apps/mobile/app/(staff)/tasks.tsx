@@ -80,6 +80,7 @@ export default function StaffTasks() {
           data={filtered}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
           keyExtractor={(item: any) => item.id}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
           renderItem={({ item: task }: any) => {
             const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
             return (
