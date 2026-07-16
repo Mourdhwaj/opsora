@@ -1,10 +1,12 @@
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { ScrollView, Alert, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Card } from '../../src/components';
+import { Building, LayoutGrid, UtensilsCrossed, Droplets, Zap, UserPlus, Archive, Settings } from 'lucide-react-native';
+import { PageHeader, MoreGrid } from '../../src/components';
 import { useAuth } from '../../src/services/auth';
+import { theme } from '../../src/lib/theme';
 
 export default function MoreScreen() {
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   const router = useRouter();
 
   function handleLogout() {
@@ -16,54 +18,35 @@ export default function MoreScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.pageTitle}>Settings</Text>
-
-      <Card style={styles.profileCard}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{user?.fullName?.charAt(0) || 'O'}</Text>
-        </View>
-        <Text style={styles.userName}>{user?.fullName || 'User'}</Text>
-        <Text style={styles.userEmail}>{user?.email}</Text>
-        <Text style={styles.userRole}>{user?.role?.toUpperCase()}</Text>
-      </Card>
-
-      <Card style={styles.menuCard}>
-        {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem} onPress={() => item.route ? router.push(item.route) : Alert.alert('Coming Soon', 'This feature is under development.')}>
-            <Text style={styles.menuIcon}>{item.icon}</Text>
-            <Text style={styles.menuText}>{item.label}</Text>
-            <Text style={styles.menuArrow}>›</Text>
-          </TouchableOpacity>
-        ))}
-      </Card>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      <PageHeader title="More" />
+      <MoreGrid
+        onNavigate={(route) => router.push(route as any)}
+        items={[
+          { icon: <Building size={24} color={theme.colors.primary} />, label: 'Properties', route: '/(owner)/properties' },
+          { icon: <LayoutGrid size={24} color={theme.colors.primary} />, label: 'Room Layout', route: '/(owner)/rooms' },
+          { icon: <UtensilsCrossed size={24} color={theme.colors.primary} />, label: 'Food & Meals', route: '/(owner)/food' },
+          { icon: <Droplets size={24} color={theme.colors.primary} />, label: 'Water IoT', route: '/(owner)/iot/water' },
+          { icon: <Zap size={24} color={theme.colors.primary} />, label: 'Electricity', route: '/(owner)/iot/electricity' },
+          { icon: <UserPlus size={24} color={theme.colors.primary} />, label: 'Group Check-in', route: '/(owner)/check-in' },
+          { icon: <Archive size={24} color={theme.colors.primary} />, label: 'Archive', route: '/(owner)/archive' },
+          { icon: <Settings size={24} color={theme.colors.primary} />, label: 'Settings', route: '/(owner)/more' },
+        ]}
+      />
+      <LogoutButton onPress={handleLogout} />
     </ScrollView>
   );
 }
 
-const menuItems = [
-  { icon: '📁', label: 'Archive', route: '/(owner)/archive' },
-  { icon: '🔔', label: 'Notifications', route: '' },
-  { icon: '👥', label: 'Staff Management', route: '' },
-];
+function LogoutButton({ onPress }: { onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.logoutButton} onPress={onPress}>
+      <Text style={styles.logoutText}>Logout</Text>
+    </TouchableOpacity>
+  );
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 16 },
-  profileCard: { alignItems: 'center', padding: 24, marginBottom: 16 },
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#3b82f6', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  avatarText: { color: '#fff', fontSize: 28, fontWeight: '700' },
-  userName: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  userEmail: { fontSize: 14, color: '#6b7280', marginTop: 2 },
-  userRole: { fontSize: 12, color: '#3b82f6', fontWeight: '600', marginTop: 4 },
-  menuCard: { marginBottom: 16 },
-  menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  menuIcon: { fontSize: 20, marginRight: 12 },
-  menuText: { fontSize: 16, color: '#374151', flex: 1 },
-  menuArrow: { fontSize: 20, color: '#9ca3af' },
-  logoutButton: { backgroundColor: '#fff', borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#ef4444' },
-  logoutText: { color: '#ef4444', fontSize: 16, fontWeight: '600' },
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  logoutButton: { margin: theme.spacing.lg, borderRadius: theme.borderRadius.lg, padding: theme.spacing.md, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.danger },
+  logoutText: { color: theme.colors.danger, fontSize: 16, fontWeight: '600' },
 });
