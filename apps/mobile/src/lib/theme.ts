@@ -21,6 +21,9 @@ export const theme = {
     dangerSurface: '#FEF2F2',
     info: '#3B82F6',
     infoSurface: '#EFF6FF',
+    overlay: 'rgba(0,0,0,0.3)',
+    textDark: '#374151',
+    borderMedium: '#d1d5db',
   },
   font: {
     regular: 'Inter_400Regular',
