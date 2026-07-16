@@ -139,7 +139,7 @@ export default function TenantFood() {
                   {(['yes', 'maybe', 'no'] as const).map(val => (
                     <TouchableOpacity
                       key={val}
-                      style={[styles.attBtn, attendance[meal] === val && styles.attBtnActive, attendance[meal] === val && { backgroundColor: val === 'yes' ? '#22c55e' : val === 'maybe' ? '#eab308' : '#ef4444' }]}
+                      style={[styles.attBtn, attendance[meal] === val && styles.attBtnActive, attendance[meal] === val && { backgroundColor: val === 'yes' ? theme.colors.success : val === 'maybe' ? theme.colors.warning : theme.colors.danger }]}
                       onPress={() => handleAttendance(meal, val)}
                     >
                       <Text style={[styles.attBtnText, attendance[meal] === val && styles.attBtnTextActive]}>
@@ -174,37 +174,37 @@ export default function TenantFood() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: theme.colors.background, padding: 16 },
+  pageTitle: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 16 },
   tabRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
+  tab: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: theme.colors.borderLight, alignItems: 'center' },
   tabActive: { backgroundColor: theme.colors.primary },
-  tabText: { fontSize: 13, fontWeight: '600', color: '#6b7280', textTransform: 'capitalize' },
-  tabTextActive: { color: '#fff' },
+  tabText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary, textTransform: 'capitalize' },
+  tabTextActive: { color: theme.colors.surface },
   card: { marginBottom: 12 },
   menuHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   menuIcon: { fontSize: 24 },
-  mealType: { fontSize: 16, fontWeight: '600', color: '#111827', textTransform: 'capitalize' },
-  menuDate: { fontSize: 12, color: '#9ca3af' },
-  specialBadge: { fontSize: 11, fontWeight: '600', color: '#d97706', backgroundColor: '#fef3c7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  mealType: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text, textTransform: 'capitalize' },
+  menuDate: { fontSize: 12, color: theme.colors.textMuted },
+  specialBadge: { fontSize: 11, fontFamily: theme.font.semiBold, color: '#d97706', backgroundColor: '#fef3c7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   itemsList: { gap: 2 },
-  menuItem: { fontSize: 14, color: '#374151', lineHeight: 22 },
+  menuItem: { fontSize: 14, color: theme.colors.textDark, lineHeight: 22 },
   pollHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  pollTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  pollMeta: { fontSize: 12, color: '#9ca3af' },
-  pollInfo: { fontSize: 12, color: '#9ca3af', marginBottom: 8 },
-  pollOption: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  pollOptionText: { fontSize: 14, color: '#374151' },
-  pollOptionVotes: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
-  attendanceTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  attendanceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  attendanceLabel: { fontSize: 14, fontWeight: '500', color: '#374151', textTransform: 'capitalize' },
+  pollTitle: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  pollMeta: { fontSize: 12, color: theme.colors.textMuted },
+  pollInfo: { fontSize: 12, color: theme.colors.textMuted, marginBottom: 8 },
+  pollOption: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  pollOptionText: { fontSize: 14, color: theme.colors.textDark },
+  pollOptionVotes: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary },
+  attendanceTitle: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 12 },
+  attendanceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  attendanceLabel: { fontSize: 14, fontFamily: theme.font.medium, color: theme.colors.textDark, textTransform: 'capitalize' },
   attendanceButtons: { flexDirection: 'row', gap: 8 },
-  attBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  attBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.borderLight, alignItems: 'center', justifyContent: 'center' },
   attBtnActive: {},
-  attBtnText: { fontSize: 16, fontWeight: '700', color: '#6b7280' },
-  attBtnTextActive: { color: '#fff' },
-  historyRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  historyDate: { fontSize: 13, color: '#374151' },
-  historyMeals: { fontSize: 13, color: '#6b7280' },
+  attBtnText: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.textSecondary },
+  attBtnTextActive: { color: theme.colors.surface },
+  historyRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  historyDate: { fontSize: 13, color: theme.colors.textDark },
+  historyMeals: { fontSize: 13, color: theme.colors.textSecondary },
 });

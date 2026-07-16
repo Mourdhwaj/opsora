@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, LoadingSkeleton, EmptyState, StatusBadge } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatCurrency, formatDate } from '../../src/lib/utils';
+import { theme } from '../../src/lib/theme';
 import type { RentPayment } from '../../src/types';
 
 export default function TenantPayments() {
@@ -19,13 +20,13 @@ export default function TenantPayments() {
   return (
     <View style={styles.wrapper}>
       <View style={styles.summaryRow}>
-        <View style={[styles.summaryCard, { backgroundColor: '#f0fdf4' }]}>
+        <View style={[styles.summaryCard, { backgroundColor: theme.colors.successSurface }]}>
           <Text style={styles.summaryLabel}>Total Paid</Text>
-          <Text style={[styles.summaryValue, { color: '#16a34a' }]}>{formatCurrency(totalPaid)}</Text>
+          <Text style={[styles.summaryValue, { color: theme.colors.success }]}>{formatCurrency(totalPaid)}</Text>
         </View>
-        <View style={[styles.summaryCard, { backgroundColor: '#fef2f2' }]}>
+        <View style={[styles.summaryCard, { backgroundColor: theme.colors.dangerSurface }]}>
           <Text style={styles.summaryLabel}>Pending</Text>
-          <Text style={[styles.summaryValue, { color: '#dc2626' }]}>{formatCurrency(totalPending)}</Text>
+          <Text style={[styles.summaryValue, { color: theme.colors.danger }]}>{formatCurrency(totalPending)}</Text>
         </View>
       </View>
 
@@ -52,11 +53,11 @@ export default function TenantPayments() {
                 </View>
                 <View>
                   <Text style={styles.amountLabel}>Paid</Text>
-                  <Text style={[styles.amount, { color: '#22c55e' }]}>{formatCurrency(payment.paidAmount)}</Text>
+                  <Text style={[styles.amount, { color: theme.colors.success }]}>{formatCurrency(payment.paidAmount)}</Text>
                 </View>
                 <View>
                   <Text style={styles.amountLabel}>Balance</Text>
-                  <Text style={[styles.amount, { color: payment.balanceAmount > 0 ? '#ef4444' : '#22c55e' }]}>{formatCurrency(payment.balanceAmount)}</Text>
+                  <Text style={[styles.amount, { color: payment.balanceAmount > 0 ? theme.colors.danger : theme.colors.success }]}>{formatCurrency(payment.balanceAmount)}</Text>
                 </View>
               </View>
               <Text style={styles.due}>Due: {formatDate(payment.dueDate)}</Text>
@@ -69,18 +70,18 @@ export default function TenantPayments() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
   summaryRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 16 },
   summaryCard: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center' },
-  summaryLabel: { fontSize: 12, color: '#6b7280' },
-  summaryValue: { fontSize: 18, fontWeight: '800', marginTop: 2 },
+  summaryLabel: { fontSize: 12, color: theme.colors.textSecondary },
+  summaryValue: { fontSize: 18, fontFamily: theme.font.extraBold, marginTop: 2 },
   container: { flex: 1, padding: 16 },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 16 },
+  pageTitle: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 16 },
   card: { marginBottom: 10 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  month: { fontSize: 18, fontWeight: '700', color: '#111827' },
+  month: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text },
   amountRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  amountLabel: { fontSize: 11, color: '#9ca3af' },
-  amount: { fontSize: 16, fontWeight: '700', color: '#111827', marginTop: 2 },
-  due: { fontSize: 12, color: '#9ca3af' },
+  amountLabel: { fontSize: 11, color: theme.colors.textMuted },
+  amount: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginTop: 2 },
+  due: { fontSize: 12, color: theme.colors.textMuted },
 });

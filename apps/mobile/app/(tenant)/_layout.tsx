@@ -39,16 +39,16 @@ export default function TenantLayout() {
         screenOptions={{
           headerLeft: () => (
             <TouchableOpacity onPress={openDrawer} style={{ paddingLeft: 16, paddingVertical: 8 }}>
-              <Text style={{ fontSize: 24, color: '#111827' }}>☰</Text>
+              <Text style={{ fontSize: 24, color: theme.colors.text }}>☰</Text>
             </TouchableOpacity>
           ),
-          headerStyle: { backgroundColor: '#fff', elevation: 0, shadowOpacity: 0, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-          headerTintColor: '#111827',
-          headerTitleStyle: { fontWeight: '700', fontSize: 18 },
+          headerStyle: { backgroundColor: theme.colors.surface, elevation: 0, shadowOpacity: 0, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+          headerTintColor: theme.colors.text,
+          headerTitleStyle: { fontFamily: theme.font.bold, fontSize: 18 },
           tabBarActiveTintColor: theme.colors.primary,
-          tabBarInactiveTintColor: '#9ca3af',
+          tabBarInactiveTintColor: theme.colors.textMuted,
           tabBarStyle: { display: 'none' },
-          tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+          tabBarLabelStyle: { fontSize: 10, fontFamily: theme.font.semiBold },
         }}
       >
         <Tabs.Screen name="dashboard" options={{ title: 'Home', tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 22 }}>🏠</Text> }} />
@@ -65,7 +65,7 @@ export default function TenantLayout() {
 
       <Animated.View style={[styles.drawer, { transform: [{ translateX }] }]} pointerEvents={drawerOpen ? 'auto' : 'none'}>
         <View style={styles.brand}>
-          <View style={styles.brandIcon}><Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>O</Text></View>
+          <View style={styles.brandIcon}><Text style={{ color: theme.colors.surface, fontSize: 18, fontFamily: theme.font.bold }}>O</Text></View>
           <View><Text style={styles.brandName}>Opsora</Text><Text style={styles.brandSub}>Resident Portal</Text></View>
         </View>
         <View style={styles.navSection}>
@@ -99,21 +99,21 @@ const tenantItems = [
 ];
 
 const styles = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)', zIndex: 10 },
-  drawer: { position: 'absolute', left: 0, top: 0, bottom: 0, width: DRAWER_WIDTH, backgroundColor: '#fff', elevation: 16, zIndex: 20 },
-  brand: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', gap: 12 },
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.overlay, zIndex: 10 },
+  drawer: { position: 'absolute', left: 0, top: 0, bottom: 0, width: DRAWER_WIDTH, backgroundColor: theme.colors.surface, elevation: 16, zIndex: 20 },
+  brand: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight, gap: 12 },
   brandIcon: { width: 40, height: 40, borderRadius: 10, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center' },
-  brandName: { fontSize: 18, fontWeight: '800', color: '#111827' },
-  brandSub: { fontSize: 12, color: '#9ca3af' },
+  brandName: { fontSize: 18, fontFamily: theme.font.extraBold, color: theme.colors.text },
+  brandSub: { fontSize: 12, color: theme.colors.textMuted },
   navSection: { flex: 1, paddingTop: 12 },
   navItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 20, marginHorizontal: 12, borderRadius: 10, gap: 12 },
-  navLabel: { fontSize: 15, fontWeight: '500', color: '#6b7280' },
-  footer: { borderTopWidth: 1, borderTopColor: '#f3f4f6', padding: 16 },
+  navLabel: { fontSize: 15, fontFamily: theme.font.medium, color: theme.colors.textSecondary },
+  footer: { borderTopWidth: 1, borderTopColor: theme.colors.borderLight, padding: 16 },
   userInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
   avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center' },
-  avatarText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  userName: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  userRole: { fontSize: 12, color: '#9ca3af' },
+  avatarText: { color: theme.colors.surface, fontSize: 14, fontFamily: theme.font.bold },
+  userName: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  userRole: { fontSize: 12, color: theme.colors.textMuted },
   logoutBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
-  logoutText: { fontSize: 14, color: '#ef4444', fontWeight: '500' },
+  logoutText: { fontSize: 14, color: theme.colors.danger, fontFamily: theme.font.medium },
 });

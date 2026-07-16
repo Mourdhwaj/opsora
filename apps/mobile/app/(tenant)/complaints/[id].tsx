@@ -72,7 +72,7 @@ export default function TenantComplaintDetail() {
             value={feedback}
             onChangeText={setFeedback}
             placeholder="Share your feedback (optional)"
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={theme.colors.textMuted}
             multiline
           />
           <TouchableOpacity
@@ -103,22 +103,22 @@ function DetailRow({ label, value }: { label: string; value?: ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
+  container: { flex: 1, backgroundColor: theme.colors.background, padding: 16 },
   headerCard: { marginBottom: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  ticket: { fontSize: 14, color: '#9ca3af', fontWeight: '500' },
-  title: { fontSize: 20, fontWeight: '800', color: '#111827', marginBottom: 8 },
-  description: { fontSize: 15, color: '#6b7280', lineHeight: 22 },
+  ticket: { fontSize: 14, color: theme.colors.textMuted, fontFamily: theme.font.medium },
+  title: { fontSize: 20, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 8 },
+  description: { fontSize: 15, color: theme.colors.textSecondary, lineHeight: 22 },
   section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  detailLabel: { fontSize: 14, color: '#6b7280' },
-  detailValue: { fontSize: 14, fontWeight: '600', color: '#111827', textTransform: 'capitalize' },
+  sectionTitle: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 12 },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  detailLabel: { fontSize: 14, color: theme.colors.textSecondary },
+  detailValue: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text, textTransform: 'capitalize' },
   ratingRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  star: { fontSize: 32, color: '#d1d5db' },
-  starActive: { color: '#f59e0b' },
-  feedbackInput: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, padding: 12, fontSize: 14, color: '#111827', minHeight: 60, textAlignVertical: 'top', marginBottom: 12 },
+  star: { fontSize: 32, color: theme.colors.borderMedium },
+  starActive: { color: theme.colors.warning },
+  feedbackInput: { borderWidth: 1, borderColor: theme.colors.borderMedium, borderRadius: 10, padding: 12, fontSize: 14, color: theme.colors.text, minHeight: 60, textAlignVertical: 'top', marginBottom: 12 },
   rateBtn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
-  rateBtnDisabled: { backgroundColor: '#d1d5db' },
-  rateBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  rateBtnDisabled: { backgroundColor: theme.colors.borderMedium },
+  rateBtnText: { color: theme.colors.surface, fontSize: 15, fontFamily: theme.font.semiBold },
 });

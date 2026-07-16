@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Card, LoadingSkeleton, ErrorState } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatCurrency, formatDate } from '../../src/lib/utils';
+import { theme } from '../../src/lib/theme';
 
 interface TenantDashboardData {
   profile: { fullName: string; phone: string };
@@ -34,7 +35,7 @@ export default function TenantDashboard() {
       <Card style={styles.rentCard}>
         <Text style={styles.cardTitle}>Rent Status</Text>
         <Text style={styles.rentAmount}>{formatCurrency(data?.payments?.currentMonth?.due || 0)}</Text>
-        <Text style={[styles.dueDate, { color: data?.payments?.currentMonth?.status === 'paid' ? '#22c55e' : '#ef4444' }]}>
+        <Text style={[styles.dueDate, { color: data?.payments?.currentMonth?.status === 'paid' ? theme.colors.success : theme.colors.danger }]}>
           {data?.payments?.currentMonth?.status === 'paid' ? 'Paid' : `Pending: ${formatCurrency(data?.payments?.currentMonth?.pending || 0)}`}
         </Text>
       </Card>
@@ -47,7 +48,7 @@ export default function TenantDashboard() {
         </Card>
         <Card style={[styles.smallCard, { flex: 1, marginLeft: 4 }]}>
           <Text style={styles.cardTitle}>Issues</Text>
-          <Text style={[styles.issueCount, { color: (data?.complaints?.open || 0) > 0 ? '#ef4444' : '#22c55e' }]}>
+          <Text style={[styles.issueCount, { color: (data?.complaints?.open || 0) > 0 ? theme.colors.danger : theme.colors.success }]}>
             {data?.complaints?.open || 0}
           </Text>
           <Text style={styles.roomType}>{data?.complaints?.urgent || 0} urgent</Text>
@@ -93,26 +94,26 @@ export default function TenantDashboard() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
-  greeting: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 4 },
-  name: { fontSize: 16, color: '#6b7280', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: theme.colors.background, padding: 16 },
+  greeting: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 4 },
+  name: { fontSize: 16, color: theme.colors.textSecondary, marginBottom: 20 },
   rentCard: { marginBottom: 12 },
-  cardTitle: { fontSize: 14, color: '#6b7280', fontWeight: '500' },
-  rentAmount: { fontSize: 36, fontWeight: '800', color: '#111827', marginTop: 8 },
+  cardTitle: { fontSize: 14, color: theme.colors.textSecondary, fontFamily: theme.font.medium },
+  rentAmount: { fontSize: 36, fontFamily: theme.font.extraBold, color: theme.colors.text, marginTop: 8 },
   dueDate: { fontSize: 13, marginTop: 4 },
   row: { flexDirection: 'row', marginBottom: 12 },
   smallCard: { padding: 16 },
-  roomText: { fontSize: 28, fontWeight: '800', color: '#111827', marginTop: 8 },
-  roomType: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
-  issueCount: { fontSize: 28, fontWeight: '800', marginTop: 8 },
+  roomText: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginTop: 8 },
+  roomType: { fontSize: 12, color: theme.colors.textMuted, marginTop: 2 },
+  issueCount: { fontSize: 28, fontFamily: theme.font.extraBold, marginTop: 8 },
   section: { marginBottom: 12 },
-  propName: { fontSize: 16, fontWeight: '600', color: '#111827', marginTop: 8 },
-  propAddr: { fontSize: 13, color: '#6b7280', marginTop: 2 },
-  complaintRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  complaintTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  complaintMeta: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
+  propName: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text, marginTop: 8 },
+  propAddr: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 2 },
+  complaintRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  complaintTitle: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  complaintMeta: { fontSize: 12, color: theme.colors.textMuted, marginTop: 2 },
   quickActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  actionButton: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 14, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+  actionButton: { flex: 1, backgroundColor: theme.colors.surface, borderRadius: 12, padding: 14, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
   actionIcon: { fontSize: 24, marginBottom: 4 },
-  actionLabel: { fontSize: 11, fontWeight: '600', color: '#374151' },
+  actionLabel: { fontSize: 11, fontFamily: theme.font.semiBold, color: theme.colors.textDark },
 });
