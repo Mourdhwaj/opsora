@@ -90,7 +90,10 @@ export default function StaffComplaints() {
               <Text style={styles.title}>{c.title}</Text>
               <Text style={styles.desc} numberOfLines={2}>{c.description}</Text>
               <View style={styles.metaRow}>
-                <Text style={styles.meta}>{getCategoryIcon(c.category)} {c.category}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  {getCategoryIcon(c.category)}
+                  <Text style={styles.meta}>{c.category}</Text>
+                </View>
                 <Text style={styles.meta}>{timeAgo(c.createdAt)}</Text>
               </View>
               <View style={styles.actions}>

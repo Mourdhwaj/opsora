@@ -1,4 +1,6 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, type ViewStyle } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, type ViewStyle } from 'react-native';
+import { Search, X } from 'lucide-react-native';
+import { theme } from '../lib/theme';
 
 interface SearchBarProps {
   value: string;
@@ -10,18 +12,18 @@ interface SearchBarProps {
 export function SearchBar({ value, onChangeText, placeholder = 'Search...', style }: SearchBarProps) {
   return (
     <View style={[styles.container, style]}>
-      <Text style={styles.icon}>🔍</Text>
+      <Search size={18} color={theme.colors.textMuted} style={styles.icon} />
       <TextInput
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor={theme.colors.textMuted}
         returnKeyType="search"
       />
       {value.length > 0 && (
         <TouchableOpacity style={styles.clearBtn} onPress={() => onChangeText('')} activeOpacity={0.5}>
-          <Text style={styles.clear}>✕</Text>
+          <X size={16} color={theme.colors.textMuted} />
         </TouchableOpacity>
       )}
     </View>
@@ -32,15 +34,14 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    marginHorizontal: 16,
-    marginVertical: 8,
+    backgroundColor: theme.colors.borderLight,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
+    marginHorizontal: theme.spacing.lg,
+    marginVertical: theme.spacing.sm,
     height: 44,
   },
-  icon: { fontSize: 16, marginRight: 8 },
-  input: { flex: 1, fontSize: 16, color: '#111827', padding: 0 },
+  icon: { marginRight: theme.spacing.sm },
+  input: { flex: 1, fontSize: 15, fontFamily: theme.font.regular, color: theme.colors.text, padding: 0 },
   clearBtn: { padding: 4 },
-  clear: { fontSize: 16, color: '#9ca3af' },
 });

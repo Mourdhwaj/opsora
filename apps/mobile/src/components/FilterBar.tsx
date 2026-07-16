@@ -1,4 +1,5 @@
 import { ScrollView, TouchableOpacity, Text, StyleSheet, type ViewStyle } from 'react-native';
+import { theme } from '../lib/theme';
 
 interface FilterOption {
   label: string;
@@ -33,16 +34,16 @@ export function FilterBar({ options, selected, onSelect, style }: FilterBarProps
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
+  container: { paddingHorizontal: theme.spacing.lg, paddingVertical: theme.spacing.sm, gap: 8 },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: theme.colors.borderLight,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.colors.border,
   },
-  chipActive: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
-  chipText: { fontSize: 13, fontWeight: '500', color: '#6b7280' },
+  chipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  chipText: { fontSize: 13, fontFamily: theme.font.medium, color: theme.colors.textSecondary },
   chipTextActive: { color: '#fff' },
 });

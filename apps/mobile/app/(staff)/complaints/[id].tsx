@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, RefreshControl, TextInput } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
@@ -87,7 +87,12 @@ export default function StaffComplaintDetail() {
 
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>Details</Text>
-          <DetailRow label="Category" value={`${getCategoryIcon(complaint?.category)} ${complaint?.category}`} />
+          <DetailRow label="Category" value={
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              {getCategoryIcon(complaint?.category)}
+              <Text style={styles.detailValue}>{complaint?.category}</Text>
+            </View>
+          } />
           <DetailRow label="Priority" value={complaint?.priority} />
           <DetailRow label="Created" value={complaint?.createdAt ? timeAgo(complaint.createdAt) : ''} />
           {complaint?.slaDeadline && (
@@ -158,11 +163,11 @@ export default function StaffComplaintDetail() {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value?: string }) {
+function DetailRow({ label, value }: { label: string; value?: ReactNode }) {
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value || 'N/A'}</Text>
+      {value || <Text style={styles.detailValue}>N/A</Text>}
     </View>
   );
 }

@@ -1,29 +1,32 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ArrowLeft, type LucideIcon } from 'lucide-react-native';
+import { theme } from '../lib/theme';
 
 interface HeaderProps {
   title: string;
   showBack?: boolean;
-  rightAction?: { icon: string; onPress: () => void };
+  rightAction?: { icon: LucideIcon; onPress: () => void };
 }
 
 export function Header({ title, showBack, rightAction }: HeaderProps) {
   const router = useRouter();
+  const RightIcon = rightAction?.icon;
 
   return (
     <View style={styles.header}>
       <View style={styles.left}>
         {showBack && (
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backText}>←</Text>
+            <ArrowLeft size={22} color={theme.colors.text} />
           </TouchableOpacity>
         )}
       </View>
       <Text style={styles.title}>{title}</Text>
       <View style={styles.right}>
-        {rightAction && (
+        {rightAction && RightIcon && (
           <TouchableOpacity onPress={rightAction.onPress}>
-            <Text style={styles.actionText}>{rightAction.icon}</Text>
+            <RightIcon size={20} color={theme.colors.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -32,11 +35,9 @@ export function Header({ title, showBack, rightAction }: HeaderProps) {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: theme.spacing.lg, paddingVertical: 12, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
   left: { width: 40 },
   backButton: { padding: 4 },
-  backText: { fontSize: 24, color: '#374151' },
-  title: { fontSize: 18, fontWeight: '700', color: '#111827', flex: 1, textAlign: 'center' },
+  title: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text, flex: 1, textAlign: 'center' },
   right: { width: 40, alignItems: 'flex-end' },
-  actionText: { fontSize: 20, color: '#3b82f6' },
 });

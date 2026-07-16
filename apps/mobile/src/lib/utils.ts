@@ -1,3 +1,7 @@
+import type { ReactNode } from 'react';
+import { Wrench, Droplets, Zap, Broom, Shield, UtensilsCrossed, Volume2, Car, Globe, HelpCircle } from 'lucide-react-native';
+import { theme } from './theme';
+
 export function formatCurrency(amount: number): string {
   return '₹' + amount.toLocaleString('en-IN');
 }
@@ -60,19 +64,21 @@ export function getPriorityColor(priority?: string): string {
   return colors[priority.toLowerCase()] || '#6b7280';
 }
 
-export function getCategoryIcon(category?: string): string {
-  if (!category) return '📋';
-  const icons: Record<string, string> = {
-    maintenance: '🔧',
-    plumbing: '🚿',
-    electrical: '⚡',
-    cleaning: '🧹',
-    security: '🔒',
-    food: '🍽️',
-    noise: '🔊',
-    parking: '🅿️',
-    internet: '🌐',
-    other: '📋',
+export function getCategoryIcon(category?: string): ReactNode {
+  if (!category) return <HelpCircle size={14} color={theme.colors.textMuted} />;
+  
+  const icons: Record<string, ReactNode> = {
+    maintenance: <Wrench size={14} color={theme.colors.primary} />,
+    plumbing: <Droplets size={14} color={theme.colors.info} />,
+    electrical: <Zap size={14} color={theme.colors.warning} />,
+    cleaning: <Broom size={14} color={theme.colors.success} />,
+    security: <Shield size={14} color={theme.colors.danger} />,
+    food: <UtensilsCrossed size={14} color={theme.colors.primary} />,
+    noise: <Volume2 size={14} color={theme.colors.warning} />,
+    parking: <Car size={14} color={theme.colors.textSecondary} />,
+    internet: <Globe size={14} color={theme.colors.info} />,
+    other: <HelpCircle size={14} color={theme.colors.textMuted} />,
   };
-  return icons[category.toLowerCase()] || '📋';
+  
+  return icons[category.toLowerCase()] || <HelpCircle size={14} color={theme.colors.textMuted} />;
 }

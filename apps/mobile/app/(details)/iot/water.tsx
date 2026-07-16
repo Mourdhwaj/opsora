@@ -2,8 +2,10 @@ import { View, Text, ScrollView, StyleSheet, RefreshControl } from 'react-native
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
+import { MapPin, AlertTriangle } from 'lucide-react-native';
 import { Card, LoadingSkeleton, EmptyState } from '../../../src/components';
 import { api } from '../../../src/services/api';
+import { theme } from '../../../src/lib/theme';
 
 export default function WaterIoTScreen() {
   const router = useRouter();
@@ -23,7 +25,7 @@ export default function WaterIoTScreen() {
       ) : (
         tanks.map((tank: any) => {
           const level = Math.round(tank.latestReading?.levelPercentage || tank.currentLevel || 0);
-          const color = level < 20 ? '#ef4444' : level < 50 ? '#eab308' : '#22c55e';
+          const color = level < 20 ? theme.colors.danger : level < 50 ? theme.colors.warning : theme.colors.success;
           return (
             <TouchableOpacity key={tank.id} onPress={() => router.push(`/(details)/iot/water/${tank.id}`)}>
               <Card style={styles.tankCard}>
@@ -33,12 +35,22 @@ export default function WaterIoTScreen() {
                 </View>
                 <View style={styles.tankMeta}>
                   <Text style={styles.tankType}>{tank.tankType} · {tank.capacityLiters}L capacity</Text>
-                  {tank.location && <Text style={styles.tankLocation}>📍 {tank.location}</Text>}
+                  {tank.location && (
+                    <View style={styles.locationRow}>
+                      <MapPin size={12} color={theme.colors.textMuted} />
+                      <Text style={styles.tankLocation}>{tank.location}</Text>
+                    </View>
+                  )}
                 </View>
                 <View style={styles.progressTrack}>
                   <View style={[styles.progressFill, { width: `${level}%`, backgroundColor: color }]} />
                 </View>
-                {level < 20 && <Text style={styles.alertText}>⚠️ Low water level!</Text>}
+                {level < 20 && (
+                  <View style={styles.alertRow}>
+                    <AlertTriangle size={14} color={theme.colors.danger} />
+                    <Text style={styles.alertText}>Low water level!</Text>
+                  </View>
+                )}
               </Card>
             </TouchableOpacity>
           );
@@ -49,16 +61,18 @@ export default function WaterIoTScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: theme.colors.background, padding: theme.spacing.lg },
+  pageTitle: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 16 },
   tankCard: { marginBottom: 12 },
   tankHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  tankName: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  tankLevel: { fontSize: 22, fontWeight: '800' },
-  tankMeta: { marginBottom: 10 },
-  tankType: { fontSize: 13, color: '#6b7280' },
-  tankLocation: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
-  progressTrack: { height: 10, backgroundColor: '#e5e7eb', borderRadius: 5, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 5 },
-  alertText: { fontSize: 13, color: '#ef4444', fontWeight: '600', marginTop: 8 },
+  tankName: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  tankLevel: { fontSize: 16, fontFamily: theme.font.extraBold },
+  tankMeta: { marginBottom: 8 },
+  tankType: { fontSize: 13, fontFamily: theme.font.regular, color: theme.colors.textSecondary },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  tankLocation: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.textMuted },
+  progressTrack: { height: 6, backgroundColor: theme.colors.borderLight, borderRadius: 3, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 3 },
+  alertRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
+  alertText: { fontSize: 12, fontFamily: theme.font.medium, color: theme.colors.danger },
 });

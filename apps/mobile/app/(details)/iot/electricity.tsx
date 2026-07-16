@@ -1,10 +1,10 @@
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { TouchableOpacity } from 'react-native';
 import { Card, LoadingSkeleton, EmptyState } from '../../../src/components';
 import { api } from '../../../src/services/api';
 import { formatCurrency } from '../../../src/lib/utils';
+import { theme } from '../../../src/lib/theme';
 
 export default function ElectricityIoTScreen() {
   const router = useRouter();
@@ -57,16 +57,16 @@ export default function ElectricityIoTScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: theme.colors.background, padding: theme.spacing.lg },
+  pageTitle: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 16 },
   meterCard: { marginBottom: 12 },
   meterHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  meterNumber: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  meterType: { fontSize: 13, color: '#6b7280', textTransform: 'capitalize' },
-  meterStats: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12, borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#f3f4f6' },
+  meterNumber: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text },
+  meterType: { fontSize: 13, fontFamily: theme.font.regular, color: theme.colors.textSecondary, textTransform: 'capitalize' },
+  meterStats: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12, borderTopWidth: 1, borderBottomWidth: 1, borderColor: theme.colors.borderLight },
   statItem: { alignItems: 'center' },
-  statValue: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  statLabel: { fontSize: 11, color: '#9ca3af', marginTop: 2 },
+  statValue: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text },
+  statLabel: { fontSize: 11, fontFamily: theme.font.regular, color: theme.colors.textMuted, marginTop: 2 },
   meterMeta: { marginTop: 8 },
-  metaText: { fontSize: 12, color: '#9ca3af' },
+  metaText: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.textMuted, marginBottom: 2 },
 });

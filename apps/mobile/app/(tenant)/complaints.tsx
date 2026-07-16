@@ -93,7 +93,10 @@ export default function TenantComplaints() {
           <View style={styles.chipRow}>
             {CATEGORIES.map(c => (
               <TouchableOpacity key={c} style={[styles.chip, category === c && styles.chipActive]} onPress={() => setCategory(c)}>
-                <Text style={[styles.chipText, category === c && styles.chipTextActive]}>{getCategoryIcon(c)} {c}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  {getCategoryIcon(c)}
+                  <Text style={[styles.chipText, category === c && styles.chipTextActive]}>{c}</Text>
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -130,7 +133,10 @@ export default function TenantComplaints() {
                 <Text style={styles.complaintTitle}>{complaint.title}</Text>
                 <Text style={styles.complaintDesc} numberOfLines={2}>{complaint.description}</Text>
                 <View style={styles.complaintMeta}>
-                  <Text style={styles.metaText}>{getCategoryIcon(complaint.category)} {complaint.category}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    {getCategoryIcon(complaint.category)}
+                    <Text style={styles.metaText}>{complaint.category}</Text>
+                  </View>
                   <Text style={styles.metaText}>{formatDate(complaint.createdAt)}</Text>
                 </View>
               </Card>

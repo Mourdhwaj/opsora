@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, PanResponder, KeyboardAvoidingView, Platform } from 'react-native';
+import { theme } from '../lib/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -67,13 +68,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'flex-end' },
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheet: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: theme.spacing.lg,
     paddingBottom: 32,
     overflow: 'hidden',
   },
-  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#d1d5db', alignSelf: 'center', marginTop: 10, marginBottom: 8 },
-  sheetTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 12, paddingHorizontal: 4 },
+  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: theme.colors.border, alignSelf: 'center', marginTop: 10, marginBottom: 8 },
+  sheetTitle: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 12, paddingHorizontal: 4 },
 });
