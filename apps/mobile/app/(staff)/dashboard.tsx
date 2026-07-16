@@ -37,15 +37,15 @@ export default function StaffDashboard() {
       <Text style={styles.pageTitle}>Staff Dashboard</Text>
 
       <View style={styles.metricsRow}>
-        <MetricBox label="My Tasks" value={data?.myTasks || 0} color="theme.colors.primary" />
-        <MetricBox label="Open Tickets" value={data?.openTickets || 0} color="#ef4444" />
-        <MetricBox label="In Progress" value={data?.inProgressTickets || 0} color="#eab308" />
-        <MetricBox label="Resolved Today" value={data?.resolvedToday || 0} color="#22c55e" />
+        <MetricBox label="My Tasks" value={data?.myTasks?.length || 0} color={theme.colors.primary} />
+        <MetricBox label="Open Tickets" value={data?.counts?.allOpen || 0} color="#ef4444" />
+        <MetricBox label="In Progress" value={data?.counts?.inProgress || 0} color="#eab308" />
+        <MetricBox label="Resolved Today" value={data?.counts?.resolvedToday || 0} color="#22c55e" />
       </View>
 
-      {data?.slaBreaches > 0 && (
+      {data?.counts?.slaBreached > 0 && (
         <Card style={{ marginBottom: 12, padding: 12, backgroundColor: '#fef2f2' }}>
-          <Text style={styles.alertText}>⚠️ {data.slaBreaches} ticket{data.slaBreaches > 1 ? 's' : ''} approaching SLA breach</Text>
+          <Text style={styles.alertText}>⚠️ {data.counts.slaBreached} ticket{data.counts.slaBreached > 1 ? 's' : ''} approaching SLA breach</Text>
         </Card>
       )}
 
