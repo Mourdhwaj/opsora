@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, ScrollView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { useLocalSearchParams } from 'expo-router';
 import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, FilterBar, BottomSheet } from '../../src/components';
 import { api } from '../../src/services/api';
 import type { AllocationRoom } from '../../src/types';
@@ -13,14 +14,16 @@ const STATUS_FILTERS = [
 ];
 
 export default function RoomsScreen() {
-  const [selectedProperty, setSelectedProperty] = useState<string>('');
+  const { propertyId: initialPropertyId } = useLocalSearchParams<{ propertyId?: string }>();
+  const [selectedProperty, setSelectedProperty] = useState<string>(initialPropertyId || '');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedRoom, setSelectedRoom] = useState<AllocationRoom | null>(null);
 
-  const { data: properties } = useQuery({
+  const { data: properties } = useQuery<{ id: string; name: string }[]>({
     queryKey: ['properties-list'],
     queryFn: () => api.get('/properties', { params: { limit: 50 } }).then((r: any) => r.data?.data || []),
+    staleTime: 60_000,
   });
 
   const { data: rooms, isLoading, error, refetch } = useQuery<AllocationRoom[]>({
@@ -30,30 +33,35 @@ export default function RoomsScreen() {
       if (selectedProperty) params.propertyId = selectedProperty;
       return api.get('/allocation/rooms', { params }).then((r: any) => r.data || []);
     },
-    enabled: !!selectedProperty || (!selectedProperty && properties?.length > 0),
+    enabled: !!selectedProperty,
   });
 
-  // Auto-select first property
-  if (properties?.length > 0 && !selectedProperty) {
-    setSelectedProperty(properties[0].id);
-  }
+  useEffect(() => {
+    if (!selectedProperty && initialPropertyId) {
+      setSelectedProperty(initialPropertyId);
+    }
+  }, [initialPropertyId]);
 
-  const filtered = (rooms || []).filter(r => {
+  const filtered = useMemo(() => (rooms || []).filter(r => {
     const matchSearch = r.roomNumber?.toLowerCase().includes(search.toLowerCase());
     let matchStatus = true;
     if (statusFilter === 'vacant') matchStatus = r.vacantBeds === r.totalBeds;
     else if (statusFilter === 'full') matchStatus = r.vacantBeds === 0;
     else if (statusFilter === 'partial') matchStatus = r.vacantBeds > 0 && r.vacantBeds < r.totalBeds;
     return matchSearch && matchStatus;
-  });
+  }), [rooms, search, statusFilter]);
 
-  // Group by floor
-  const floors = filtered.reduce((acc: Record<number, AllocationRoom[]>, room) => {
-    const fn = room.floorNumber || 0;
-    if (!acc[fn]) acc[fn] = [];
-    acc[fn].push(room);
+  const floors = useMemo(() => {
+    const acc: Record<number, AllocationRoom[]> = {};
+    for (const room of filtered) {
+      const fn = room.floorNumber || 0;
+      if (!acc[fn]) acc[fn] = [];
+      acc[fn].push(room);
+    }
     return acc;
-  }, {});
+  }, [filtered]);
+
+  const floorKeys = useMemo(() => Object.keys(floors).sort((a, b) => Number(a) - Number(b)), [floors]);
 
   if (isLoading) return <LoadingSkeleton />;
   if (error) return <ErrorState message="Failed to load rooms" onRetry={refetch} />;
@@ -78,10 +86,10 @@ export default function RoomsScreen() {
       <FilterBar options={STATUS_FILTERS} selected={statusFilter} onSelect={setStatusFilter} />
 
       {filtered.length === 0 ? (
-        <EmptyState title="No rooms found" message="Add rooms to your property first" icon="🏠" />
+        <EmptyState title="No rooms found" message="Add rooms to your property first" />
       ) : (
         <FlatList
-          data={Object.keys(floors).sort((a, b) => Number(a) - Number(b))}
+          data={floorKeys}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
           keyExtractor={(fn) => `floor-${fn}`}
           renderItem={({ item: fn }) => (

@@ -11,8 +11,8 @@ interface HeroStatCardProps {
 }
 
 export function HeroStatCard({ label, value, trend, trendLabel, subtitle }: HeroStatCardProps) {
-  const isPositive = trend && trend > 0;
-  const isNegative = trend && trend < 0;
+  const isPositive = trend !== undefined && trend > 0;
+  const isNegative = trend !== undefined && trend < 0;
   return (
     <View style={styles.card}>
       <Text style={styles.label}>{label}</Text>

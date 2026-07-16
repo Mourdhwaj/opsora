@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { BedDouble } from 'lucide-react-native';
 import { Card, LoadingSkeleton, Button, BottomSheet } from '../../../src/components';
 import { CreateRoomForm } from '../../../src/components/forms/CreateRoomForm';
 import { api } from '../../../src/services/api';
 import { formatCurrency } from '../../../src/lib/utils';
+import { theme } from '../../../src/lib/theme';
 
 export default function PropertyDetail() {
   const { id } = useLocalSearchParams();
@@ -44,6 +46,8 @@ export default function PropertyDetail() {
 
   const floors = property?.floors || [];
   const rooms = property?.rooms || [];
+  const totalBeds = rooms.reduce((sum: number, r: any) => sum + (r.totalBeds || 0), 0);
+  const occupiedBeds = rooms.reduce((sum: number, r: any) => sum + (r.occupiedBeds || 0), 0);
 
   return (
     <View style={styles.wrapper}>
@@ -77,9 +81,22 @@ export default function PropertyDetail() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Rooms</Text>
-          <TouchableOpacity onPress={() => setShowAddRoom(true)} style={styles.addBtn}>
-            <Text style={styles.addBtnText}>+ Add Room</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: '/(owner)/rooms', params: { propertyId: id as string } })}
+              style={styles.viewLayoutBtn}
+            >
+              <BedDouble size={14} color={theme.colors.textSecondary} /><Text style={styles.viewLayoutBtnText}> Layout{totalBeds > 0 ? ' ' : ''}</Text>
+              {totalBeds > 0 && (
+                <Text style={[styles.occupancyBadge, { color: getOccupancyColor(occupiedBeds, totalBeds), backgroundColor: getOccupancyBg(occupiedBeds, totalBeds) }]}>
+                  {occupiedBeds}/{totalBeds}
+                </Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowAddRoom(true)} style={styles.addBtn}>
+              <Text style={styles.addBtnText}>+ Add Room</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {rooms.length === 0 ? (
@@ -134,6 +151,22 @@ function InfoItem({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+function getOccupancyColor(occupied: number, total: number): string {
+  if (total === 0) return '#6b7280';
+  const pct = (occupied / total) * 100;
+  if (pct >= 90) return '#dc2626';
+  if (pct >= 70) return '#d97706';
+  return '#16a34a';
+}
+
+function getOccupancyBg(occupied: number, total: number): string {
+  if (total === 0) return '#f3f4f6';
+  const pct = (occupied / total) * 100;
+  if (pct >= 90) return '#fee2e2';
+  if (pct >= 70) return '#fef3c7';
+  return '#dcfce7';
+}
+
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#f9fafb' },
   container: { flex: 1, padding: 16 },
@@ -152,6 +185,9 @@ const styles = StyleSheet.create({
   wifiPass: { fontSize: 13, color: '#0369a1', marginTop: 2 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   sectionTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
+  viewLayoutBtn: { backgroundColor: '#f0f9ff', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#bae6fd' },
+  viewLayoutBtnText: { color: '#0369a1', fontSize: 13, fontWeight: '600' },
+  occupancyBadge: { fontSize: 12, fontWeight: '700', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6, overflow: 'hidden' },
   addBtn: { backgroundColor: '#3b82f6', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
   addBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
   emptyCard: { alignItems: 'center', padding: 24 },
