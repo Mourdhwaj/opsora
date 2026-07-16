@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Card, LoadingSkeleton, EmptyState, ErrorState, StatusBadge, SearchBar, FilterBar, BottomSheet } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, StatusBadge, SearchBar, FilterBar, BottomSheet, LoadMoreButton } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatDate, getPriorityColor, getCategoryIcon } from '../../src/lib/utils';
 import type { Complaint } from '../../src/types';
@@ -22,6 +22,8 @@ const STATUS_FILTERS = [
   { label: 'Resolved', value: 'resolved' },
 ];
 
+const PAGE_SIZE = 20;
+
 export default function TenantComplaints() {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
@@ -30,17 +32,21 @@ export default function TenantComplaints() {
   const [priority, setPriority] = useState('medium');
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data: complaints, isLoading, error, refetch } = useQuery<Complaint[]>({
-    queryKey: ['tenant-complaints', statusFilter],
+  const { data, isLoading, error, refetch, isFetching } = useQuery<{ data: Complaint[]; pagination?: { total: number } }>({
+    queryKey: ['tenant-complaints', statusFilter, page],
     queryFn: () => {
-      const params: any = {};
+      const params: any = { page, limit: PAGE_SIZE };
       if (statusFilter) params.status = statusFilter;
-      return api.get('/tenant/complaints', { params }).then(r => r.data?.data || r.data || []);
+      return api.get('/tenant/complaints', { params }).then(r => r.data);
     },
   });
+
+  const complaints = data?.data || [];
+  const total = data?.pagination?.total ?? complaints.length;
 
   const createMutation = useMutation({
     mutationFn: (body: any) => api.post('/complaints', body),
@@ -62,10 +68,12 @@ export default function TenantComplaints() {
     createMutation.mutate({ title: title.trim(), description: description.trim(), category, priority });
   }
 
-  const filtered = (complaints || []).filter(c =>
+  const filtered = complaints.filter(c =>
     c.title.toLowerCase().includes(search.toLowerCase()) ||
     c.ticketNumber?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const remaining = total - page * PAGE_SIZE;
 
   if (isLoading) return <LoadingSkeleton />;
   if (error) return <ErrorState message="Failed to load complaints" onRetry={refetch} />;
@@ -134,7 +142,7 @@ export default function TenantComplaints() {
       {filtered.length === 0 ? (
         <EmptyState title="No complaints" message="Submit your first complaint" />
       ) : (
-        <ScrollView contentContainerStyle={{ paddingBottom: 32 }} refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 80 }} refreshControl={<RefreshControl refreshing={isFetching} onRefresh={() => { setPage(1); refetch(); }} />}>
           {filtered.map((complaint) => (
             <TouchableOpacity key={complaint.id} onPress={() => router.push(`/(tenant)/complaints/${complaint.id}`)}>
               <Card style={styles.card}>
@@ -156,6 +164,7 @@ export default function TenantComplaints() {
           ))}
         </ScrollView>
       )}
+      <LoadMoreButton onPress={() => setPage(p => p + 1)} loading={isFetching && page > 1} remaining={remaining} />
     </View>
   );
 }

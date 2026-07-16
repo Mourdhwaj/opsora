@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, FilterBar, StatusBadge } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, FilterBar, StatusBadge, LoadMoreButton } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatDate, getPriorityColor, getCategoryIcon, timeAgo } from '../../src/lib/utils';
 import type { Complaint } from '../../src/types';
@@ -23,22 +23,28 @@ const PRIORITY_FILTERS = [
   { label: 'Low', value: 'low' },
 ];
 
+const PAGE_SIZE = 20;
+
 export default function StaffComplaints() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data: complaints, isLoading, error, refetch } = useQuery<Complaint[]>({
-    queryKey: ['staff-complaints', statusFilter, priorityFilter],
+  const { data, isLoading, error, refetch, isFetching } = useQuery<{ data: Complaint[]; pagination?: { total: number } }>({
+    queryKey: ['staff-complaints', statusFilter, priorityFilter, page],
     queryFn: () => {
-      const params: any = { limit: 100 };
+      const params: any = { page, limit: PAGE_SIZE };
       if (statusFilter) params.status = statusFilter;
       if (priorityFilter) params.priority = priorityFilter;
-      return api.get('/staff-portal/complaints', { params }).then(r => r.data?.data || r.data || []);
+      return api.get('/staff-portal/complaints', { params }).then(r => r.data);
     },
   });
+
+  const complaints = data?.data || [];
+  const total = data?.pagination?.total ?? complaints.length;
 
   const acceptMutation = useMutation({
     mutationFn: (id: string) => api.patch(`/complaints/${id}/status`, { status: 'in_progress' }),
@@ -56,10 +62,12 @@ export default function StaffComplaints() {
     },
   });
 
-  const filtered = (complaints || []).filter(c =>
+  const filtered = complaints.filter(c =>
     c.title.toLowerCase().includes(search.toLowerCase()) ||
     c.ticketNumber?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const remaining = total - page * PAGE_SIZE;
 
   if (isLoading) return <LoadingSkeleton />;
   if (error) return <ErrorState message="Failed to load complaints" onRetry={refetch} />;
@@ -77,7 +85,7 @@ export default function StaffComplaints() {
           data={filtered}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
           keyExtractor={(item) => item.id}
-          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+          refreshControl={<RefreshControl refreshing={isFetching} onRefresh={() => { setPage(1); refetch(); }} />}
           renderItem={({ item: c }) => (
             <TouchableOpacity onPress={() => router.push(`/(staff)/complaints/${c.id}`)} activeOpacity={0.7}>
             <Card style={styles.card}>
@@ -116,6 +124,7 @@ export default function StaffComplaints() {
           )}
         />
       )}
+      <LoadMoreButton onPress={() => setPage(p => p + 1)} loading={isFetching && page > 1} remaining={remaining} />
     </View>
   );
 }

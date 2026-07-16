@@ -1,19 +1,29 @@
+import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { Card, LoadingSkeleton, EmptyState, ErrorState, StatusBadge } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, StatusBadge, LoadMoreButton } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatCurrency, formatDate } from '../../src/lib/utils';
 import { theme } from '../../src/lib/theme';
 import type { RentPayment } from '../../src/types';
 
+const PAGE_SIZE = 20;
+
 export default function TenantPayments() {
-  const { data: payments, isLoading, error, refetch } = useQuery<RentPayment[]>({
-    queryKey: ['tenant-payments'],
-    queryFn: () => api.get('/tenant/payments').then(r => r.data?.data || r.data || []),
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, error, refetch, isFetching } = useQuery<{ data: RentPayment[]; pagination?: { total: number } }>({
+    queryKey: ['tenant-payments', page],
+    queryFn: () => api.get('/tenant/payments', { params: { page, limit: PAGE_SIZE } }).then(r => r.data),
   });
 
-  const totalPaid = (payments || []).filter(p => p.paymentStatus === 'paid').reduce((s, p) => s + p.paidAmount, 0);
-  const totalPending = (payments || []).filter(p => p.paymentStatus !== 'paid').reduce((s, p) => s + p.balanceAmount, 0);
+  const payments = data?.data || [];
+  const total = data?.pagination?.total ?? payments.length;
+
+  const totalPaid = payments.filter(p => p.paymentStatus === 'paid').reduce((s, p) => s + p.paidAmount, 0);
+  const totalPending = payments.filter(p => p.paymentStatus !== 'paid').reduce((s, p) => s + p.balanceAmount, 0);
+
+  const remaining = total - page * PAGE_SIZE;
 
   if (isLoading) return <LoadingSkeleton />;
   if (error) return <ErrorState message="Failed to load payments" onRetry={refetch} />;
@@ -33,12 +43,12 @@ export default function TenantPayments() {
 
       <ScrollView
         style={styles.container}
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        refreshControl={<RefreshControl refreshing={isFetching} onRefresh={() => { setPage(1); refetch(); }} />}
+        contentContainerStyle={{ paddingBottom: 80 }}
       >
         <Text style={styles.pageTitle}>Payment History</Text>
 
-        {(!payments || payments.length === 0) ? (
+        {payments.length === 0 ? (
           <EmptyState title="No payments yet" message="Payments will appear here" />
         ) : (
           payments.map((payment) => (
@@ -65,6 +75,7 @@ export default function TenantPayments() {
             </Card>
           ))
         )}
+        <LoadMoreButton onPress={() => setPage(p => p + 1)} loading={isFetching && page > 1} remaining={remaining} />
       </ScrollView>
     </View>
   );

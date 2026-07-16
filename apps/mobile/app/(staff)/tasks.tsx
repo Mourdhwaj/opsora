@@ -2,11 +2,12 @@ import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Alert, TextInput } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, BottomSheet } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, BottomSheet, LoadMoreButton } from '../../src/components';
 import { api } from '../../src/services/api';
 import { timeAgo } from '../../src/lib/utils';
 
 const STATUS_TABS = ['all', 'pending', 'in_progress', 'completed'];
+const PAGE_SIZE = 20;
 
 export default function StaffTasks() {
   const [activeTab, setActiveTab] = useState('all');
@@ -14,12 +15,16 @@ export default function StaffTasks() {
   const [showNotesSheet, setShowNotesSheet] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [completionNotes, setCompletionNotes] = useState('');
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
 
-  const { data: tasks, isLoading, error, refetch } = useQuery({
-    queryKey: ['staff-tasks'],
-    queryFn: () => api.get('/staff/tasks').then(r => r.data?.data || r.data || []),
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
+    queryKey: ['staff-tasks', page],
+    queryFn: () => api.get('/staff/tasks', { params: { page, limit: PAGE_SIZE } }).then(r => r.data),
   });
+
+  const tasks = data?.data || [];
+  const total = data?.pagination?.total ?? tasks.length;
 
   const completeMutation = useMutation({
     mutationFn: ({ id, notes }: { id: string; notes?: string }) =>
@@ -46,11 +51,13 @@ export default function StaffTasks() {
     .filter((t: any) => t.title?.toLowerCase().includes(search.toLowerCase()));
 
   const counts = {
-    all: tasks?.length || 0,
-    pending: tasks?.filter((t: any) => t.status === 'pending').length || 0,
-    in_progress: tasks?.filter((t: any) => t.status === 'in_progress').length || 0,
-    completed: tasks?.filter((t: any) => t.status === 'completed').length || 0,
+    all: total,
+    pending: tasks.filter((t: any) => t.status === 'pending').length || 0,
+    in_progress: tasks.filter((t: any) => t.status === 'in_progress').length || 0,
+    completed: tasks.filter((t: any) => t.status === 'completed').length || 0,
   };
+
+  const remaining = total - page * PAGE_SIZE;
 
   if (isLoading) return <LoadingSkeleton />;
   if (error) return <ErrorState message="Failed to load tasks" onRetry={refetch} />;
@@ -81,7 +88,7 @@ export default function StaffTasks() {
           data={filtered}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
           keyExtractor={(item: any) => item.id}
-          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+          refreshControl={<RefreshControl refreshing={isFetching} onRefresh={() => { setPage(1); refetch(); }} />}
           renderItem={({ item: task }: any) => {
             const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
             return (
@@ -147,6 +154,7 @@ export default function StaffTasks() {
           }}
         />
       )}
+      <LoadMoreButton onPress={() => setPage(p => p + 1)} loading={isFetching && page > 1} remaining={remaining} />
 
       <BottomSheet visible={showNotesSheet} onClose={() => setShowNotesSheet(false)} title="Task Completion">
         <Text style={styles.sheetLabel}>Add completion notes (optional):</Text>
