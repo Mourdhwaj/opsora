@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
-import { Card, LoadingSkeleton, StatusBadge, BottomSheet } from '../../../src/components';
-import { CommentSection } from '../../../src/components/CommentSection';
-import { api } from '../../../src/services/api';
-import { formatDate, getPriorityColor, timeAgo } from '../../../src/lib/utils';
-import { theme } from '../../../src/lib/theme';
+import { Card, LoadingSkeleton, StatusBadge, BottomSheet } from '../../src/components';
+import { CommentSection } from '../../src/components/CommentSection';
+import { api } from '../../src/services/api';
+import { formatDate, getPriorityColor, timeAgo } from '../../src/lib/utils';
+import { theme } from '../../src/lib/theme';
 import {
   Tag, AlertTriangle, Clock, CheckCircle, User, UserCog, ChevronRight,
   Wrench, Droplets, Zap, Sparkles, Shield, UtensilsCrossed, Volume2,

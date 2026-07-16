@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Wrench, Droplets, Zap, Broom, Shield, UtensilsCrossed, Volume2, Car, Globe, HelpCircle } from 'lucide-react-native';
+import { Wrench, Droplets, Zap, Paintbrush, Shield, UtensilsCrossed, Volume2, Car, Globe, HelpCircle } from 'lucide-react-native';
 import { theme } from './theme';
 
 export function formatCurrency(amount: number): string {
@@ -84,7 +84,7 @@ export function getCategoryIcon(category?: string): ReactNode {
     maintenance: <Wrench size={14} color={theme.colors.primary} />,
     plumbing: <Droplets size={14} color={theme.colors.info} />,
     electrical: <Zap size={14} color={theme.colors.warning} />,
-    cleaning: <Broom size={14} color={theme.colors.success} />,
+    cleaning: <Paintbrush size={14} color={theme.colors.success} />,
     security: <Shield size={14} color={theme.colors.danger} />,
     food: <UtensilsCrossed size={14} color={theme.colors.primary} />,
     noise: <Volume2 size={14} color={theme.colors.warning} />,

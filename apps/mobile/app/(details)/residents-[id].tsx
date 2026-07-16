@@ -1,10 +1,10 @@
-import { theme } from "../../../src/lib/theme";
+import { theme } from "../../src/lib/theme";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Card, LoadingSkeleton, StatusBadge, Button } from '../../../src/components';
-import { api } from '../../../src/services/api';
-import { formatDate, formatCurrency } from '../../../src/lib/utils';
+import { Card, LoadingSkeleton, StatusBadge, Button } from '../../src/components';
+import { api } from '../../src/services/api';
+import { formatDate, formatCurrency } from '../../src/lib/utils';
 
 export default function ResidentDetail() {
   const { id } = useLocalSearchParams();

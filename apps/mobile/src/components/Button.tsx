@@ -1,4 +1,4 @@
-import { theme } from "../../lib/theme";
+import { theme } from "../lib/theme";
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, type ViewStyle } from 'react-native';
 
 interface ButtonProps {

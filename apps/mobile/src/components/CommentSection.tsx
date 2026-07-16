@@ -1,4 +1,4 @@
-import { theme } from "../../lib/theme";
+import { theme } from "../lib/theme";
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

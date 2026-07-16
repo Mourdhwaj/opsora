@@ -1,12 +1,12 @@
-import { theme } from "../../../src/lib/theme";
+import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
-import { Card, LoadingSkeleton, StatusBadge, BottomSheet } from '../../../src/components';
-import { RecordPaymentForm } from '../../../src/components/forms/RecordPaymentForm';
-import { api } from '../../../src/services/api';
-import { formatCurrency, formatDate } from '../../../src/lib/utils';
+import { Card, LoadingSkeleton, StatusBadge, BottomSheet } from '../../src/components';
+import { RecordPaymentForm } from '../../src/components/forms/RecordPaymentForm';
+import { api } from '../../src/services/api';
+import { formatCurrency, formatDate } from '../../src/lib/utils';
 
 export default function PaymentDetail() {
   const { id } = useLocalSearchParams();
