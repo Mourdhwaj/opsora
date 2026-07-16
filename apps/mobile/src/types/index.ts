@@ -414,8 +414,11 @@ export interface GroupCheckinResident {
   bloodGroup?: string;
   aadhaarNumber?: string;
   panNumber?: string;
+  passportNumber?: string;
   occupation?: string;
   companyName?: string;
+  collegeName?: string;
+  workAddress?: string;
   emergencyName?: string;
   emergencyPhone?: string;
   emergencyRelation?: string;
@@ -427,4 +430,6 @@ export interface GroupCheckinResident {
   depositPaid: number;
   foodPreference: string;
   mealPlan: string;
+  specialDietary?: string;
+  moveInDate?: string;
 }
