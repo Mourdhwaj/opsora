@@ -109,7 +109,7 @@ export default function PropertyDetail() {
               <View style={styles.roomHeader}>
                 <Text style={styles.roomNumber}>Room {room.roomNumber}</Text>
                 <Text style={[styles.roomStatus, {
-                  color: room.status === 'available' ? '#22c55e' : room.status === 'occupied' ? theme.colors.primary : '#6b7280'
+                  color: room.status === 'available' ? theme.colors.success : room.status === 'occupied' ? theme.colors.primary : theme.colors.textSecondary
                 }]}>{room.status}</Text>
               </View>
               <View style={styles.roomInfo}>
@@ -152,52 +152,52 @@ function InfoItem({ label, value }: { label: string; value: string | number }) {
 }
 
 function getOccupancyColor(occupied: number, total: number): string {
-  if (total === 0) return '#6b7280';
+  if (total === 0) return theme.colors.textSecondary;
   const pct = (occupied / total) * 100;
-  if (pct >= 90) return '#dc2626';
-  if (pct >= 70) return '#d97706';
-  return '#16a34a';
+  if (pct >= 90) return theme.colors.danger;
+  if (pct >= 70) return theme.colors.warning;
+  return theme.colors.success;
 }
 
 function getOccupancyBg(occupied: number, total: number): string {
-  if (total === 0) return '#f3f4f6';
+  if (total === 0) return theme.colors.borderLight;
   const pct = (occupied / total) * 100;
-  if (pct >= 90) return '#fee2e2';
-  if (pct >= 70) return '#fef3c7';
-  return '#dcfce7';
+  if (pct >= 90) return theme.colors.dangerSurface;
+  if (pct >= 70) return theme.colors.warningSurface;
+  return theme.colors.successSurface;
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
   container: { flex: 1, padding: 16 },
   detailCard: { marginBottom: 16 },
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  name: { fontSize: 22, fontWeight: '800', color: '#111827' },
-  address: { fontSize: 14, color: '#6b7280', marginTop: 4 },
+  name: { fontSize: 22, fontFamily: theme.font.extraBold, color: theme.colors.text },
+  address: { fontSize: 14, color: theme.colors.textSecondary, marginTop: 4 },
   deleteBtn: { padding: 8 },
   deleteIcon: { fontSize: 20 },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.colors.borderLight },
   infoItem: { alignItems: 'center' },
-  infoLabel: { fontSize: 11, color: '#9ca3af' },
-  infoValue: { fontSize: 16, fontWeight: '600', color: '#111827', marginTop: 2, textTransform: 'capitalize' },
-  wifiSection: { marginTop: 12, padding: 10, backgroundColor: '#f0f9ff', borderRadius: 8 },
-  wifiLabel: { fontSize: 13, color: '#0369a1', fontWeight: '500' },
-  wifiPass: { fontSize: 13, color: '#0369a1', marginTop: 2 },
+  infoLabel: { fontSize: 11, color: theme.colors.textMuted },
+  infoValue: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text, marginTop: 2, textTransform: 'capitalize' },
+  wifiSection: { marginTop: 12, padding: 10, backgroundColor: theme.colors.infoSurface, borderRadius: 8 },
+  wifiLabel: { fontSize: 13, color: theme.colors.info, fontFamily: theme.font.medium },
+  wifiPass: { fontSize: 13, color: theme.colors.info, marginTop: 2 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  viewLayoutBtn: { backgroundColor: '#f0f9ff', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#bae6fd' },
-  viewLayoutBtnText: { color: '#0369a1', fontSize: 13, fontWeight: '600' },
-  occupancyBadge: { fontSize: 12, fontWeight: '700', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6, overflow: 'hidden' },
+  sectionTitle: { fontSize: 20, fontFamily: theme.font.bold, color: theme.colors.text },
+  viewLayoutBtn: { backgroundColor: theme.colors.infoSurface, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#bae6fd' },
+  viewLayoutBtnText: { color: theme.colors.info, fontSize: 13, fontFamily: theme.font.semiBold },
+  occupancyBadge: { fontSize: 12, fontFamily: theme.font.bold, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6, overflow: 'hidden' },
   addBtn: { backgroundColor: theme.colors.primary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  addBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  addBtnText: { color: theme.colors.surface, fontSize: 13, fontFamily: theme.font.semiBold },
   emptyCard: { alignItems: 'center', padding: 24 },
-  emptyText: { fontSize: 14, color: '#9ca3af' },
+  emptyText: { fontSize: 14, color: theme.colors.textMuted },
   roomCard: { marginBottom: 8 },
   roomHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  roomNumber: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  roomStatus: { fontSize: 13, fontWeight: '500', textTransform: 'capitalize' },
-  roomInfo: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 8, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
+  roomNumber: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  roomStatus: { fontSize: 13, fontFamily: theme.font.medium, textTransform: 'capitalize' },
+  roomInfo: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 8, borderTopWidth: 1, borderTopColor: theme.colors.borderLight },
   floorCard: { marginBottom: 8 },
-  floorName: { fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#111827' },
+  floorName: { fontSize: 16, fontFamily: theme.font.semiBold, marginBottom: 8, color: theme.colors.text },
   floorStats: { flexDirection: 'row', justifyContent: 'space-around' },
 });

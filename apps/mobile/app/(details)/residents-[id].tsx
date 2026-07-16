@@ -131,33 +131,33 @@ function DetailRow({ label, value }: { label: string; value?: string }) {
 }
 
 function getStatusBg(status: string): string {
-  const colors: Record<string, string> = { open: '#fff7ed', in_progress: '#eff6ff', resolved: '#f0fdf4', closed: '#f9fafb' };
-  return colors[status] || '#f9fafb';
+  const colors: Record<string, string> = { open: theme.colors.warningSurface, in_progress: theme.colors.infoSurface, resolved: theme.colors.successSurface, closed: theme.colors.background };
+  return colors[status] || theme.colors.background;
 }
 
 function getStatusColor(status: string): string {
-  const colors: Record<string, string> = { open: '#ea580c', in_progress: theme.colors.primary, resolved: '#16a34a', closed: '#6b7280' };
-  return colors[status] || '#6b7280';
+  const colors: Record<string, string> = { open: theme.colors.warning, in_progress: theme.colors.primary, resolved: theme.colors.success, closed: theme.colors.textSecondary };
+  return colors[status] || theme.colors.textSecondary;
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
+  container: { flex: 1, backgroundColor: theme.colors.background, padding: 16 },
   profileCard: { alignItems: 'center', padding: 24, marginBottom: 16 },
   avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  avatarText: { color: '#fff', fontSize: 36, fontWeight: '700' },
-  name: { fontSize: 22, fontWeight: '800', color: '#111827' },
-  email: { fontSize: 14, color: '#6b7280', marginTop: 4 },
-  checkoutBtn: { marginTop: 12, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#ef4444' },
-  checkoutText: { color: '#ef4444', fontSize: 13, fontWeight: '600' },
+  avatarText: { color: theme.colors.surface, fontSize: 36, fontFamily: theme.font.bold },
+  name: { fontSize: 22, fontFamily: theme.font.extraBold, color: theme.colors.text },
+  email: { fontSize: 14, color: theme.colors.textSecondary, marginTop: 4 },
+  checkoutBtn: { marginTop: 12, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.danger },
+  checkoutText: { color: theme.colors.danger, fontSize: 13, fontFamily: theme.font.semiBold },
   section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  detailLabel: { fontSize: 14, color: '#6b7280' },
-  detailValue: { fontSize: 14, fontWeight: '600', color: '#111827', maxWidth: '60%', textAlign: 'right' },
-  historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  historyTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  historySubtitle: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
-  historyAmount: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  sectionTitle: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 12 },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  detailLabel: { fontSize: 14, color: theme.colors.textSecondary },
+  detailValue: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text, maxWidth: '60%', textAlign: 'right' },
+  historyRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  historyTitle: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  historySubtitle: { fontSize: 12, color: theme.colors.textMuted, marginTop: 2 },
+  historyAmount: { fontSize: 14, fontFamily: theme.font.bold, color: theme.colors.text },
   miniBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  miniBadgeText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
+  miniBadgeText: { fontSize: 11, fontFamily: theme.font.semiBold, textTransform: 'capitalize' },
 });

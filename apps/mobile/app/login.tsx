@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'r
 import { useRouter } from 'expo-router';
 import { Button, Input } from '../src/components';
 import { useAuth } from '../src/services/auth';
+import { theme } from '../src/lib/theme';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -46,10 +47,10 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
+  container: { flex: 1, backgroundColor: theme.colors.background },
   content: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 36, fontWeight: '800', color: '#111827', textAlign: 'center' },
-  subtitle: { fontSize: 16, color: '#6b7280', textAlign: 'center', marginTop: 4, marginBottom: 48 },
+  title: { fontSize: 36, fontFamily: theme.font.extraBold, color: theme.colors.text, textAlign: 'center' },
+  subtitle: { fontSize: 16, color: theme.colors.textSecondary, textAlign: 'center', marginTop: 4, marginBottom: 48 },
   form: { marginTop: 16 },
   button: { marginTop: 8 },
 });

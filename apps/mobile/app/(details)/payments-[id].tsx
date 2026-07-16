@@ -39,9 +39,9 @@ export default function PaymentDetail() {
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>Amount Breakdown</Text>
           <AmountRow label="Total Amount" value={formatCurrency(payment?.totalAmount)} />
-          <AmountRow label="Paid Amount" value={formatCurrency(payment?.paidAmount)} color="#22c55e" />
-          <AmountRow label="Balance" value={formatCurrency(payment?.balanceAmount)} color={hasBalance ? '#ef4444' : '#22c55e'} />
-          {payment?.lateFee > 0 && <AmountRow label="Late Fee" value={formatCurrency(payment.lateFee)} color="#ef4444" />}
+          <AmountRow label="Paid Amount" value={formatCurrency(payment?.paidAmount)} color={theme.colors.success} />
+          <AmountRow label="Balance" value={formatCurrency(payment?.balanceAmount)} color={hasBalance ? theme.colors.danger : theme.colors.success} />
+          {payment?.lateFee > 0 && <AmountRow label="Late Fee" value={formatCurrency(payment.lateFee)} color={theme.colors.danger} />}
           {payment?.electricityCharge > 0 && <AmountRow label="Electricity" value={formatCurrency(payment.electricityCharge)} />}
           {payment?.waterCharge > 0 && <AmountRow label="Water" value={formatCurrency(payment.waterCharge)} />}
           {payment?.foodCharge > 0 && <AmountRow label="Food" value={formatCurrency(payment.foodCharge)} />}
@@ -108,29 +108,29 @@ function DetailRow({ label, value }: { label: string; value?: string }) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
   container: { flex: 1, padding: 16, paddingBottom: 80 },
   headerCard: { marginBottom: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  month: { fontSize: 22, fontWeight: '800', color: '#111827' },
-  tenant: { fontSize: 15, color: '#6b7280' },
-  room: { fontSize: 13, color: '#9ca3af', marginTop: 2 },
+  month: { fontSize: 22, fontFamily: theme.font.extraBold, color: theme.colors.text },
+  tenant: { fontSize: 15, color: theme.colors.textSecondary },
+  room: { fontSize: 13, color: theme.colors.textMuted, marginTop: 2 },
   section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  amountRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  amountLabel: { fontSize: 14, color: '#6b7280' },
-  amountValue: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  detailLabel: { fontSize: 14, color: '#6b7280' },
-  detailValue: { fontSize: 14, fontWeight: '600', color: '#111827', textTransform: 'capitalize' },
-  proofLink: { fontSize: 14, color: theme.colors.primary, fontWeight: '500' },
+  sectionTitle: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 12 },
+  amountRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  amountLabel: { fontSize: 14, color: theme.colors.textSecondary },
+  amountValue: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  detailLabel: { fontSize: 14, color: theme.colors.textSecondary },
+  detailValue: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text, textTransform: 'capitalize' },
+  proofLink: { fontSize: 14, color: theme.colors.primary, fontFamily: theme.font.medium },
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: '#fff', padding: 16,
-    borderTopWidth: 1, borderTopColor: '#e5e7eb',
+    backgroundColor: theme.colors.surface, padding: 16,
+    borderTopWidth: 1, borderTopColor: theme.colors.border,
     shadowColor: '#000', shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 4,
   },
-  balanceText: { fontSize: 14, fontWeight: '600', color: '#ef4444' },
-  recordBtn: { fontSize: 15, fontWeight: '700', color: theme.colors.primary },
+  balanceText: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.danger },
+  recordBtn: { fontSize: 15, fontFamily: theme.font.bold, color: theme.colors.primary },
 });
