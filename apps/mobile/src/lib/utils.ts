@@ -59,9 +59,22 @@ export function getPriorityColor(priority?: string): string {
     urgent: '#ef4444',
     high: '#f97316',
     medium: '#eab308',
-    low: 'theme.colors.primary',
+    low: theme.colors.primary,
   };
   return colors[priority.toLowerCase()] || '#6b7280';
+}
+
+export function getTimeParams(timeFilter: string): { startDate?: string; endDate?: string } {
+  const now = new Date();
+  if (timeFilter === 'this_month') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { startDate: start.toISOString(), endDate: now.toISOString() };
+  }
+  if (timeFilter === 'last_3_months') {
+    const start = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+    return { startDate: start.toISOString(), endDate: now.toISOString() };
+  }
+  return {};
 }
 
 export function getCategoryIcon(category?: string): ReactNode {

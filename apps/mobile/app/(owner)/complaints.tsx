@@ -6,7 +6,7 @@ import { Plus, AlertCircle } from 'lucide-react-native';
 import { Card, LoadingSkeleton, EmptyState, SearchBar, FilterChips, TimeFilter, LoadMoreButton, PageHeader, StatusBadge, BottomSheet } from '../../src/components';
 import { CreateComplaintForm } from '../../src/components/forms/CreateComplaintForm';
 import { api } from '../../src/services/api';
-import { formatDate, getPriorityColor } from '../../src/lib/utils';
+import { formatDate, getPriorityColor, getTimeParams } from '../../src/lib/utils';
 import { theme } from '../../src/lib/theme';
 import type { Complaint } from '../../src/types';
 
@@ -33,19 +33,6 @@ const TIME_FILTERS = [
 ];
 
 const PAGE_SIZE = 20;
-
-function getTimeParams(timeFilter: string): { startDate?: string; endDate?: string } {
-  const now = new Date();
-  if (timeFilter === 'this_month') {
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    return { startDate: start.toISOString(), endDate: now.toISOString() };
-  }
-  if (timeFilter === 'last_3_months') {
-    const start = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-    return { startDate: start.toISOString(), endDate: now.toISOString() };
-  }
-  return {};
-}
 
 export default function ComplaintsList() {
   const [search, setSearch] = useState('');
