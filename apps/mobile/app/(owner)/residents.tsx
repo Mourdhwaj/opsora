@@ -27,7 +27,7 @@ const PAGE_SIZE = 20;
 
 export default function ResidentsList() {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('active');
   const [timeFilter, setTimeFilter] = useState('all_time');
   const [page, setPage] = useState(1);
   const [showCheckin, setShowCheckin] = useState(false);
@@ -84,7 +84,7 @@ export default function ResidentsList() {
         <TimeFilter options={TIME_FILTERS} selected={timeFilter} onSelect={v => { setTimeFilter(v); setPage(1); }} />
 
         <Text style={styles.countText}>
-          Showing {filtered.length} of {total} resident{total !== 1 ? 's' : ''}
+          Showing {filtered.length} of {total} active resident{total !== 1 ? 's' : ''}
         </Text>
 
         {filtered.length === 0 ? (
