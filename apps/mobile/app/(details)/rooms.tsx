@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { Card, LoadingSkeleton, EmptyState, ErrorState, SearchBar, FilterBar, BottomSheet } from '../../src/components';
 import { api } from '../../src/services/api';
+import { theme } from '../../src/lib/theme';
 import type { AllocationRoom } from '../../src/types';
 
 const STATUS_FILTERS = [
@@ -182,33 +183,33 @@ export default function RoomsScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
-  propertyRow: { paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
-  propertyPill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb' },
-  propertyPillActive: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
-  propertyPillText: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
+  propertyRow: { paddingHorizontal: theme.spacing.lg, paddingVertical: theme.spacing.sm, gap: 8 },
+  propertyPill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: theme.colors.borderLight, borderWidth: 1, borderColor: theme.colors.border },
+  propertyPillActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  propertyPillText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary },
   propertyPillTextActive: { color: '#fff' },
   floorSection: { marginBottom: 20 },
-  floorHeader: { fontSize: 15, fontWeight: '700', color: '#374151', marginBottom: 10, paddingHorizontal: 4 },
+  floorHeader: { fontSize: 15, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 10, paddingHorizontal: 4 },
   roomGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  roomCard: { backgroundColor: '#fff', borderRadius: 14, padding: 12, width: '47%', shadowColor: '#1a1a2e', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  roomCard: { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.xl, padding: 12, width: '47%', ...theme.shadow.sm },
   roomCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  roomNumber: { fontSize: 16, fontWeight: '700', color: '#111827' },
+  roomNumber: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text },
   occupancyBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  occupancyText: { fontSize: 12, fontWeight: '600' },
-  roomType: { fontSize: 12, color: '#6b7280', marginBottom: 2 },
-  roomRent: { fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  occupancyText: { fontSize: 12, fontFamily: theme.font.semiBold },
+  roomType: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.textSecondary, marginBottom: 2 },
+  roomRent: { fontSize: 12, fontFamily: theme.font.semiBold, color: theme.colors.text, marginBottom: 8 },
   bedDots: { flexDirection: 'row', gap: 4, flexWrap: 'wrap' },
   bedDot: { width: 10, height: 10, borderRadius: 5 },
   sheetContent: { paddingTop: 8 },
-  sheetInfo: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  sheetLabel: { fontSize: 14, color: '#6b7280' },
-  sheetValue: { fontSize: 14, fontWeight: '600', color: '#111827', textTransform: 'capitalize' },
-  sheetSectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginTop: 16, marginBottom: 10 },
-  bedRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', gap: 10 },
+  sheetInfo: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  sheetLabel: { fontSize: 14, fontFamily: theme.font.regular, color: theme.colors.textSecondary },
+  sheetValue: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text, textTransform: 'capitalize' },
+  sheetSectionTitle: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginTop: 16, marginBottom: 10 },
+  bedRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight, gap: 10 },
   bedDotLarge: { width: 12, height: 12, borderRadius: 6 },
-  bedNumber: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  bedOccupant: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  bedVacant: { fontSize: 12, color: '#22c55e', marginTop: 2 },
-  bedStatus: { fontSize: 12, fontWeight: '600', textTransform: 'capitalize' },
+  bedNumber: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  bedOccupant: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.textSecondary, marginTop: 2 },
+  bedVacant: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.success, marginTop: 2 },
+  bedStatus: { fontSize: 12, fontFamily: theme.font.semiBold, textTransform: 'capitalize' },
 });

@@ -2,8 +2,10 @@ import { useState, useCallback } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, ActivityIndicator } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { User, Users, Heart, ChevronLeft, ChevronRight, Phone, Home, Briefcase, Leaf, Drumstick, Sprout } from 'lucide-react-native';
 import { Card, ErrorState } from '../../src/components';
 import { api } from '../../src/services/api';
+import { theme } from '../../src/lib/theme';
 import type { AllocationRoom, RoomCombination, RoomAssignment, GroupCheckinResident } from '../../src/types';
 
 interface GroupComposition { males: number; females: number; couples: number }
@@ -20,11 +22,11 @@ function emptyResident(gender: 'male' | 'female'): GroupCheckinResident {
 }
 
 function CounterRow({ label, icon, count, onIncrement, onDecrement }: {
-  label: string; icon: string; count: number; onIncrement: () => void; onDecrement: () => void;
+  label: string; icon: React.ReactNode; count: number; onIncrement: () => void; onDecrement: () => void;
 }) {
   return (
     <View style={styles.counterRow}>
-      <Text style={styles.counterIcon}>{icon}</Text>
+      {icon}
       <Text style={styles.counterLabel}>{label}</Text>
       <View style={styles.counterControls}>
         <TouchableOpacity style={styles.counterBtn} onPress={onDecrement} activeOpacity={0.6}>
@@ -40,16 +42,19 @@ function CounterRow({ label, icon, count, onIncrement, onDecrement }: {
 }
 
 function RoomGroupSection({ title, icon, rooms, group, assigned, needed, onAssign, onUnassign }: {
-  title: string; icon: string; rooms: RoomAssignment[]; group: 'males' | 'females' | 'couples';
+  title: string; icon: React.ReactNode; rooms: RoomAssignment[]; group: 'males' | 'females' | 'couples';
   assigned: GroupCheckinResident[]; needed: number;
   onAssign: (group: 'males' | 'females' | 'couples', room: RoomAssignment, bed: { bedId: string; bedNumber: string }) => void;
   onUnassign: (bedId: string) => void;
 }) {
   return (
     <View style={styles.roomGroup}>
-      <Text style={styles.roomGroupTitle}>{icon} {title} ({assigned.filter(r =>
-        group === 'males' ? r.gender === 'male' : group === 'females' ? r.gender === 'female' : true
-      ).length}/{needed})</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        {icon}
+        <Text style={styles.roomGroupTitle}>{title} ({assigned.filter(r =>
+          group === 'males' ? r.gender === 'male' : group === 'females' ? r.gender === 'female' : true
+        ).length}/{needed})</Text>
+      </View>
       {rooms.map((room) => (
         <View key={room.roomId} style={styles.suggestedRoom}>
           <Text style={styles.suggestedRoomTitle}>Room {room.roomNumber} · Floor {room.floorNumber}</Text>
@@ -227,9 +232,9 @@ export default function GroupCheckinScreen() {
               ))}
             </ScrollView>
 
-            <CounterRow label="Male Residents" icon="👨" count={composition.males} onIncrement={() => updateComposition('males', 1)} onDecrement={() => updateComposition('males', -1)} />
-            <CounterRow label="Female Residents" icon="👩" count={composition.females} onIncrement={() => updateComposition('females', 1)} onDecrement={() => updateComposition('females', -1)} />
-            <CounterRow label="Couples" icon="👫" count={composition.couples} onIncrement={() => updateComposition('couples', 1)} onDecrement={() => updateComposition('couples', -1)} />
+            <CounterRow label="Male Residents" icon={<User size={22} color={theme.colors.info} />} count={composition.males} onIncrement={() => updateComposition('males', 1)} onDecrement={() => updateComposition('males', -1)} />
+            <CounterRow label="Female Residents" icon={<User size={22} color={theme.colors.primary} />} count={composition.females} onIncrement={() => updateComposition('females', 1)} onDecrement={() => updateComposition('females', -1)} />
+            <CounterRow label="Couples" icon={<Heart size={22} color={theme.colors.danger} />} count={composition.couples} onIncrement={() => updateComposition('couples', 1)} onDecrement={() => updateComposition('couples', -1)} />
 
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total Residents</Text>
@@ -246,11 +251,11 @@ export default function GroupCheckinScreen() {
               {combinations.length > 1 && (
                 <View style={styles.comboNav}>
                   <TouchableOpacity onPress={() => setSelectedComboIndex(Math.max(0, selectedComboIndex - 1))} disabled={selectedComboIndex === 0} activeOpacity={0.6}>
-                    <Text style={[styles.comboNavBtn, selectedComboIndex === 0 && styles.disabled]}>◀</Text>
+                    <ChevronLeft size={20} color={selectedComboIndex === 0 ? theme.colors.textMuted : theme.colors.primary} />
                   </TouchableOpacity>
                   <Text style={styles.comboCount}>{selectedComboIndex + 1}/{combinations.length}</Text>
                   <TouchableOpacity onPress={() => setSelectedComboIndex(Math.min(combinations.length - 1, selectedComboIndex + 1))} disabled={selectedComboIndex === combinations.length - 1} activeOpacity={0.6}>
-                    <Text style={[styles.comboNavBtn, selectedComboIndex === combinations.length - 1 && styles.disabled]}>▶</Text>
+                    <ChevronRight size={20} color={selectedComboIndex === combinations.length - 1 ? theme.colors.textMuted : theme.colors.primary} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -258,20 +263,20 @@ export default function GroupCheckinScreen() {
 
             {combo?.partialAllocation && (
               <View style={styles.warningBox}>
-                <Text style={styles.warningText}>⚠️ {combo.partialAllocation.message}</Text>
+                <Text style={styles.warningText}>{combo.partialAllocation.message}</Text>
               </View>
             )}
 
             {combo?.maleRooms.length > 0 && (
-              <RoomGroupSection title="Male Residents" icon="👨" rooms={combo.maleRooms} group="males"
+              <RoomGroupSection title="Male Residents" icon={<User size={16} color={theme.colors.info} />} rooms={combo.maleRooms} group="males"
                 assigned={residents} needed={composition.males} onAssign={assignBed} onUnassign={unassignBed} />
             )}
             {combo?.femaleRooms.length > 0 && (
-              <RoomGroupSection title="Female Residents" icon="👩" rooms={combo.femaleRooms} group="females"
+              <RoomGroupSection title="Female Residents" icon={<User size={16} color={theme.colors.primary} />} rooms={combo.femaleRooms} group="females"
                 assigned={residents} needed={composition.females} onAssign={assignBed} onUnassign={unassignBed} />
             )}
             {combo?.coupleRooms.length > 0 && (
-              <RoomGroupSection title="Couples" icon="👫" rooms={combo.coupleRooms} group="couples"
+              <RoomGroupSection title="Couples" icon={<Heart size={16} color={theme.colors.danger} />} rooms={combo.coupleRooms} group="couples"
                 assigned={residents} needed={composition.couples * 2} onAssign={assignBed} onUnassign={unassignBed} />
             )}
 
@@ -428,65 +433,62 @@ export default function GroupCheckinScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
-  stepsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
+  stepsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: theme.spacing.lg, paddingVertical: 12, backgroundColor: theme.colors.surface, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
   stepIndicator: { alignItems: 'center', gap: 4 },
-  stepDot: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' },
-  stepDotActive: { backgroundColor: '#dbeafe' },
-  stepDotCurrent: { backgroundColor: '#3b82f6' },
-  stepDotText: { fontSize: 12, fontWeight: '600', color: '#9ca3af' },
+  stepDot: { width: 28, height: 28, borderRadius: 14, backgroundColor: theme.colors.borderLight, justifyContent: 'center', alignItems: 'center' },
+  stepDotActive: { backgroundColor: theme.colors.primarySurface },
+  stepDotCurrent: { backgroundColor: theme.colors.primary },
+  stepDotText: { fontSize: 12, fontFamily: theme.font.semiBold, color: theme.colors.textMuted },
   stepDotTextActive: { color: '#fff' },
-  stepLabel: { fontSize: 10, fontWeight: '500', color: '#9ca3af' },
-  stepLabelActive: { color: '#3b82f6', fontWeight: '700' },
-  scrollArea: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
+  stepLabel: { fontSize: 10, fontFamily: theme.font.medium, color: theme.colors.textMuted },
+  stepLabelActive: { color: theme.colors.primary, fontFamily: theme.font.bold },
+  scrollArea: { flex: 1, paddingHorizontal: theme.spacing.lg, paddingTop: 16 },
   stepCard: { marginBottom: 16 },
   stepHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  stepTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 4 },
-  stepSubtitle: { fontSize: 14, color: '#6b7280', marginBottom: 16 },
-  fieldLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
-  fieldValue: { fontSize: 14, color: '#111827', marginBottom: 12, fontWeight: '500' },
-  input: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, padding: 12, fontSize: 16, color: '#111827', backgroundColor: '#fff', marginBottom: 12 },
-  counterRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  counterIcon: { fontSize: 22, marginRight: 12 },
-  counterLabel: { flex: 1, fontSize: 15, fontWeight: '500', color: '#374151' },
+  stepTitle: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 4 },
+  stepSubtitle: { fontSize: 14, fontFamily: theme.font.regular, color: theme.colors.textSecondary, marginBottom: 16 },
+  fieldLabel: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.text, marginBottom: 6 },
+  fieldValue: { fontSize: 14, fontFamily: theme.font.medium, color: theme.colors.text, marginBottom: 12 },
+  input: { borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.borderRadius.md, padding: 12, fontSize: 16, fontFamily: theme.font.regular, color: theme.colors.text, backgroundColor: theme.colors.surface, marginBottom: 12 },
+  counterRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  counterLabel: { flex: 1, fontSize: 15, fontFamily: theme.font.medium, color: theme.colors.text },
   counterControls: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  counterBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' },
-  counterBtnText: { fontSize: 20, fontWeight: '600', color: '#374151' },
-  counterValue: { fontSize: 18, fontWeight: '700', color: '#111827', minWidth: 24, textAlign: 'center' },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderTopWidth: 2, borderTopColor: '#e5e7eb', marginTop: 8 },
-  totalLabel: { fontSize: 15, fontWeight: '600', color: '#374151' },
-  totalValue: { fontSize: 18, fontWeight: '800', color: '#3b82f6' },
-  propertyPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb', marginRight: 8 },
-  propertyPillActive: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
-  pillText: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
+  counterBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.borderLight, justifyContent: 'center', alignItems: 'center' },
+  counterBtnText: { fontSize: 20, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  counterValue: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text, minWidth: 24, textAlign: 'center' },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderTopWidth: 2, borderTopColor: theme.colors.border, marginTop: 8 },
+  totalLabel: { fontSize: 15, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  totalValue: { fontSize: 18, fontFamily: theme.font.extraBold, color: theme.colors.primary },
+  propertyPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: theme.colors.borderLight, borderWidth: 1, borderColor: theme.colors.border, marginRight: 8 },
+  propertyPillActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  pillText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary },
   pillTextActive: { color: '#fff' },
   comboNav: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  comboNavBtn: { fontSize: 16, color: '#3b82f6', padding: 4 },
-  comboCount: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
-  disabled: { opacity: 0.3 },
-  warningBox: { backgroundColor: '#fef3c7', borderRadius: 10, padding: 12, marginBottom: 12 },
-  warningText: { fontSize: 13, color: '#92400e', fontWeight: '500' },
+  comboCount: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary },
+  warningBox: { backgroundColor: theme.colors.warningSurface, borderRadius: theme.borderRadius.md, padding: 12, marginBottom: 12 },
+  warningText: { fontSize: 13, fontFamily: theme.font.medium, color: theme.colors.warning },
   roomGroup: { marginBottom: 16 },
-  roomGroupTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 8 },
-  suggestedRoom: { backgroundColor: '#f9fafb', borderRadius: 10, padding: 12, marginBottom: 8 },
-  suggestedRoomTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  suggestedRoomMeta: { fontSize: 12, color: '#6b7280', marginTop: 2, marginBottom: 8 },
+  roomGroupTitle: { fontSize: 15, fontFamily: theme.font.bold, color: theme.colors.text },
+  suggestedRoom: { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.md, padding: 12, marginBottom: 8 },
+  suggestedRoomTitle: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  suggestedRoomMeta: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.textSecondary, marginTop: 2, marginBottom: 8 },
   bedButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  bedBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#e0f2fe', borderWidth: 1, borderColor: '#bae6fd' },
-  bedBtnAssigned: { backgroundColor: '#3b82f6', borderColor: '#3b82f6' },
-  bedBtnText: { fontSize: 13, fontWeight: '600', color: '#0369a1' },
+  bedBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: theme.colors.primarySurface, borderWidth: 1, borderColor: theme.colors.primaryLight },
+  bedBtnAssigned: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  bedBtnText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.primary },
   bedBtnTextAssigned: { color: '#fff' },
-  assignmentStatus: { fontSize: 14, fontWeight: '600', color: '#6b7280', textAlign: 'center', marginTop: 8 },
-  residentPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: '#f3f4f6', marginRight: 6 },
-  residentPillActive: { backgroundColor: '#3b82f6' },
-  residentPillText: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
+  assignmentStatus: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary, textAlign: 'center', marginTop: 8 },
+  residentPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: theme.colors.borderLight, marginRight: 6 },
+  residentPillActive: { backgroundColor: theme.colors.primary },
+  residentPillText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary },
   residentPillTextActive: { color: '#fff' },
   genderRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  genderBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
-  genderBtnActive: { backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#3b82f6' },
-  genderBtnText: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
-  genderBtnTextActive: { color: '#3b82f6' },
-  reviewCard: { backgroundColor: '#f9fafb', borderRadius: 10, padding: 12, marginBottom: 8 },
+  genderBtn: { flex: 1, paddingVertical: 10, borderRadius: theme.borderRadius.md, backgroundColor: theme.colors.borderLight, alignItems: 'center' },
+  genderBtnActive: { backgroundColor: theme.colors.primarySurface, borderWidth: 1, borderColor: theme.colors.primary },
+  genderBtnText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary },
+  genderBtnTextActive: { color: theme.colors.primary },
+  reviewCard: { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.md, padding: 12, marginBottom: 8 },
   reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   reviewName: { fontSize: 15, fontWeight: '600', color: '#111827' },
   reviewBed: { fontSize: 12, fontWeight: '600', color: '#3b82f6' },

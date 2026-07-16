@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { Plus } from 'lucide-react-native';
 import { Card, LoadingSkeleton, EmptyState, SearchBar, BottomSheet } from '../../src/components';
 import { CreatePropertyForm } from '../../src/components/forms/CreatePropertyForm';
 import { api } from '../../src/services/api';
+import { theme } from '../../src/lib/theme';
 import type { Property } from '../../src/types';
 
 export default function PropertiesList() {
@@ -41,7 +43,7 @@ export default function PropertiesList() {
               <Card style={styles.propertyCard}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.propertyName}>{property.name}</Text>
-                  <Text style={[styles.statusBadge, { backgroundColor: property.status === 'active' ? '#dcfce7' : '#f3f4f6', color: property.status === 'active' ? '#16a34a' : '#6b7280' }]}>
+                  <Text style={[styles.statusBadge, { backgroundColor: property.status === 'active' ? theme.colors.successSurface : theme.colors.borderLight, color: property.status === 'active' ? theme.colors.success : theme.colors.textSecondary }]}>
                     {property.status}
                   </Text>
                 </View>
@@ -49,8 +51,8 @@ export default function PropertiesList() {
                 <View style={styles.propertyStats}>
                   <Stat label="Rooms" value={property.totalRooms} />
                   <Stat label="Beds" value={property.totalBeds} />
-                  <Stat label="Occupied" value={property.occupiedBeds} color="#22c55e" />
-                  <Stat label="Vacant" value={property.vacantBeds} color={property.vacantBeds > 0 ? '#eab308' : '#6b7280'} />
+                  <Stat label="Occupied" value={property.occupiedBeds} color={theme.colors.success} />
+                  <Stat label="Vacant" value={property.vacantBeds} color={property.vacantBeds > 0 ? theme.colors.warning : theme.colors.textSecondary} />
                 </View>
                 {property.totalBeds > 0 && (
                   <View style={styles.occupancyBar}>
@@ -64,7 +66,7 @@ export default function PropertiesList() {
       </ScrollView>
 
       <TouchableOpacity style={styles.fab} onPress={() => setShowCreate(true)}>
-        <Text style={styles.fabIcon}>+</Text>
+        <Plus size={24} color="#fff" />
       </TouchableOpacity>
 
       <BottomSheet visible={showCreate} onClose={() => setShowCreate(false)} height={700}>
@@ -84,19 +86,18 @@ function Stat({ label, value, color }: { label: string; value: number; color?: s
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
-  container: { flex: 1, padding: 16 },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 4 },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
+  container: { flex: 1, padding: theme.spacing.lg },
+  pageTitle: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 4 },
   propertyCard: { marginBottom: 12 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  propertyName: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  statusBadge: { fontSize: 11, fontWeight: '600', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, overflow: 'hidden' },
-  propertyAddress: { fontSize: 13, color: '#6b7280', marginTop: 4 },
-  propertyStats: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
-  statValue: { fontSize: 18, fontWeight: '700', color: '#111827', textAlign: 'center' },
-  statLabel: { fontSize: 11, color: '#9ca3af', textAlign: 'center', marginTop: 2 },
-  occupancyBar: { height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
-  occupancyFill: { height: '100%', backgroundColor: '#3b82f6', borderRadius: 2 },
-  fab: { position: 'absolute', bottom: 24, right: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: '#3b82f6', alignItems: 'center', justifyContent: 'center', elevation: 6, shadowColor: '#3b82f6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-  fabIcon: { fontSize: 28, color: '#fff', marginTop: -2 },
+  propertyName: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text },
+  statusBadge: { fontSize: 11, fontFamily: theme.font.semiBold, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, overflow: 'hidden' },
+  propertyAddress: { fontSize: 13, fontFamily: theme.font.regular, color: theme.colors.textSecondary, marginTop: 4 },
+  propertyStats: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.colors.borderLight },
+  statValue: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text, textAlign: 'center' },
+  statLabel: { fontSize: 11, fontFamily: theme.font.regular, color: theme.colors.textMuted, textAlign: 'center', marginTop: 2 },
+  occupancyBar: { height: 4, backgroundColor: theme.colors.border, borderRadius: 2, marginTop: 12, overflow: 'hidden' },
+  occupancyFill: { height: '100%', backgroundColor: theme.colors.primary, borderRadius: 2 },
+  fab: { position: 'absolute', bottom: 24, right: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', ...theme.shadow.fab },
 });

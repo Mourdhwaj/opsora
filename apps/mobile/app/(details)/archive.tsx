@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, LoadingSkeleton, EmptyState, SearchBar } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatDate } from '../../src/lib/utils';
+import { theme } from '../../src/lib/theme';
 import type { ArchivedUser, ArchivedResident, ArchiveStats } from '../../src/types';
 
 export default function ArchiveScreen() {
@@ -84,12 +85,12 @@ export default function ArchiveScreen() {
   return (
     <View style={styles.wrapper}>
       <View style={styles.statsRow}>
-        <View style={[styles.statCard, { backgroundColor: '#eff6ff' }]}>
-          <Text style={[styles.statValue, { color: '#3b82f6' }]}>{stats?.totalArchivedUsers || 0}</Text>
+        <View style={[styles.statCard, { backgroundColor: theme.colors.primarySurface }]}>
+          <Text style={[styles.statValue, { color: theme.colors.primary }]}>{stats?.totalArchivedUsers || 0}</Text>
           <Text style={styles.statLabel}>Archived Users</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#f0fdf4' }]}>
-          <Text style={[styles.statValue, { color: '#16a34a' }]}>{stats?.totalArchivedResidents || 0}</Text>
+        <View style={[styles.statCard, { backgroundColor: theme.colors.successSurface }]}>
+          <Text style={[styles.statValue, { color: theme.colors.success }]}>{stats?.totalArchivedResidents || 0}</Text>
           <Text style={styles.statLabel}>Archived Residents</Text>
         </View>
       </View>
@@ -138,24 +139,24 @@ export default function ArchiveScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
-  statsRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 16 },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
+  statsRow: { flexDirection: 'row', gap: 8, paddingHorizontal: theme.spacing.lg, paddingTop: 16 },
   statCard: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center' },
-  statValue: { fontSize: 22, fontWeight: '800' },
-  statLabel: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginTop: 12 },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: '#f3f4f6', alignItems: 'center' },
-  tabActive: { backgroundColor: '#3b82f6' },
-  tabText: { fontSize: 13, fontWeight: '600', color: '#6b7280' },
+  statValue: { fontSize: 22, fontFamily: theme.font.extraBold },
+  statLabel: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.textSecondary, marginTop: 2 },
+  tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: theme.spacing.lg, marginTop: 12 },
+  tab: { flex: 1, paddingVertical: 10, borderRadius: theme.borderRadius.md, backgroundColor: theme.colors.borderLight, alignItems: 'center' },
+  tabActive: { backgroundColor: theme.colors.primary },
+  tabText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary },
   tabTextActive: { color: '#fff' },
   card: { marginBottom: 10 },
   cardHeader: { flexDirection: 'row', alignItems: 'center' },
-  cardName: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  cardMeta: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
-  cardReason: { fontSize: 12, color: '#f97316', marginTop: 2 },
-  cardActions: { flexDirection: 'row', gap: 8, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
-  restoreBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: '#f0fdf4', alignItems: 'center' },
-  restoreText: { fontSize: 13, fontWeight: '600', color: '#16a34a' },
-  deleteBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: '#fef2f2', alignItems: 'center' },
-  deleteText: { fontSize: 13, fontWeight: '600', color: '#dc2626' },
+  cardName: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  cardMeta: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.textMuted, marginTop: 2 },
+  cardReason: { fontSize: 12, fontFamily: theme.font.regular, color: theme.colors.warning, marginTop: 2 },
+  cardActions: { flexDirection: 'row', gap: 8, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.colors.borderLight },
+  restoreBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: theme.colors.successSurface, alignItems: 'center' },
+  restoreText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.success },
+  deleteBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: theme.colors.dangerSurface, alignItems: 'center' },
+  deleteText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.danger },
 });
