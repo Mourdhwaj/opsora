@@ -1,3 +1,4 @@
+import { theme } from '../../src/lib/theme';
 import { useState } from 'react';
 import { ScrollView, View, Text, TextInput, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +24,7 @@ export default function StaffResidents() {
   return (
     <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}>
       <Text style={styles.pageTitle}>Residents</Text>
-      <TextInput style={styles.search} placeholder="Search..." value={search} onChangeText={setSearch} placeholderTextColor="#9ca3af" />
+      <TextInput style={styles.search} placeholder="Search..." value={search} onChangeText={setSearch} placeholderTextColor={theme.colors.textMuted} />
       {filtered.length === 0 ? (
         <EmptyState title="No residents found" message="Residents will appear here" />
       ) : (
@@ -39,10 +40,10 @@ export default function StaffResidents() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 16 },
-  search: { backgroundColor: '#fff', borderRadius: 10, padding: 12, fontSize: 16, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 12 },
+  container: { flex: 1, backgroundColor: theme.colors.background, padding: 16 },
+  pageTitle: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 16 },
+  search: { backgroundColor: theme.colors.surface, borderRadius: 10, padding: 12, fontSize: 16, borderWidth: 1, borderColor: theme.colors.border, marginBottom: 12 },
   card: { marginBottom: 8 },
-  name: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  detail: { fontSize: 13, color: '#6b7280', marginTop: 2 },
+  name: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  detail: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 2 },
 });

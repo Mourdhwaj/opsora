@@ -145,7 +145,7 @@ export default function StaffComplaintDetail() {
           multiline
           numberOfLines={4}
           textAlignVertical="top"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={theme.colors.textMuted}
         />
         <TouchableOpacity style={styles.confirmBtn} onPress={handleResolve}>
           <Text style={styles.confirmText}>Mark Resolved</Text>
@@ -174,36 +174,36 @@ function DetailRow({ label, value }: { label: string; value?: ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
   container: { flex: 1, padding: 16 },
   headerCard: { marginBottom: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ticket: { fontSize: 14, color: '#9ca3af', fontWeight: '500' },
+  ticket: { fontSize: 14, color: theme.colors.textMuted, fontFamily: theme.font.medium },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  priorityText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
-  overdueBadge: { backgroundColor: '#fef2f2', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  overdueText: { fontSize: 10, fontWeight: '700', color: '#dc2626' },
-  title: { fontSize: 20, fontWeight: '800', color: '#111827', marginBottom: 8 },
-  description: { fontSize: 15, color: '#6b7280', lineHeight: 22 },
+  priorityText: { fontSize: 11, fontFamily: theme.font.semiBold, textTransform: 'capitalize' },
+  overdueBadge: { backgroundColor: theme.colors.dangerSurface, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  overdueText: { fontSize: 10, fontFamily: theme.font.bold, color: theme.colors.danger },
+  title: { fontSize: 20, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 8 },
+  description: { fontSize: 15, color: theme.colors.textSecondary, lineHeight: 22 },
   section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  detailLabel: { fontSize: 14, color: '#6b7280' },
-  detailValue: { fontSize: 14, fontWeight: '600', color: '#111827', textTransform: 'capitalize' },
+  sectionTitle: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 12 },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  detailLabel: { fontSize: 14, color: theme.colors.textSecondary },
+  detailValue: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text, textTransform: 'capitalize' },
   acceptBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: theme.colors.primary, borderRadius: 12, padding: 14, marginBottom: 10 },
   acceptIcon: { fontSize: 18 },
-  acceptText: { fontSize: 16, fontWeight: '700', color: '#fff' },
-  resolveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#22c55e', borderRadius: 12, padding: 14, marginBottom: 16 },
+  acceptText: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.surface },
+  resolveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: theme.colors.success, borderRadius: 12, padding: 14, marginBottom: 16 },
   resolveIcon: { fontSize: 18 },
-  resolveText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  resolveText: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.surface },
   actionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
-  actionLabel: { fontSize: 15, fontWeight: '500', color: theme.colors.primary },
+  actionLabel: { fontSize: 15, fontFamily: theme.font.medium, color: theme.colors.primary },
   actionArrow: { fontSize: 20, color: theme.colors.primary },
-  sheetLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
-  notesInput: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, padding: 12, fontSize: 14, minHeight: 100, marginBottom: 16, backgroundColor: '#fff', textAlignVertical: 'top' },
-  confirmBtn: { backgroundColor: '#22c55e', borderRadius: 10, padding: 14, alignItems: 'center' },
-  confirmText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  statusOption: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  statusArrow: { fontSize: 20, color: '#9ca3af' },
+  sheetLabel: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.textDark, marginBottom: 8 },
+  notesInput: { borderWidth: 1, borderColor: theme.colors.border, borderRadius: 10, padding: 12, fontSize: 14, minHeight: 100, marginBottom: 16, backgroundColor: theme.colors.surface, textAlignVertical: 'top' },
+  confirmBtn: { backgroundColor: theme.colors.success, borderRadius: 10, padding: 14, alignItems: 'center' },
+  confirmText: { color: theme.colors.surface, fontSize: 16, fontFamily: theme.font.semiBold },
+  statusOption: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  statusArrow: { fontSize: 20, color: theme.colors.textMuted },
 });

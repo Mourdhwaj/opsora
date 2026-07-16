@@ -178,44 +178,44 @@ function formatStatus(s: string): string {
 }
 
 function getStatusColor(s: string): string {
-  const m: Record<string, string> = { pending: '#f59e0b', in_progress: theme.colors.primary, completed: '#22c55e' };
-  return m[s] || '#6b7280';
+  const m: Record<string, string> = { pending: theme.colors.warning, in_progress: theme.colors.primary, completed: theme.colors.success };
+  return m[s] || theme.colors.textSecondary;
 }
 
 function getPriorityColor(p: string): string {
-  const m: Record<string, string> = { urgent: '#dc2626', high: '#f97316', medium: '#eab308', low: theme.colors.primary };
-  return m[p] || '#6b7280';
+  const m: Record<string, string> = { urgent: theme.colors.danger, high: '#f97316', medium: '#eab308', low: theme.colors.primary };
+  return m[p] || theme.colors.textSecondary;
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: '#f9fafb' },
+  wrapper: { flex: 1, backgroundColor: theme.colors.background },
   tabRow: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 8, gap: 6 },
-  tab: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: '#f3f4f6' },
+  tab: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: theme.colors.borderLight },
   tabActive: { backgroundColor: theme.colors.primary },
-  tabText: { fontSize: 12, fontWeight: '600', color: '#6b7280' },
-  tabTextActive: { color: '#fff' },
+  tabText: { fontSize: 12, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary },
+  tabTextActive: { color: theme.colors.surface },
   card: { marginBottom: 10 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
-  taskTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  taskDesc: { fontSize: 13, color: '#6b7280', marginTop: 4 },
+  taskTitle: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  taskDesc: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 4 },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginLeft: 8 },
-  statusText: { fontSize: 12, fontWeight: '600' },
+  statusText: { fontSize: 12, fontFamily: theme.font.semiBold },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  priorityText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
-  dueDate: { fontSize: 12, color: '#6b7280' },
-  overdue: { color: '#dc2626', fontWeight: '600' },
-  assignee: { fontSize: 12, color: '#6b7280' },
-  notesBox: { backgroundColor: '#f9fafb', borderRadius: 8, padding: 10, marginBottom: 8 },
-  notesLabel: { fontSize: 11, fontWeight: '600', color: '#6b7280', marginBottom: 2 },
-  notesText: { fontSize: 13, color: '#374151' },
+  priorityText: { fontSize: 11, fontFamily: theme.font.semiBold, textTransform: 'capitalize' },
+  dueDate: { fontSize: 12, color: theme.colors.textSecondary },
+  overdue: { color: theme.colors.danger, fontFamily: theme.font.semiBold },
+  assignee: { fontSize: 12, color: theme.colors.textSecondary },
+  notesBox: { backgroundColor: theme.colors.background, borderRadius: 8, padding: 10, marginBottom: 8 },
+  notesLabel: { fontSize: 11, fontFamily: theme.font.semiBold, color: theme.colors.textSecondary, marginBottom: 2 },
+  notesText: { fontSize: 13, color: theme.colors.textDark },
   actions: { flexDirection: 'row', gap: 8 },
-  startBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#eff6ff', alignItems: 'center' },
-  startText: { fontSize: 13, fontWeight: '600', color: theme.colors.primary },
-  completeBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#f0fdf4', alignItems: 'center' },
-  completeText: { fontSize: 13, fontWeight: '600', color: '#16a34a' },
-  sheetLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
-  notesInput: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, padding: 12, fontSize: 14, minHeight: 80, marginBottom: 12, backgroundColor: '#fff' },
-  confirmBtn: { backgroundColor: '#22c55e', borderRadius: 10, padding: 14, alignItems: 'center' },
-  confirmText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  startBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: theme.colors.infoSurface, alignItems: 'center' },
+  startText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.primary },
+  completeBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: theme.colors.successSurface, alignItems: 'center' },
+  completeText: { fontSize: 13, fontFamily: theme.font.semiBold, color: theme.colors.success },
+  sheetLabel: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.textDark, marginBottom: 8 },
+  notesInput: { borderWidth: 1, borderColor: theme.colors.border, borderRadius: 8, padding: 12, fontSize: 14, minHeight: 80, marginBottom: 12, backgroundColor: theme.colors.surface },
+  confirmBtn: { backgroundColor: theme.colors.success, borderRadius: 10, padding: 14, alignItems: 'center' },
+  confirmText: { color: theme.colors.surface, fontSize: 16, fontFamily: theme.font.semiBold },
 });
