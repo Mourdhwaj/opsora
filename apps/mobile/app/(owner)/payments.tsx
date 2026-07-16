@@ -43,7 +43,7 @@ export default function PaymentsList() {
       if (timeParams.endDate) params.endDate = timeParams.endDate;
       return api.get('/payments', { params }).then(r => {
         const d = r.data?.data || r.data;
-        return Array.isArray(d) ? { data: d, total: d.length } : d;
+        return Array.isArray(d) ? { data: d, total: r.data?.pagination?.total ?? d.length } : d;
       });
     },
   });
@@ -101,7 +101,7 @@ export default function PaymentsList() {
         </Text>
 
         {filtered.length === 0 ? (
-          <EmptyState title="No payments found" message="Record a payment to get started" icon="💰" />
+          <EmptyState title="No payments found" message="Record a payment to get started" />
         ) : (
           filtered.map(payment => (
             <Card key={payment.id} style={styles.paymentCard}>

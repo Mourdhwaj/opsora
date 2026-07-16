@@ -25,7 +25,7 @@ export default function StaffResidents() {
       <Text style={styles.pageTitle}>Residents</Text>
       <TextInput style={styles.search} placeholder="Search..." value={search} onChangeText={setSearch} placeholderTextColor="#9ca3af" />
       {filtered.length === 0 ? (
-        <EmptyState title="No residents found" message="Residents will appear here" icon="👥" />
+        <EmptyState title="No residents found" message="Residents will appear here" />
       ) : (
         filtered.map((r) => (
           <Card key={r.id} style={styles.card}>

@@ -44,7 +44,7 @@ export default function ResidentsList() {
       if (timeParams.endDate) params.endDate = timeParams.endDate;
       return api.get('/residents', { params }).then(r => {
         const d = r.data?.data || r.data;
-        return Array.isArray(d) ? { data: d, total: d.length } : d;
+        return Array.isArray(d) ? { data: d, total: r.data?.pagination?.total ?? d.length } : d;
       });
     },
   });

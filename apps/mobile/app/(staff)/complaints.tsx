@@ -70,7 +70,7 @@ export default function StaffComplaints() {
       <FilterBar options={PRIORITY_FILTERS} selected={priorityFilter} onSelect={setPriorityFilter} />
 
       {filtered.length === 0 ? (
-        <EmptyState title="No tickets found" message="All clear — no complaints to show" icon="🎉" />
+        <EmptyState title="No tickets found" message="All clear — no complaints to show" />
       ) : (
         <FlatList
           data={filtered}

@@ -10,7 +10,7 @@ import { theme } from '../../src/lib/theme';
 import {
   Tag, AlertTriangle, Clock, CheckCircle, User, UserCog, ChevronRight,
   Wrench, Droplets, Zap, Sparkles, Shield, UtensilsCrossed, Volume2,
-  Car, Wifi, ClipboardList, CircleDot,
+  Car, Wifi, ClipboardList, Circle,
 } from 'lucide-react-native';
 
 const STATUSES = ['open', 'in_progress', 'resolved', 'closed'];
@@ -169,7 +169,7 @@ export default function ComplaintDetail() {
           <Text style={s.sectionTitle}>Actions</Text>
           <TouchableOpacity style={s.actionBtn} onPress={() => setShowStatusChange(true)}>
             <View style={s.actionLeft}>
-              <CircleDot size={18} color={theme.colors.primary} />
+              <Circle size={18} color={theme.colors.primary} />
               <Text style={s.actionText}>Change Status</Text>
             </View>
             <ChevronRight size={18} color={theme.colors.textMuted} />

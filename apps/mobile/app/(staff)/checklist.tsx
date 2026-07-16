@@ -109,7 +109,7 @@ export default function StaffChecklist() {
       </View>
 
       {items.length === 0 ? (
-        <EmptyState title="No checklist items" message="Checklist items will appear here" icon="☑️" />
+        <EmptyState title="No checklist items" message="Checklist items will appear here" />
       ) : (
         <FlatList
           data={Object.keys(grouped)}

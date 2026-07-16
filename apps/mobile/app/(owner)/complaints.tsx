@@ -55,7 +55,7 @@ export default function ComplaintsList() {
       if (timeParams.endDate) params.endDate = timeParams.endDate;
       return api.get('/complaints', { params }).then(r => {
         const d = r.data?.data || r.data;
-        return Array.isArray(d) ? { data: d, total: d.length } : d;
+        return Array.isArray(d) ? { data: d, total: r.data?.pagination?.total ?? d.length } : d;
       });
     },
   });
@@ -128,7 +128,7 @@ export default function ComplaintsList() {
         </Text>
 
         {filtered.length === 0 ? (
-          <EmptyState title="No issues found" message="All clear!" icon="📭" />
+          <EmptyState title="No issues found" message="All clear!" />
         ) : (
           filtered.map(complaint => (
             <Card key={complaint.id} style={styles.card}>

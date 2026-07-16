@@ -74,7 +74,7 @@ export default function StaffTasks() {
       </View>
 
       {filtered.length === 0 ? (
-        <EmptyState title="No tasks found" message="Try adjusting your filters" icon="✅" />
+        <EmptyState title="No tasks found" message="Try adjusting your filters" />
       ) : (
         <FlatList
           data={filtered}

@@ -138,7 +138,7 @@ export default function OwnerFoodScreen() {
           <Text style={styles.analyticsTitle}>Food Analytics</Text>
           <View style={styles.analyticsGrid}>
             <View style={styles.analyticsItem}>
-              <Text style={styles.analyticsValue}>{analytics.satisfactionScore?.toFixed(1) || 'N/A'}</Text>
+              <Text style={styles.analyticsValue}>{typeof analytics.satisfactionScore === 'number' ? analytics.satisfactionScore.toFixed(1) : 'N/A'}</Text>
               <Text style={styles.analyticsLabel}>Satisfaction</Text>
             </View>
             <View style={styles.analyticsItem}>

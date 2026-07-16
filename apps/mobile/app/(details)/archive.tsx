@@ -107,7 +107,7 @@ export default function ArchiveScreen() {
       <SearchBar value={search} onChangeText={setSearch} placeholder="Search archived..." />
 
       {filtered.length === 0 ? (
-        <EmptyState title="No archived records" message="Archived users and residents will appear here" icon="📦" />
+        <EmptyState title="No archived records" message="Archived users and residents will appear here" />
       ) : (
         <FlatList
           data={filtered}

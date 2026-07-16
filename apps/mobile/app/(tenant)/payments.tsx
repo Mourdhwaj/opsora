@@ -37,7 +37,7 @@ export default function TenantPayments() {
         <Text style={styles.pageTitle}>Payment History</Text>
 
         {(!payments || payments.length === 0) ? (
-          <EmptyState title="No payments yet" message="Payments will appear here" icon="💰" />
+          <EmptyState title="No payments yet" message="Payments will appear here" />
         ) : (
           payments.map((payment) => (
             <Card key={payment.id} style={styles.card}>

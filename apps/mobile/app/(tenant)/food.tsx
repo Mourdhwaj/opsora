@@ -81,7 +81,7 @@ export default function TenantFood() {
       {activeTab === 'menu' && (
         <>
           {(!menus || menus.length === 0) ? (
-            <EmptyState title="No menu available" message="Check back later" icon="🍽️" />
+            <EmptyState title="No menu available" message="Check back later" />
           ) : (
             menus.slice(0, 10).map((menu: any) => (
               <Card key={menu.id} style={styles.card}>
