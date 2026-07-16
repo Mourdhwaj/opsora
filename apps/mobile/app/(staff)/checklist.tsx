@@ -147,10 +147,10 @@ function formatDateDisplay(dateStr: string): string {
 const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#f9fafb' },
   dateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  dateArrow: { fontSize: 20, color: 'theme.colors.primary', padding: 8 },
+  dateArrow: { fontSize: 20, color: theme.colors.primary, padding: 8 },
   dateCenter: { alignItems: 'center' },
   dateText: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  todayBadge: { fontSize: 11, fontWeight: '600', color: 'theme.colors.primary', marginTop: 2 },
+  todayBadge: { fontSize: 11, fontWeight: '600', color: theme.colors.primary, marginTop: 2 },
   progressSection: { padding: 16 },
   progressBar: { height: 8, backgroundColor: '#e5e7eb', borderRadius: 4, overflow: 'hidden', marginBottom: 6 },
   progressFill: { height: '100%', backgroundColor: '#22c55e', borderRadius: 4 },

@@ -136,14 +136,14 @@ function getStatusBg(status: string): string {
 }
 
 function getStatusColor(status: string): string {
-  const colors: Record<string, string> = { open: '#ea580c', in_progress: 'theme.colors.primary', resolved: '#16a34a', closed: '#6b7280' };
+  const colors: Record<string, string> = { open: '#ea580c', in_progress: theme.colors.primary, resolved: '#16a34a', closed: '#6b7280' };
   return colors[status] || '#6b7280';
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
   profileCard: { alignItems: 'center', padding: 24, marginBottom: 16 },
-  avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'theme.colors.primary', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   avatarText: { color: '#fff', fontSize: 36, fontWeight: '700' },
   name: { fontSize: 22, fontWeight: '800', color: '#111827' },
   email: { fontSize: 14, color: '#6b7280', marginTop: 4 },

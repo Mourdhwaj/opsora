@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
   detailLabel: { fontSize: 14, color: '#6b7280' },
   detailValue: { fontSize: 14, fontWeight: '600', color: '#111827', textTransform: 'capitalize' },
-  proofLink: { fontSize: 14, color: 'theme.colors.primary', fontWeight: '500' },
+  proofLink: { fontSize: 14, color: theme.colors.primary, fontWeight: '500' },
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -132,5 +132,5 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 4,
   },
   balanceText: { fontSize: 14, fontWeight: '600', color: '#ef4444' },
-  recordBtn: { fontSize: 15, fontWeight: '700', color: 'theme.colors.primary' },
+  recordBtn: { fontSize: 15, fontWeight: '700', color: theme.colors.primary },
 });

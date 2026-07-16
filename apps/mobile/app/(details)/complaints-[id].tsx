@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
+import { ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { Card, LoadingSkeleton, StatusBadge, BottomSheet } from '../../src/components';
@@ -233,9 +233,15 @@ export default function ComplaintDetail() {
 
           <View style={s.notesSection}>
             <Text style={s.notesLabel}>Resolution Notes (required for resolving)</Text>
-            <Text style={s.notesInput}>
-              {resolutionNotes || 'Tap to add notes...'}
-            </Text>
+            <TextInput
+              style={s.notesInput}
+              value={resolutionNotes}
+              onChangeText={setResolutionNotes}
+              placeholder="Add resolution notes..."
+              placeholderTextColor={theme.colors.textMuted}
+              multiline
+              numberOfLines={3}
+            />
           </View>
         </ScrollView>
       </BottomSheet>

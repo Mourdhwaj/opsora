@@ -1,6 +1,6 @@
 import { theme } from "../../src/lib/theme";
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { Card, LoadingSkeleton, EmptyState, StatusBadge, SearchBar, FilterBar, BottomSheet } from '../../src/components';
@@ -82,13 +82,23 @@ export default function TenantComplaints() {
         <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={styles.formTitle}>New Complaint</Text>
           <Text style={styles.label}>Title *</Text>
-          <View style={styles.input}>
-            <Text style={styles.inputPlaceholder}>Brief description</Text>
-          </View>
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Brief description"
+            placeholderTextColor={theme.colors.textMuted}
+          />
           <Text style={styles.label}>Description *</Text>
-          <View style={[styles.input, styles.textArea]}>
-            <Text style={styles.inputPlaceholder}>Detailed description</Text>
-          </View>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Detailed description"
+            placeholderTextColor={theme.colors.textMuted}
+            multiline
+            numberOfLines={4}
+          />
 
           <Text style={styles.label}>Category</Text>
           <View style={styles.chipRow}>
@@ -153,7 +163,7 @@ const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: '#f9fafb' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, paddingBottom: 0 },
   pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827' },
-  addButton: { backgroundColor: 'theme.colors.primary', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  addButton: { backgroundColor: theme.colors.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   addButtonText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   formTitle: { fontSize: 20, fontWeight: '800', color: '#111827', marginBottom: 16 },
   label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 6 },
@@ -162,10 +172,10 @@ const styles = StyleSheet.create({
   inputPlaceholder: { fontSize: 16, color: '#9ca3af' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   chip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb' },
-  chipActive: { backgroundColor: 'theme.colors.primary', borderColor: 'theme.colors.primary' },
+  chipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
   chipText: { fontSize: 12, fontWeight: '500', color: '#6b7280', textTransform: 'capitalize' },
   chipTextActive: { color: '#fff' },
-  submitBtn: { backgroundColor: 'theme.colors.primary', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  submitBtn: { backgroundColor: theme.colors.primary, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   submitText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   card: { marginHorizontal: 16, marginBottom: 10 },
   complaintHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },

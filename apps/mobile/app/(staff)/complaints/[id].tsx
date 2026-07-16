@@ -3,6 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, RefreshCon
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { Card, LoadingSkeleton, StatusBadge, BottomSheet } from '../../../src/components';
+import { theme } from '../../../src/lib/theme';
 import { CommentSection } from '../../../src/components/CommentSection';
 import { api } from '../../../src/services/api';
 import { formatDate, getPriorityColor, getCategoryIcon, timeAgo } from '../../../src/lib/utils';
@@ -190,15 +191,15 @@ const styles = StyleSheet.create({
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
   detailLabel: { fontSize: 14, color: '#6b7280' },
   detailValue: { fontSize: 14, fontWeight: '600', color: '#111827', textTransform: 'capitalize' },
-  acceptBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'theme.colors.primary', borderRadius: 12, padding: 14, marginBottom: 10 },
+  acceptBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: theme.colors.primary, borderRadius: 12, padding: 14, marginBottom: 10 },
   acceptIcon: { fontSize: 18 },
   acceptText: { fontSize: 16, fontWeight: '700', color: '#fff' },
   resolveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#22c55e', borderRadius: 12, padding: 14, marginBottom: 16 },
   resolveIcon: { fontSize: 18 },
   resolveText: { fontSize: 16, fontWeight: '700', color: '#fff' },
   actionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
-  actionLabel: { fontSize: 15, fontWeight: '500', color: 'theme.colors.primary' },
-  actionArrow: { fontSize: 20, color: 'theme.colors.primary' },
+  actionLabel: { fontSize: 15, fontWeight: '500', color: theme.colors.primary },
+  actionArrow: { fontSize: 20, color: theme.colors.primary },
   sheetLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
   notesInput: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, padding: 12, fontSize: 14, minHeight: 100, marginBottom: 16, backgroundColor: '#fff', textAlignVertical: 'top' },
   confirmBtn: { backgroundColor: '#22c55e', borderRadius: 10, padding: 14, alignItems: 'center' },

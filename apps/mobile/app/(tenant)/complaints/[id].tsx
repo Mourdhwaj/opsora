@@ -3,6 +3,7 @@ import { ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert,
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { Card, LoadingSkeleton, StatusBadge } from '../../../src/components';
+import { theme } from '../../../src/lib/theme';
 import { CommentSection } from '../../../src/components/CommentSection';
 import { api } from '../../../src/services/api';
 import { formatDate, timeAgo, getPriorityColor, getCategoryIcon } from '../../../src/lib/utils';
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   star: { fontSize: 32, color: '#d1d5db' },
   starActive: { color: '#f59e0b' },
   feedbackInput: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, padding: 12, fontSize: 14, color: '#111827', minHeight: 60, textAlignVertical: 'top', marginBottom: 12 },
-  rateBtn: { backgroundColor: 'theme.colors.primary', paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
+  rateBtn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   rateBtnDisabled: { backgroundColor: '#d1d5db' },
   rateBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
 });

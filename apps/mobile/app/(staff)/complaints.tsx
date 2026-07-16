@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   meta: { fontSize: 12, color: '#9ca3af' },
   actions: { flexDirection: 'row', gap: 8 },
   acceptBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: '#eff6ff', alignItems: 'center' },
-  acceptText: { fontSize: 13, fontWeight: '600', color: 'theme.colors.primary' },
+  acceptText: { fontSize: 13, fontWeight: '600', color: theme.colors.primary },
   resolveBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: '#f0fdf4', alignItems: 'center' },
   resolveText: { fontSize: 13, fontWeight: '600', color: '#16a34a' },
 });
