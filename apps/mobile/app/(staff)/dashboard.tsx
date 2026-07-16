@@ -38,35 +38,35 @@ export default function StaffDashboard() {
 
       <View style={styles.metricsRow}>
         <MetricBox label="My Tasks" value={data?.myTasks?.length || 0} color={theme.colors.primary} />
-        <MetricBox label="Open Tickets" value={data?.counts?.allOpen || 0} color="#ef4444" />
-        <MetricBox label="In Progress" value={data?.counts?.inProgress || 0} color="#eab308" />
-        <MetricBox label="Resolved Today" value={data?.counts?.resolvedToday || 0} color="#22c55e" />
+        <MetricBox label="Open Tickets" value={data?.counts?.allOpen || 0} color={theme.colors.danger} />
+        <MetricBox label="In Progress" value={data?.counts?.inProgress || 0} color={theme.colors.warning} />
+        <MetricBox label="Resolved Today" value={data?.counts?.resolvedToday || 0} color={theme.colors.success} />
       </View>
 
       {data?.counts?.slaBreached > 0 && (
-        <Card style={{ marginBottom: 12, padding: 12, backgroundColor: '#fef2f2' }}>
+        <Card style={{ marginBottom: 12, padding: 12, backgroundColor: theme.colors.dangerSurface }}>
           <Text style={styles.alertText}>⚠️ {data.counts.slaBreached} ticket{data.counts.slaBreached > 1 ? 's' : ''} approaching SLA breach</Text>
         </Card>
       )}
 
       <View style={styles.checkInOutRow}>
         <TouchableOpacity
-          style={[styles.checkBtn, { backgroundColor: '#f0fdf4' }]}
+          style={[styles.checkBtn, { backgroundColor: theme.colors.successSurface }]}
           onPress={() => checkinMutation.mutate()}
           disabled={checkinMutation.isPending || data?.isCheckedIn}
           activeOpacity={0.6}
         >
-          <Text style={[styles.checkBtnText, { color: '#16a34a' }]}>
+          <Text style={[styles.checkBtnText, { color: theme.colors.success }]}>
             {data?.isCheckedIn ? '✓ Checked In' : 'Check In'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.checkBtn, { backgroundColor: '#fef2f2' }]}
+          style={[styles.checkBtn, { backgroundColor: theme.colors.dangerSurface }]}
           onPress={() => checkoutMutation.mutate()}
           disabled={checkoutMutation.isPending || !data?.isCheckedIn}
           activeOpacity={0.6}
         >
-          <Text style={[styles.checkBtnText, { color: '#dc2626' }]}>Check Out</Text>
+          <Text style={[styles.checkBtnText, { color: theme.colors.danger }]}>Check Out</Text>
         </TouchableOpacity>
       </View>
 
@@ -127,27 +127,27 @@ function MetricBox({ label, value, color }: { label: string; value: number; colo
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
-  pageTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: theme.colors.background, padding: 16 },
+  pageTitle: { fontSize: 28, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: 16 },
   metricsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  metric: { backgroundColor: '#fff', borderRadius: 12, padding: 16, borderTopWidth: 3, flex: 1, minWidth: '45%', alignItems: 'center' },
-  metricValue: { fontSize: 28, fontWeight: '800' },
-  metricLabel: { fontSize: 12, color: '#6b7280', marginTop: 4 },
-  alertText: { fontSize: 14, fontWeight: '600', color: '#dc2626' },
+  metric: { backgroundColor: theme.colors.surface, borderRadius: 12, padding: 16, borderTopWidth: 3, flex: 1, minWidth: '45%', alignItems: 'center' },
+  metricValue: { fontSize: 28, fontFamily: theme.font.extraBold },
+  metricLabel: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 4 },
+  alertText: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.danger },
   checkInOutRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   checkBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
-  checkBtnText: { fontSize: 14, fontWeight: '600' },
+  checkBtnText: { fontSize: 14, fontFamily: theme.font.semiBold },
   section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  ticketRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  ticketTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  ticketMeta: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
-  ticketTime: { fontSize: 11, color: '#9ca3af' },
-  taskRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-  taskTitle: { fontSize: 14, fontWeight: '500', color: '#111827' },
-  taskMeta: { fontSize: 12, color: '#9ca3af', marginTop: 2, textTransform: 'capitalize' },
+  sectionTitle: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginBottom: 12 },
+  ticketRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  ticketTitle: { fontSize: 14, fontFamily: theme.font.semiBold, color: theme.colors.text },
+  ticketMeta: { fontSize: 12, color: theme.colors.textMuted, marginTop: 2 },
+  ticketTime: { fontSize: 11, color: theme.colors.textMuted },
+  taskRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight },
+  taskTitle: { fontSize: 14, fontFamily: theme.font.medium, color: theme.colors.text },
+  taskMeta: { fontSize: 12, color: theme.colors.textMuted, marginTop: 2, textTransform: 'capitalize' },
   quickActions: { flexDirection: 'row', gap: 8 },
-  actionButton: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 14, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+  actionButton: { flex: 1, backgroundColor: theme.colors.surface, borderRadius: 12, padding: 14, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
   actionIcon: { fontSize: 24, marginBottom: 4 },
-  actionLabel: { fontSize: 11, fontWeight: '600', color: '#374151' },
+  actionLabel: { fontSize: 11, fontFamily: theme.font.semiBold, color: theme.colors.textDark },
 });
