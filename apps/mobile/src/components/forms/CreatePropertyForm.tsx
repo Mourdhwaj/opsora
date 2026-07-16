@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 6 },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   typeChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb' },
-  typeChipActive: { backgroundColor: 'theme.colors.primary', borderColor: 'theme.colors.primary' },
+  typeChipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
   typeChipText: { fontSize: 13, fontWeight: '500', color: '#6b7280' },
   typeChipTextActive: { color: '#fff' },
   actions: { flexDirection: 'row', gap: 12, marginTop: 8 },

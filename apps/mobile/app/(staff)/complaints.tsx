@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Card, LoadingSkeleton, EmptyState, SearchBar, FilterBar, StatusBadge, BottomSheet } from '../../src/components';
+import { Card, LoadingSkeleton, EmptyState, SearchBar, FilterBar, StatusBadge } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatDate, getPriorityColor, getCategoryIcon, timeAgo } from '../../src/lib/utils';
 import type { Complaint } from '../../src/types';

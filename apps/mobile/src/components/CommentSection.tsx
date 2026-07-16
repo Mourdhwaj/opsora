@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   commentDate: { fontSize: 11, color: '#9ca3af', marginTop: 4 },
   inputRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-end' },
   input: { flex: 1, borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, padding: 10, fontSize: 14, color: '#111827', maxHeight: 80, textAlignVertical: 'top' },
-  sendBtn: { backgroundColor: 'theme.colors.primary', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 },
+  sendBtn: { backgroundColor: theme.colors.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 },
   sendText: { color: '#fff', fontSize: 14, fontWeight: '600' },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   checkbox: { width: 16, height: 16, borderRadius: 4, borderWidth: 1.5, borderColor: '#d1d5db' },
