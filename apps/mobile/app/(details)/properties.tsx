@@ -37,7 +37,7 @@ export default function PropertiesList() {
           <EmptyState title="No properties found" message="Add a property to get started" />
         ) : (
           filtered.map((property) => (
-            <TouchableOpacity key={property.id} onPress={() => router.push(`/(owner)/properties/${property.id}`)}>
+            <TouchableOpacity key={property.id} onPress={() => router.push(`/(details)/properties/${property.id}`)}>
               <Card style={styles.propertyCard}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.propertyName}>{property.name}</Text>

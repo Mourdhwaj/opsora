@@ -58,18 +58,6 @@ export default function OwnerLayout() {
           tabBarIcon: ({ color, size }) => <Grid2x2 size={size} color={color} />,
         }}
       />
-      {/* Hidden screens — accessible via navigation but not shown in tabs */}
-      <Tabs.Screen name="properties" options={{ href: false }} />
-      <Tabs.Screen name="properties/[id]" options={{ href: false }} />
-      <Tabs.Screen name="residents/[id]" options={{ href: false }} />
-      <Tabs.Screen name="payments/[id]" options={{ href: false }} />
-      <Tabs.Screen name="complaints/[id]" options={{ href: false }} />
-      <Tabs.Screen name="food" options={{ href: false }} />
-      <Tabs.Screen name="rooms" options={{ href: false }} />
-      <Tabs.Screen name="check-in" options={{ href: false }} />
-      <Tabs.Screen name="archive" options={{ href: false }} />
-      <Tabs.Screen name="iot/water" options={{ href: false }} />
-      <Tabs.Screen name="iot/electricity" options={{ href: false }} />
     </Tabs>
   );
 }

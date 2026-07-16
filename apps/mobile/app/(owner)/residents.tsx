@@ -104,7 +104,7 @@ export default function ResidentsList() {
           <EmptyState title="No residents found" message="Check in a resident to get started" />
         ) : (
           filtered.map(resident => (
-            <TouchableOpacity key={resident.id} onPress={() => router.push(`/(owner)/residents/${resident.id}`)}>
+            <TouchableOpacity key={resident.id} onPress={() => router.push(`/(details)/residents-${resident.id}`)}>
               <Card style={styles.card}>
                 <View style={styles.cardHeader}>
                   <View style={styles.avatar}>

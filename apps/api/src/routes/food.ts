@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
 import { foodPolls, foodPollOptions, foodVotes, mealAttendance, foodMenu, foodRatings, ingredientFormulas, tenantProfiles, notifications, properties, users } from '../lib/schema';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, inArray, gte, lte } from 'drizzle-orm';
 import { createFoodPollSchema, createFoodRatingSchema, createMealAttendanceSchema, createIngredientFormulaSchema, parseBody } from '../types';
 
 export async function foodRoutes(app: FastifyInstance) {
@@ -72,7 +72,8 @@ export async function foodRoutes(app: FastifyInstance) {
   // Get poll detail
   app.get('/food/polls/:id', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
-    const poll = db.select().from(foodPolls).where(eq(foodPolls.id, id)).get();
+    const tenantId = request.user!.tenantId;
+    const poll = db.select().from(foodPolls).where(and(eq(foodPolls.id, id), eq(foodPolls.tenantId, tenantId))).get();
     if (!poll) return reply.status(404).send({ error: 'Poll not found' });
 
     const options = db.select().from(foodPollOptions).where(eq(foodPollOptions.pollId, id)).all();
@@ -488,7 +489,7 @@ export async function foodRoutes(app: FastifyInstance) {
     const allPolls = db.select().from(foodPolls).where(eq(foodPolls.tenantId, tenantId)).all();
     const pollIds = allPolls.map(p => p.id);
     const allVotes = pollIds.length > 0 ? db.select().from(foodVotes)
-      .where(sql`${foodVotes.pollId} IN (${sql.join(pollIds.map(id => sql`${id}`), sql`, `)})`).all() : [];
+      .where(inArray(foodVotes.pollId, pollIds)).all() : [];
 
     const avgRating = allRatings.length > 0
       ? allRatings.reduce((sum, r) => sum + (r.rating || 0), 0) / allRatings.length : 0;
@@ -545,7 +546,7 @@ export async function foodRoutes(app: FastifyInstance) {
 
     const cutoff = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
     const records = db.select().from(mealAttendance)
-      .where(and(eq(mealAttendance.tenantId, tenantId), sql`${mealAttendance.date} >= ${cutoff}`))
+      .where(and(eq(mealAttendance.tenantId, tenantId), gte(mealAttendance.date, cutoff)))
       .all();
 
     // Group by date and meal type
@@ -633,8 +634,8 @@ export async function foodRoutes(app: FastifyInstance) {
     const data = db.select().from(foodMenu)
       .where(and(
         eq(foodMenu.tenantId, request.user!.tenantId),
-        sql`${foodMenu.date} >= ${today}`,
-        sql`${foodMenu.date} <= ${nextWeek}`,
+        gte(foodMenu.date, today),
+        lte(foodMenu.date, nextWeek),
       ))
       .orderBy(foodMenu.date).all();
     return reply.send(data);

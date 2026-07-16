@@ -22,13 +22,13 @@ export default function MoreScreen() {
       <MoreGrid
         onNavigate={(route) => router.push(route as any)}
         items={[
-          { icon: <Building size={24} color={theme.colors.primary} />, label: 'Properties', route: '/(owner)/properties' },
-          { icon: <LayoutGrid size={24} color={theme.colors.primary} />, label: 'Room Layout', route: '/(owner)/rooms' },
-          { icon: <UtensilsCrossed size={24} color={theme.colors.primary} />, label: 'Food & Meals', route: '/(owner)/food' },
-          { icon: <Droplets size={24} color={theme.colors.primary} />, label: 'Water IoT', route: '/(owner)/iot/water' },
-          { icon: <Zap size={24} color={theme.colors.primary} />, label: 'Electricity', route: '/(owner)/iot/electricity' },
-          { icon: <UserPlus size={24} color={theme.colors.primary} />, label: 'Group Check-in', route: '/(owner)/check-in' },
-          { icon: <Archive size={24} color={theme.colors.primary} />, label: 'Archive', route: '/(owner)/archive' },
+          { icon: <Building size={24} color={theme.colors.primary} />, label: 'Properties', route: '/(details)/properties' },
+          { icon: <LayoutGrid size={24} color={theme.colors.primary} />, label: 'Room Layout', route: '/(details)/rooms' },
+          { icon: <UtensilsCrossed size={24} color={theme.colors.primary} />, label: 'Food & Meals', route: '/(details)/food' },
+          { icon: <Droplets size={24} color={theme.colors.primary} />, label: 'Water IoT', route: '/(details)/iot/water' },
+          { icon: <Zap size={24} color={theme.colors.primary} />, label: 'Electricity', route: '/(details)/iot/electricity' },
+          { icon: <UserPlus size={24} color={theme.colors.primary} />, label: 'Group Check-in', route: '/(details)/check-in' },
+          { icon: <Archive size={24} color={theme.colors.primary} />, label: 'Archive', route: '/(details)/archive' },
           { icon: <Settings size={24} color={theme.colors.primary} />, label: 'Settings', route: '/(owner)/more' },
         ]}
       />

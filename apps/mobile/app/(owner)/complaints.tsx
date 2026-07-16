@@ -147,7 +147,7 @@ export default function ComplaintsList() {
             <Card key={complaint.id} style={styles.card}>
               <TouchableOpacity
                 style={styles.cardContent}
-                onPress={() => router.push(`/(owner)/complaints/${complaint.id}`)}
+                onPress={() => router.push(`/(details)/complaints-${complaint.id}`)}
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.iconWrap}>

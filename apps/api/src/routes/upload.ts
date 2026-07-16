@@ -39,8 +39,8 @@ export async function uploadRoutes(app: FastifyInstance) {
     return reply.send({ url, filename: data.filename });
   });
 
-  // Serve uploaded files (manual file reading since @fastify/static is not registered)
-  app.get('/uploads/:filename', async (request, reply) => {
+  // Serve uploaded files (requires auth)
+  app.get('/uploads/:filename', { preHandler: [authenticate] }, async (request, reply) => {
     const { filename } = request.params as { filename: string };
     // Basic sanitization — no path traversal
     if (filename.includes('..') || filename.includes('/')) {

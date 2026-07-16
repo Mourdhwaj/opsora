@@ -25,7 +25,7 @@ export default function WaterIoTScreen() {
           const level = Math.round(tank.latestReading?.levelPercentage || tank.currentLevel || 0);
           const color = level < 20 ? '#ef4444' : level < 50 ? '#eab308' : '#22c55e';
           return (
-            <TouchableOpacity key={tank.id} onPress={() => router.push(`/(owner)/iot/water/${tank.id}`)}>
+            <TouchableOpacity key={tank.id} onPress={() => router.push(`/(details)/iot/water/${tank.id}`)}>
               <Card style={styles.tankCard}>
                 <View style={styles.tankHeader}>
                   <Text style={styles.tankName}>{tank.name}</Text>

@@ -285,8 +285,9 @@ export async function staffPortalRoutes(app: FastifyInstance) {
       conditions.push(eq(complaints.assignedTo, staffId));
     }
     if (search) {
+      const searchPattern = `%${search}%`;
       conditions.push(
-        sql`(${complaints.title} LIKE ${'%' + search + '%'} OR ${complaints.ticketNumber} LIKE ${'%' + search + '%'} OR ${complaints.description} LIKE ${'%' + search + '%'})`
+        sql`(${complaints.title} LIKE ${searchPattern} OR ${complaints.ticketNumber} LIKE ${searchPattern} OR ${complaints.description} LIKE ${searchPattern})`
       );
     }
 
@@ -329,18 +330,30 @@ export async function staffPortalRoutes(app: FastifyInstance) {
     });
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
   // TICKET DETAIL (with full thread, SLA, metadata)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════════
   app.get('/staff/tickets/:id', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireStaffAccess(request, reply)) return;
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
+    const role = request.user!.role;
+    const userId = request.user!.userId;
 
     const ticket = db.select().from(complaints)
       .where(and(eq(complaints.id, id), eq(complaints.tenantId, tenantId)))
       .get();
     if (!ticket) return reply.status(404).send({ error: 'Ticket not found' });
+
+    // Staff can only view tickets assigned to them (owner/admin can view all)
+    if (role === 'staff') {
+      const staffRecord = db.select().from(staff)
+        .where(and(eq(staff.userId, userId), eq(staff.tenantId, tenantId)))
+        .get();
+      if (!staffRecord || ticket.assignedTo !== staffRecord.id) {
+        return reply.status(403).send({ error: 'Access denied: ticket not assigned to you' });
+      }
+    }
 
     // Get comments/thread
     const comments = db.select().from(complaintComments)

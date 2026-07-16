@@ -98,7 +98,7 @@ export default function OwnerDashboard() {
       />
 
       <View style={styles.quickActions}>
-        <IconActionButton icon={<Building size={22} color={theme.colors.primary} />} label="Properties" onPress={() => router.push('/(owner)/properties')} />
+        <IconActionButton icon={<Building size={22} color={theme.colors.primary} />} label="Properties" onPress={() => router.push('/(details)/properties')} />
         <IconActionButton icon={<Users size={22} color={theme.colors.primary} />} label="Residents" onPress={() => router.push('/(owner)/residents')} />
         <IconActionButton icon={<CreditCard size={22} color={theme.colors.primary} />} label="Payments" onPress={() => router.push('/(owner)/payments')} />
         <IconActionButton icon={<AlertCircle size={22} color={theme.colors.primary} />} label="Issues" onPress={() => router.push('/(owner)/complaints')} />

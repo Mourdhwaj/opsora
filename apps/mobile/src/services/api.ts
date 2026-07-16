@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 const getBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
   if (Platform.OS === 'android') return 'http://10.0.2.2:3001';
+  // For iOS simulator use localhost, for real device use your computer's IP
   return 'http://localhost:3001';
 };
 
@@ -12,7 +13,7 @@ const API_BASE_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: 8000,
   headers: { 'Content-Type': 'application/json' },
 });
 

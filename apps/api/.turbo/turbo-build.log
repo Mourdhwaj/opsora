@@ -2,6 +2,12 @@
 > @opsora/api@1.0.0 build
 > tsc
 
+src/__tests__/checkin-group.test.ts(207,46): error TS2339: Property 'room_id' does not exist on type '{}'.
+src/__tests__/checkin-group.test.ts(209,63): error TS2339: Property 'bed_number' does not exist on type '{}'.
+src/__tests__/checkin-group.test.ts(212,63): error TS2339: Property 'bed_number' does not exist on type '{}'.
+src/__tests__/checkin-group.test.ts(224,44): error TS2339: Property 'room_id' does not exist on type '{}'.
+src/__tests__/checkin-group.test.ts(243,111): error TS2339: Property 'tenant_id' does not exist on type '{}'.
+src/__tests__/checkin-group.test.ts(261,29): error TS2339: Property 'floor_number' does not exist on type '{}'.
 src/index.ts(69,13): error TS2769: No overload matches this call.
   Overload 1 of 3, '(plugin: FastifyPluginCallback<FastifyJWTOptions, RawServerDefault, FastifyTypeProviderDefault, FastifyBaseLogger>, opts?: FastifyRegisterOptions<...> | undefined): FastifyInstance<...> & PromiseLike<...>', gave the following error.
     Type 'string | undefined' is not assignable to type 'Secret | { public: Secret; private?: Secret | undefined; }'.
@@ -18,12 +24,12 @@ src/index.ts(106,11): error TS2339: Property '__loginAttempts' does not exist on
 src/index.ts(120,28): error TS2339: Property '__registerAttempts' does not exist on type 'FastifyInstance<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProvider>'.
 src/index.ts(121,46): error TS7006: Parameter 't' implicitly has an 'any' type.
 src/index.ts(128,11): error TS2339: Property '__registerAttempts' does not exist on type 'FastifyInstance<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProvider>'.
-src/index.ts(272,54): error TS2339: Property 'authenticate' does not exist on type 'FastifyInstance<Server<typeof IncomingMessage, typeof ServerResponse>, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProviderDefault> & PromiseLike<...>'.
-src/index.ts(279,27): error TS7006: Parameter 'message' implicitly has an 'any' type.
-src/index.ts(299,25): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/index.ts(283,54): error TS2339: Property 'authenticate' does not exist on type 'FastifyInstance<Server<typeof IncomingMessage, typeof ServerResponse>, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProviderDefault> & PromiseLike<...>'.
+src/index.ts(290,27): error TS7006: Parameter 'message' implicitly has an 'any' type.
+src/index.ts(310,25): error TS7006: Parameter 'error' implicitly has an 'any' type.
 src/middleware/auth.ts(29,5): error TS2687: All declarations of 'user' must have identical modifiers.
 src/middleware/auth.ts(29,5): error TS2717: Subsequent property declarations must have the same type.  Property 'user' must be of type '{ userId: string; tenantId: string; email: string; role: string; }', but here has type '{ userId: string; tenantId: string; email: string; role: string; } | undefined'.
-src/routes/food.ts(193,25): error TS2769: No overload matches this call.
+src/routes/food.ts(203,25): error TS2769: No overload matches this call.
   Overload 1 of 2, '(value: { date: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<string, any>; ... 12 more ...; attendanceActual?: number | ... 3 more ... | undefined; }): SQLiteInsertBase<...>', gave the following error.
     Type 'string | null' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
       Type 'null' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
@@ -32,56 +38,49 @@ src/routes/food.ts(193,25): error TS2769: No overload matches this call.
 src/routes/iot.ts(67,32): error TS18047: 'tank.criticalLevelAlert' is possibly 'null'.
 src/routes/iot.ts(133,59): error TS18047: 'meter.costPerUnit' is possibly 'null'.
 src/routes/iot.ts(133,79): error TS18047: 'meter.fixedCharge' is possibly 'null'.
-src/routes/payments-proof.ts(104,82): error TS2339: Property 'breakfastOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
-src/routes/payments-proof.ts(105,74): error TS2339: Property 'lunchOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
-src/routes/payments-proof.ts(106,76): error TS2339: Property 'dinnerOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
-src/routes/payments-proof.ts(107,36): error TS2339: Property 'foodOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
-src/routes/payments-proof.ts(191,20): error TS2339: Property 'foodOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
-src/routes/payments-proof.ts(193,84): error TS2339: Property 'breakfastOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
-src/routes/payments-proof.ts(194,76): error TS2339: Property 'lunchOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
-src/routes/payments-proof.ts(195,78): error TS2339: Property 'dinnerOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
-src/routes/payments-proof.ts(640,35): error TS2769: No overload matches this call.
+src/routes/payments-proof.ts(110,82): error TS2339: Property 'breakfastOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
+src/routes/payments-proof.ts(111,74): error TS2339: Property 'lunchOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
+src/routes/payments-proof.ts(112,76): error TS2339: Property 'dinnerOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
+src/routes/payments-proof.ts(113,36): error TS2339: Property 'foodOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
+src/routes/payments-proof.ts(200,20): error TS2339: Property 'foodOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
+src/routes/payments-proof.ts(202,84): error TS2339: Property 'breakfastOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
+src/routes/payments-proof.ts(203,76): error TS2339: Property 'lunchOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
+src/routes/payments-proof.ts(204,78): error TS2339: Property 'dinnerOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.
+src/routes/payments-proof.ts(649,35): error TS2769: No overload matches this call.
   Overload 1 of 2, '(value: { id: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<string, any>; reminderType: string | SQL<unknown> | Placeholder<...>; ... 5 more ...; sentAt?: string | ... 3 more ... | undefined; }): SQLiteInsertBase<...>', gave the following error.
     Type 'string | undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
       Type 'undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
   Overload 2 of 2, '(values: { id: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<string, any>; reminderType: string | SQL<unknown> | Placeholder<...>; ... 5 more ...; sentAt?: string | ... 3 more ... | undefined; }[]): SQLiteInsertBase<...>', gave the following error.
     Object literal may only specify known properties, and 'id' does not exist in type '{ id: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<string, any>; reminderType: string | SQL<unknown> | Placeholder<...>; ... 5 more ...; sentAt?: string | ... 3 more ... | undefined; }[]'.
-src/routes/payments.ts(47,43): error TS18048: 'body.electricityCharge' is possibly 'undefined'.
-src/routes/payments.ts(47,68): error TS18048: 'body.waterCharge' is possibly 'undefined'.
-src/routes/payments.ts(48,7): error TS18048: 'body.foodCharge' is possibly 'undefined'.
-src/routes/payments.ts(48,25): error TS18048: 'body.maintenanceCharge' is possibly 'undefined'.
-src/routes/payments.ts(95,27): error TS18047: 'payment.paidAmount' is possibly 'null'.
-src/routes/payments.ts(127,65): error TS18047: 'p.paidAmount' is possibly 'null'.
-src/routes/properties.ts(241,26): error TS18048: 'body.totalBeds' is possibly 'undefined'.
+src/routes/payments.ts(50,43): error TS18048: 'body.electricityCharge' is possibly 'undefined'.
+src/routes/payments.ts(50,68): error TS18048: 'body.waterCharge' is possibly 'undefined'.
+src/routes/payments.ts(51,7): error TS18048: 'body.foodCharge' is possibly 'undefined'.
+src/routes/payments.ts(51,25): error TS18048: 'body.maintenanceCharge' is possibly 'undefined'.
+src/routes/payments.ts(101,27): error TS18047: 'payment.paidAmount' is possibly 'null'.
+src/routes/payments.ts(133,65): error TS18047: 'p.paidAmount' is possibly 'null'.
+src/routes/properties.ts(256,26): error TS18048: 'body.totalBeds' is possibly 'undefined'.
 src/routes/residents.ts(61,7): error TS2769: No overload matches this call.
   Overload 2 of 2, '(values: { id: string | SQL<unknown> | Placeholder<string, any>; phone: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<...>; ... 34 more ...; dietaryPreference?: string | ... 3 more ... | undefined; }[]): SQLiteInsertBase<...>', gave the following error.
     Object literal may only specify known properties, and 'id' does not exist in type '{ id: string | SQL<unknown> | Placeholder<string, any>; phone: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<string, any>; ... 34 more ...; dietaryPreference?: string | ... 3 more ... | undefined; }[]'.
-src/routes/residents.ts(142,11): error TS7022: 'beds' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
-src/routes/residents.ts(142,35): error TS2448: Block-scoped variable 'beds' used before its declaration.
-src/routes/residents.ts(143,21): error TS2448: Block-scoped variable 'beds' used before its declaration.
-src/routes/residents.ts(143,59): error TS2448: Block-scoped variable 'beds' used before its declaration.
-src/routes/residents.ts(150,38): error TS7006: Parameter 'b' implicitly has an 'any' type.
-src/routes/residents.ts(152,100): error TS7006: Parameter 'b' implicitly has an 'any' type.
-src/routes/residents.ts(156,42): error TS7006: Parameter 'b' implicitly has an 'any' type.
-src/routes/residents.ts(157,11): error TS7022: 'rooms' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
-src/routes/residents.ts(157,36): error TS2448: Block-scoped variable 'rooms' used before its declaration.
-src/routes/residents.ts(157,57): error TS2448: Block-scoped variable 'rooms' used before its declaration.
-src/routes/residents.ts(158,45): error TS7006: Parameter 'r' implicitly has an 'any' type.
-src/routes/residents.ts(161,29): error TS7006: Parameter 'b' implicitly has an 'any' type.
-src/routes/residents.ts(182,29): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/routes/residents.ts(178,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { id: string | SQL<unknown> | Placeholder<string, any>; phone: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<...>; ... 34 more ...; dietaryPreference?: string | ... 3 more ... | undefined; }): SQLiteInsertBase<...>', gave the following error.
+    Type 'string | null' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+      Type 'null' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+  Overload 2 of 2, '(values: { id: string | SQL<unknown> | Placeholder<string, any>; phone: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<...>; ... 34 more ...; dietaryPreference?: string | ... 3 more ... | undefined; }[]): SQLiteInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'id' does not exist in type '{ id: string | SQL<unknown> | Placeholder<string, any>; phone: string | SQL<unknown> | Placeholder<string, any>; tenantId: string | SQL<unknown> | Placeholder<string, any>; ... 34 more ...; dietaryPreference?: string | ... 3 more ... | undefined; }[]'.
 src/routes/staff-portal.ts(127,36): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
   Type 'null' is not assignable to type 'string'.
 src/routes/staff-portal.ts(128,32): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
   Type 'null' is not assignable to type 'string'.
-src/routes/staff-portal.ts(315,36): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+src/routes/staff-portal.ts(316,36): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
   Type 'null' is not assignable to type 'string'.
-src/routes/staff-portal.ts(316,46): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+src/routes/staff-portal.ts(317,46): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
   Type 'null' is not assignable to type 'string'.
-src/routes/staff-portal.ts(322,32): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+src/routes/staff-portal.ts(323,32): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
   Type 'null' is not assignable to type 'string'.
-src/routes/staff-portal.ts(390,34): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+src/routes/staff-portal.ts(403,34): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
   Type 'null' is not assignable to type 'string'.
-src/routes/staff-portal.ts(391,44): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+src/routes/staff-portal.ts(404,44): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
   Type 'null' is not assignable to type 'string'.
 src/routes/tenant.ts(88,65): error TS18047: 'p.paidAmount' is possibly 'null'.
 src/routes/tenant.ts(131,28): error TS2339: Property 'foodOptIn' does not exist on type '{ id: string; tenantId: string; propertyId: string; roomId: string; bedId: string; fullName: string; phone: string; email: string | null; dateOfBirth: string | null; gender: string | null; bloodGroup: string | null; ... 26 more ...; updatedAt: string | null; }'.

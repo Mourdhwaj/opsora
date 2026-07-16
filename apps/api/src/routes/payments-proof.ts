@@ -7,7 +7,7 @@ import {
   paymentReminders, paymentActivities, tenantProfiles, notifications, rooms, beds, users,
   electricityReadings, mealAttendance, billingConfigs,
 } from '../lib/schema';
-import { eq, and, desc, count, sql } from 'drizzle-orm';
+import { eq, and, desc, count, sql, gte, lte, inArray } from 'drizzle-orm';
 import {
   createRentInvoiceSchema, uploadPaymentProofSchema, verifyPaymentSchema,
   createReminderSchema, generateBulkRemindersSchema, parseBody,
@@ -53,8 +53,11 @@ export async function paymentProofRoutes(app: FastifyInstance) {
   // Helper: batch-fetch meal attendance grouped by resident (avoids N+1)
   const getMealsByResident = (tenantId: string, monthStart: string, monthEnd: string) => {
     const allMeals = db.select().from(mealAttendance)
-      .where(and(eq(mealAttendance.tenantId, tenantId),
-        sql`${mealAttendance.date} >= ${monthStart} AND ${mealAttendance.date} <= ${monthEnd}`))
+      .where(and(
+        eq(mealAttendance.tenantId, tenantId),
+        gte(mealAttendance.date, monthStart),
+        lte(mealAttendance.date, monthEnd)
+      ))
       .all();
     const map = new Map<string, typeof allMeals>();
     for (const m of allMeals) {
@@ -78,8 +81,11 @@ export async function paymentProofRoutes(app: FastifyInstance) {
 
     // Sum electricity readings for the month across all meters
     const allReadings = db.select().from(electricityReadings)
-      .where(and(eq(electricityReadings.tenantId, tenantId),
-        sql`${electricityReadings.time} >= ${monthStart} AND ${electricityReadings.time} <= ${monthEnd}`))
+      .where(and(
+        eq(electricityReadings.tenantId, tenantId),
+        gte(electricityReadings.time, monthStart),
+        lte(electricityReadings.time, monthEnd)
+      ))
       .all();
     const totalElectricityCost = allReadings.reduce((sum, r) => sum + (r.estimatedCost || 0), 0);
 
@@ -156,8 +162,11 @@ export async function paymentProofRoutes(app: FastifyInstance) {
     let utilityPerResident = 0;
     if (includeUtility && residents.length > 0) {
       const allReadings = db.select().from(electricityReadings)
-        .where(and(eq(electricityReadings.tenantId, tenantId),
-          sql`${electricityReadings.time} >= ${monthStart} AND ${electricityReadings.time} <= ${monthEnd}`))
+        .where(and(
+          eq(electricityReadings.tenantId, tenantId),
+          gte(electricityReadings.time, monthStart),
+          lte(electricityReadings.time, monthEnd)
+        ))
         .all();
       const totalElectricityCost = allReadings.reduce((sum, r) => sum + (r.estimatedCost || 0), 0);
       utilityPerResident = Math.round(totalElectricityCost / residents.length * 100) / 100;
@@ -569,7 +578,7 @@ export async function paymentProofRoutes(app: FastifyInstance) {
     if (invoiceIds.length === 0) return reply.send([]);
 
     const data = db.select().from(receipts).where(
-      sql`${receipts.invoiceId} IN (${sql.join(invoiceIds.map(id => sql`${id}`), sql`, `)})`
+      inArray(receipts.invoiceId, invoiceIds)
     ).orderBy(desc(receipts.createdAt)).all();
 
     return reply.send(data);

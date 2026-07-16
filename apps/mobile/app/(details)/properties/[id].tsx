@@ -83,7 +83,7 @@ export default function PropertyDetail() {
           <Text style={styles.sectionTitle}>Rooms</Text>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity
-              onPress={() => router.push({ pathname: '/(owner)/rooms', params: { propertyId: id as string } })}
+              onPress={() => router.push({ pathname: '/(details)/rooms', params: { propertyId: id as string } })}
               style={styles.viewLayoutBtn}
             >
               <BedDouble size={14} color={theme.colors.textSecondary} /><Text style={styles.viewLayoutBtnText}> Layout{totalBeds > 0 ? ' ' : ''}</Text>

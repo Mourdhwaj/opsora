@@ -322,6 +322,7 @@ function broadcastToUsers(tenantId: string, userIds: string[], message: any) {
     reply.header('Referrer-Policy', 'strict-origin-when-cross-origin');
     reply.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     reply.header('X-Permitted-Cross-Domain-Policies', 'none');
+    reply.header('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';");
     reply.removeHeader('X-Powered-By');
   });
 

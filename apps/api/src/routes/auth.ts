@@ -3,19 +3,9 @@ import { FastifyInstance } from 'fastify';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
-import { tenants, users } from '../lib/schema';
+import { tenants, users, revokedTokens } from '../lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { loginSchema, registerTenantSchema, createUserSchema, parseBody } from '../types';
-
-// Authentication hook for protected routes
-async function authenticateHook(request: any, reply: any) {
-  try {
-    await request.jwtVerify();
-  } catch (err) {
-    return reply.status(401).send({ error: 'Unauthorized' });
-  }
-}
-
 import { sanitize } from '../lib/sanitize';
 
 export async function authRoutes(app: FastifyInstance) {
@@ -101,7 +91,7 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   // Get current user profile
-  app.get('/auth/me', { preHandler: [authenticateHook] }, async (request, reply) => {
+  app.get('/auth/me', { preHandler: [authenticate] }, async (request, reply) => {
     const user = db.select().from(users).where(eq(users.id, request.user!.userId)).get();
     if (!user) {
       return reply.status(404).send({ error: 'User not found' });
@@ -120,7 +110,7 @@ export async function authRoutes(app: FastifyInstance) {
         const decoded = app.jwt.decode(token) as { exp: number };
         const expiresAt = decoded?.exp || Math.floor(Date.now() / 1000) + 86400;
         
-        db.insert(require('../lib/schema').revokedTokens).values({
+        db.insert(revokedTokens).values({
           id: uuidv4(),
           token,
           expiresAt: expiresAt.toString(),
