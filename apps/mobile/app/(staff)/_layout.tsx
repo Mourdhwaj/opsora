@@ -3,11 +3,14 @@ import { Tabs, useRouter } from 'expo-router';
 import { Text, View, TouchableOpacity, StyleSheet, Animated, Dimensions } from 'react-native';
 import { useState, useRef } from 'react';
 import { useAuth } from '../../src/services/auth';
+import { useResponsive } from '../../src/lib/useResponsive';
 
-const DRAWER_WIDTH = 280;
+const DEFAULT_DRAWER_WIDTH = 280;
 
 export default function StaffLayout() {
   const { user, logout } = useAuth();
+  const { isLarge } = useResponsive();
+  const DRAWER_WIDTH = isLarge ? 320 : DEFAULT_DRAWER_WIDTH;
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
@@ -63,7 +66,7 @@ export default function StaffLayout() {
         <TouchableOpacity style={{ flex: 1 }} onPress={closeDrawer} activeOpacity={1} />
       </Animated.View>
 
-      <Animated.View style={[styles.drawer, { transform: [{ translateX }] }]} pointerEvents={drawerOpen ? 'auto' : 'none'}>
+      <Animated.View style={[styles.drawer, { width: DRAWER_WIDTH, transform: [{ translateX }] }]} pointerEvents={drawerOpen ? 'auto' : 'none'}>
         <View style={styles.brand}>
           <View style={styles.brandIcon}><Text style={{ color: theme.colors.surface, fontSize: 18, fontFamily: theme.font.bold }}>O</Text></View>
           <View><Text style={styles.brandName}>Opsora</Text><Text style={styles.brandSub}>Staff Portal</Text></View>
@@ -100,7 +103,7 @@ const staffItems = [
 
 const styles = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: theme.colors.overlay, zIndex: 10 },
-  drawer: { position: 'absolute', left: 0, top: 0, bottom: 0, width: DRAWER_WIDTH, backgroundColor: theme.colors.surface, elevation: 16, zIndex: 20 },
+  drawer: { position: 'absolute', left: 0, top: 0, bottom: 0, width: DEFAULT_DRAWER_WIDTH, backgroundColor: theme.colors.surface, elevation: 16, zIndex: 20 },
   brand: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight, gap: 12 },
   brandIcon: { width: 40, height: 40, borderRadius: 10, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center' },
   brandName: { fontSize: 18, fontFamily: theme.font.extraBold, color: theme.colors.text },
