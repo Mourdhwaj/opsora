@@ -2,7 +2,7 @@ import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
-import { tenantProfiles, beds, rooms, properties, rentPayments, complaints, archivedResidents } from '../lib/schema';
+import { tenantProfiles, beds, rooms, properties, rentPayments, complaints, archivedResidents, activityLogs } from '../lib/schema';
 import { eq, and, like, desc, sql, inArray } from 'drizzle-orm';
 import { createTenantProfileSchema, parseBody } from '../types';
 
@@ -292,31 +292,49 @@ export async function residentRoutes(app: FastifyInstance) {
     return reply.send(updated);
   });
 
-  // Check-out resident
+  // Check-out resident with deposit refund
   app.post('/residents/:id/checkout', { preHandler: [authenticate] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const tenantId = request.user!.tenantId;
+    const body = request.body as {
+      moveOutDate?: string;
+      refundAmount?: number;
+      deductions?: Array<{ reason: string; amount: number }>;
+      notes?: string;
+    };
+    
     const profile = db.select().from(tenantProfiles)
       .where(and(eq(tenantProfiles.id, id), eq(tenantProfiles.tenantId, tenantId)))
       .get();
     if (!profile) return reply.status(404).send({ error: 'Resident not found' });
 
+    // Check for pending payments
     const pendingPayments = db.select().from(rentPayments)
-      .where(and(eq(rentPayments.tenantProfileId, id), inArray(rentPayments.paymentStatus, ['pending', 'overdue', 'partial'])))
+      .where(and(
+        eq(rentPayments.tenantProfileId, id),
+        sql`${rentPayments.paymentStatus} IN ('pending', 'overdue', 'partial')`,
+      ))
       .all();
     if (pendingPayments.length > 0) {
-      return reply.status(400).send({ error: 'Cannot checkout: pending payments exist', pendingAmount: pendingPayments.reduce((s, p) => s + (p.balanceAmount || 0), 0) });
+      return reply.status(400).send({ 
+        error: 'Cannot checkout: pending payments exist', 
+        pendingAmount: pendingPayments.reduce((s, p) => s + (p.balanceAmount || 0), 0) 
+      });
     }
 
+    // Check for pending complaints
     const pendingComplaints = db.select().from(complaints)
-      .where(and(eq(complaints.tenantProfileId, id), inArray(complaints.status, ['open', 'in_progress'])))
+      .where(and(eq(complaints.tenantProfileId, id), sql`${complaints.status} IN ('open', 'in_progress')`))
       .all();
     if (pendingComplaints.length > 0) {
       return reply.status(400).send({ error: 'Cannot checkout: pending complaints exist' });
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = body.moveOutDate || new Date().toISOString().split('T')[0];
     const userId = request.user!.userId;
+    const depositPaid = profile.depositPaid || 0;
+    const totalDeductions = body.deductions?.reduce((sum, d) => sum + d.amount, 0) || 0;
+    const refundAmount = body.refundAmount ?? Math.max(0, depositPaid - totalDeductions);
 
     // Archive the resident data before checkout
     db.insert(archivedResidents).values({
@@ -334,22 +352,55 @@ export async function residentRoutes(app: FastifyInstance) {
       moveInDate: profile.moveInDate,
       moveOutDate: today,
       rentAmount: profile.rentAmount,
-      depositPaid: profile.depositPaid,
+      depositPaid,
       archivedAt: new Date().toISOString(),
       archivedBy: userId,
-      reason: 'Checked out',
+      reason: body.notes || 'Checked out',
       originalData: JSON.stringify(profile),
     }).run();
 
-    db.update(tenantProfiles).set({ status: 'checked_out', moveOutDate: today, updatedAt: new Date().toISOString() })
-      .where(eq(tenantProfiles.id, id)).run();
+    // Update resident status
+    db.update(tenantProfiles).set({ 
+      status: 'checked_out', 
+      moveOutDate: today, 
+      updatedAt: new Date().toISOString() 
+    }).where(eq(tenantProfiles.id, id)).run();
 
+    // Free up the bed
     if (profile.bedId) {
       db.update(beds).set({ status: 'vacant', updatedAt: new Date().toISOString() })
         .where(eq(beds.id, profile.bedId)).run();
     }
 
-    return reply.send({ message: 'Resident archived and checked out successfully', checkoutDate: today });
+    // Log activity
+    db.insert(activityLogs).values({
+      id: uuidv4(),
+      tenantId,
+      actorType: 'user',
+      actorId: userId,
+      actorName: profile.fullName,
+      action: 'resident_checked_out',
+      entityType: 'resident',
+      entityId: id,
+      oldValues: JSON.stringify({ depositPaid, status: 'active' }),
+      newValues: JSON.stringify({
+        moveOutDate: today,
+        depositPaid,
+        refundAmount,
+        deductions: body.deductions,
+      }),
+      createdAt: new Date().toISOString(),
+    }).run();
+
+    return reply.send({ 
+      message: 'Resident checked out successfully',
+      resident: profile.fullName,
+      depositPaid,
+      totalDeductions,
+      deductions: body.deductions || [],
+      refundAmount,
+      moveOutDate: today,
+    });
   });
 
   // Admin: Recalculate occupancy (kept for backward compatibility)
