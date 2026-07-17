@@ -251,6 +251,62 @@ export async function dashboardRoutes(app: FastifyInstance) {
     return reply.send({ tenants: tenantsWithDetails, summary });
   });
 
+  // Paid tenants for current month (owner/admin only)
+  app.get('/dashboard/paid-tenants', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const user = request.user as { userId: string; tenantId: string; email: string; role: string };
+    const tenantId = user.tenantId;
+    const { propertyId } = request.query as { propertyId?: string };
+
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    
+    const payConditions = [
+      eq(rentPayments.tenantId, tenantId),
+      eq(rentPayments.monthYear, currentMonth),
+      eq(rentPayments.paymentStatus, 'paid'),
+    ];
+    if (propertyId) payConditions.push(eq(rentPayments.propertyId, propertyId));
+    
+    const paidPayments = db.select({
+      id: rentPayments.id,
+      tenantProfileId: rentPayments.tenantProfileId,
+      monthYear: rentPayments.monthYear,
+      rentAmount: rentPayments.rentAmount,
+      paidAmount: rentPayments.paidAmount,
+      paidDate: rentPayments.paidDate,
+      paymentMethod: rentPayments.paymentMethod,
+    }).from(rentPayments)
+      .where(and(...payConditions))
+      .all();
+
+    // Get tenant details for each payment
+    const tenantsWithDetails = paidPayments.map(payment => {
+      const profile = db.select().from(tenantProfiles)
+        .where(eq(tenantProfiles.id, payment.tenantProfileId))
+        .get();
+      const room = profile?.roomId ? db.select().from(rooms)
+        .where(eq(rooms.id, profile.roomId))
+        .get() : null;
+      return {
+        id: payment.tenantProfileId,
+        name: profile?.fullName || 'Unknown',
+        phone: profile?.phone || '',
+        roomNumber: room?.roomNumber || 'N/A',
+        rentAmount: payment.rentAmount,
+        paidAmount: payment.paidAmount,
+        paidDate: payment.paidDate,
+        paymentMethod: payment.paymentMethod || 'N/A',
+      };
+    });
+
+    const totalCollected = tenantsWithDetails.reduce((sum, t) => sum + t.paidAmount, 0);
+
+    return reply.send({ 
+      tenants: tenantsWithDetails, 
+      summary: { total: tenantsWithDetails.length, totalCollected } 
+    });
+  });
+
   // Property-level dashboard (owner/admin only)
   app.get('/dashboard/property/:propertyId', { preHandler: [authenticate] }, async (request, reply) => {
     if (!requireOwner(request, reply)) return;
