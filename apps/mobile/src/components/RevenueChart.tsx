@@ -1,13 +1,14 @@
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { theme } from '../lib/theme';
+import { useResponsive } from '../lib/useResponsive';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
 const RANGES = ['1M', '3M', '6M'];
 
 interface RevenueChartProps { data: Array<{ month: string; collected: number; expected: number }>; range: string; onRangeChange: (r: string) => void; }
 
 export function RevenueChart({ data, range, onRangeChange }: RevenueChartProps) {
+  const { width: SCREEN_WIDTH } = useResponsive();
   const chartData = data.slice(-6);
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const labels = chartData.map(d => { const p = d.month.split('-'); return months[parseInt(p[1],10)-1] || p[1]; });
