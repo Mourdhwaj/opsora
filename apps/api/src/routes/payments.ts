@@ -9,9 +9,10 @@ import { createPaymentSchema, parseBody } from '../types';
 export async function paymentRoutes(app: FastifyInstance) {
   // List payments
   app.get('/payments', { preHandler: [authenticate] }, async (request, reply) => {
-    const { page = 1, limit = 20, propertyId, monthYear, status } = request.query as {
-      page?: number; limit?: number; propertyId?: string; monthYear?: string; status?: string;
-    };
+    const raw = request.query as Record<string, string>;
+    const page = Number(raw.page) || 1;
+    const limit = Number(raw.limit) || 20;
+    const { propertyId, monthYear, status } = raw as { propertyId?: string; monthYear?: string; status?: string };
     const tenantId = request.user!.tenantId;
     const offset = (page - 1) * limit;
 
