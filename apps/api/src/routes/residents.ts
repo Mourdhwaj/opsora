@@ -378,7 +378,7 @@ export async function residentRoutes(app: FastifyInstance) {
       tenantId,
       actorType: 'user',
       actorId: userId,
-      actorName: profile.fullName,
+      actorName: request.user!.email,
       action: 'resident_checked_out',
       entityType: 'resident',
       entityId: id,
