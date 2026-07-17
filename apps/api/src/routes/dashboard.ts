@@ -132,6 +132,8 @@ export async function dashboardRoutes(app: FastifyInstance) {
         collectionRate: totalExpected > 0 ? ((totalCollected / totalExpected) * 100).toFixed(1) : '0',
         paidCount: monthPayments.filter(p => p.paymentStatus === 'paid').length,
         pendingCount: monthPayments.filter(p => p.paymentStatus === 'pending').length,
+        overdueCount: monthPayments.filter(p => p.paymentStatus === 'overdue').length,
+        partialCount: monthPayments.filter(p => p.paymentStatus === 'partial').length,
         allTimeCollected, allTimeExpected,
       },
       complaints: { open: openComplaints, urgent: urgentComplaints },
@@ -187,6 +189,66 @@ export async function dashboardRoutes(app: FastifyInstance) {
       }));
 
     return reply.send(result.slice(-12));
+  });
+
+  // Pending tenants for current month (owner/admin only)
+  app.get('/dashboard/pending-tenants', { preHandler: [authenticate] }, async (request, reply) => {
+    if (!requireOwner(request, reply)) return;
+    const user = request.user as { userId: string; tenantId: string; email: string; role: string };
+    const tenantId = user.tenantId;
+    const { propertyId } = request.query as { propertyId?: string };
+
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
+    const payConditions = [
+      eq(rentPayments.tenantId, tenantId),
+      eq(rentPayments.monthYear, currentMonth),
+      sql`${rentPayments.paymentStatus} IN ('pending', 'overdue', 'partial')`,
+    ];
+    if (propertyId) payConditions.push(eq(rentPayments.propertyId, propertyId));
+
+    const pendingPayments = db.select({
+      id: rentPayments.id,
+      tenantProfileId: rentPayments.tenantProfileId,
+      monthYear: rentPayments.monthYear,
+      rentAmount: rentPayments.rentAmount,
+      totalAmount: rentPayments.totalAmount,
+      paidAmount: rentPayments.paidAmount,
+      balanceAmount: rentPayments.balanceAmount,
+      paymentStatus: rentPayments.paymentStatus,
+      dueDate: rentPayments.dueDate,
+    }).from(rentPayments)
+      .where(and(...payConditions))
+      .all();
+
+    const tenantsWithDetails = pendingPayments.map(payment => {
+      const profile = db.select().from(tenantProfiles)
+        .where(eq(tenantProfiles.id, payment.tenantProfileId))
+        .get();
+      const room = profile?.roomId ? db.select().from(rooms)
+        .where(eq(rooms.id, profile.roomId))
+        .get() : null;
+      return {
+        id: payment.tenantProfileId,
+        name: profile?.fullName || 'Unknown',
+        phone: profile?.phone || '',
+        roomNumber: room?.roomNumber || 'N/A',
+        rentAmount: payment.rentAmount,
+        paidAmount: payment.paidAmount,
+        balanceAmount: payment.balanceAmount,
+        status: payment.paymentStatus,
+        dueDate: payment.dueDate,
+      };
+    });
+
+    const summary = {
+      total: tenantsWithDetails.length,
+      overdue: tenantsWithDetails.filter(t => t.status === 'overdue').length,
+      pending: tenantsWithDetails.filter(t => t.status === 'pending').length,
+      partial: tenantsWithDetails.filter(t => t.status === 'partial').length,
+    };
+
+    return reply.send({ tenants: tenantsWithDetails, summary });
   });
 
   // Property-level dashboard (owner/admin only)
