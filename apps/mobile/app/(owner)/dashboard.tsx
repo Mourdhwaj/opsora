@@ -6,6 +6,7 @@ import { Bell, Building, Users, CreditCard, AlertCircle, UserPlus, BedDouble, Ch
 import { GradientHeader, HeroStatCard, IconActionButton, RevenueChart, ProgressRing, ErrorState, DashboardSkeleton } from '../../src/components';
 import { api } from '../../src/services/api';
 import { theme } from '../../src/lib/theme';
+import { useResponsive } from '../../src/lib/useResponsive';
 
 interface DashboardData {
   properties: { total: number; totalBeds: number; occupiedBeds: number; vacantBeds: number; occupancyRate: string };
@@ -33,6 +34,7 @@ export default function OwnerDashboard() {
   const router = useRouter();
   const [chartRange, setChartRange] = useState('3M');
   const [propertyFilter, setPropertyFilter] = useState('');
+  const { isSmall } = useResponsive();
 
   const { data: allData, isLoading, error, refetch } = useQuery({
     queryKey: ['owner-dashboard-full', propertyFilter],
@@ -97,7 +99,7 @@ export default function OwnerDashboard() {
         subtitle={`from ${data?.tenants?.active || 0} active tenants`}
       />
 
-      <View style={styles.quickActions}>
+      <View style={[styles.quickActions, isSmall && styles.quickActionsSmall]}>
         <IconActionButton icon={<Building size={22} color={theme.colors.primary} />} label="Properties" onPress={() => router.push('/(details)/properties')} />
         <IconActionButton icon={<Users size={22} color={theme.colors.primary} />} label="Residents" onPress={() => router.push('/(owner)/residents')} />
         <IconActionButton icon={<CreditCard size={22} color={theme.colors.primary} />} label="Payments" onPress={() => router.push('/(owner)/payments')} />
@@ -147,6 +149,7 @@ export default function OwnerDashboard() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   quickActions: { flexDirection: 'row', paddingHorizontal: theme.spacing.lg, gap: theme.spacing.sm, marginTop: theme.spacing.md, marginBottom: theme.spacing.md },
+  quickActionsSmall: { flexWrap: 'wrap' },
   occupancyCard: { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, padding: theme.spacing.lg, marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md, ...theme.shadow.sm },
   occupancyRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.lg, marginTop: theme.spacing.md },
   occupancyDetails: { flex: 1 },
