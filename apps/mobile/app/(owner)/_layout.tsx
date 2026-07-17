@@ -15,7 +15,7 @@ export default function OwnerLayout() {
           borderBottomColor: theme.colors.borderLight,
         },
         headerTintColor: theme.colors.text,
-        headerTitleStyle: { fontWeight: '700', fontSize: 18 },
+        headerTitleStyle: { fontFamily: theme.font.bold, fontSize: 18 },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarStyle: styles.tabBar,
@@ -73,6 +73,6 @@ const styles = StyleSheet.create({
   },
   tabBarLabel: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: theme.font.semiBold,
   },
 });

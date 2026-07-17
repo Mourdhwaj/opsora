@@ -7,7 +7,7 @@ export default function DetailsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: theme.colors.surface },
         headerTintColor: theme.colors.text,
-        headerTitleStyle: { fontWeight: '700', fontSize: 18 },
+        headerTitleStyle: { fontFamily: theme.font.bold, fontSize: 18 },
         contentStyle: { backgroundColor: theme.colors.background },
       }}
     />

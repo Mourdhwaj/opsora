@@ -266,7 +266,7 @@ const s = StyleSheet.create({
     borderRadius: theme.borderRadius.full,
   },
   priorityText: { ...theme.typography.badge, textTransform: 'capitalize' },
-  title: { fontSize: 20, fontWeight: '800', color: theme.colors.text, marginBottom: theme.spacing.sm },
+  title: { fontSize: 20, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: theme.spacing.sm },
   description: { fontSize: 15, color: theme.colors.textSecondary, lineHeight: 22 },
 
   section: { marginBottom: theme.spacing.lg },
@@ -283,7 +283,7 @@ const s = StyleSheet.create({
     marginRight: theme.spacing.md,
   },
   detailLabel: { ...theme.typography.body, flex: 1, color: theme.colors.textSecondary },
-  detailValue: { ...theme.typography.body, fontWeight: '600', color: theme.colors.text, textTransform: 'capitalize' },
+  detailValue: { ...theme.typography.body, fontFamily: theme.font.semiBold, color: theme.colors.text, textTransform: 'capitalize' },
   detailValueWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 
   actionBtn: {
@@ -292,7 +292,7 @@ const s = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight,
   },
   actionLeft: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm },
-  actionText: { fontSize: 15, fontWeight: '500', color: theme.colors.primary },
+  actionText: { fontSize: 15, fontFamily: theme.font.medium, color: theme.colors.primary },
 
   assignSection: { marginTop: theme.spacing.md },
   assignLabel: { ...theme.typography.label, marginBottom: theme.spacing.sm },
@@ -308,17 +308,17 @@ const s = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
   },
   staffLeft: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm },
-  staffName: { ...theme.typography.body, fontWeight: '500' },
+  staffName: { ...theme.typography.body, fontFamily: theme.font.medium },
   staffCountBadge: {
     backgroundColor: theme.colors.infoSurface,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 2,
     borderRadius: theme.borderRadius.full,
   },
-  staffCount: { fontSize: 11, fontWeight: '600', color: theme.colors.info },
+  staffCount: { fontSize: 11, fontFamily: theme.font.semiBold, color: theme.colors.info },
 
   statusSheet: { padding: theme.spacing.lg },
-  sheetTitle: { fontSize: 20, fontWeight: '800', color: theme.colors.text, marginBottom: theme.spacing.sm },
+  sheetTitle: { fontSize: 20, fontFamily: theme.font.extraBold, color: theme.colors.text, marginBottom: theme.spacing.sm },
   currentStatus: { ...theme.typography.body, color: theme.colors.textSecondary, marginBottom: theme.spacing.lg, textTransform: 'capitalize' },
   statusOption: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',

@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   cardHeader: { flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   info: { flex: 1 },
-  name: { fontSize: 16, fontWeight: '600', color: theme.colors.text },
+  name: { fontSize: 16, fontFamily: theme.font.semiBold, color: theme.colors.text },
   detail: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 },
   footer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.colors.borderLight },
   footerText: { fontSize: 12, color: theme.colors.textMuted },

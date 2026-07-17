@@ -48,5 +48,5 @@ function LogoutButton({ onPress }: { onPress: () => void }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   logoutButton: { margin: theme.spacing.lg, borderRadius: theme.borderRadius.lg, padding: theme.spacing.md, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.danger },
-  logoutText: { color: theme.colors.danger, fontSize: 16, fontWeight: '600' },
+  logoutText: { color: theme.colors.danger, fontSize: 16, fontFamily: theme.font.semiBold },
 });
