@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, PanResponder, KeyboardAvoidingView, Platform } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated, PanResponder, KeyboardAvoidingView, Platform } from 'react-native';
 import { theme } from '../lib/theme';
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { useResponsive } from '../lib/useResponsive';
 
 interface BottomSheetProps {
   visible: boolean;
@@ -12,7 +11,9 @@ interface BottomSheetProps {
   title?: string;
 }
 
-export function BottomSheet({ visible, onClose, children, height = SCREEN_HEIGHT * 0.7, title }: BottomSheetProps) {
+export function BottomSheet({ visible, onClose, children, height, title }: BottomSheetProps) {
+  const { height: SCREEN_HEIGHT } = useResponsive();
+  const sheetHeight = height ?? Math.round(SCREEN_HEIGHT * 0.7);
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 
@@ -54,7 +55,7 @@ export function BottomSheet({ visible, onClose, children, height = SCREEN_HEIGHT
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
           <TouchableOpacity style={{ flex: 1 }} onPress={close} activeOpacity={1} />
         </Animated.View>
-        <Animated.View style={[styles.sheet, { height, transform: [{ translateY }] }]} {...panResponder.panHandlers}>
+        <Animated.View style={[styles.sheet, { height: sheetHeight, transform: [{ translateY }] }]} {...panResponder.panHandlers}>
           <View style={styles.handle} />
           {title ? <Text style={styles.sheetTitle}>{title}</Text> : null}
           {children}
