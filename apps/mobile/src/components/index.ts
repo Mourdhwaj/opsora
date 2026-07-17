@@ -27,3 +27,4 @@ export { ResidentChipBar } from './checkin/ResidentChipBar';
 export { ResidentCard } from './checkin/ResidentCard';
 export { ReviewCard } from './checkin/ReviewCard';
 export { NeumorphicTab } from './NeumorphicTab';
+export { AnimatedCard } from './AnimatedCard';
