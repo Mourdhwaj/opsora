@@ -131,8 +131,8 @@ async function seed() {
         roomNumber,
         roomType: 'shared',
         sharingType: 2,
-        rentPerBed: 7000 + f * 1000,
-        depositAmount: 15000,
+        rentPerBed: 10500,
+        depositAmount: 5000,
       }).run();
 
       for (let b = 1; b <= bedsPerRoom; b++) {
@@ -148,7 +148,7 @@ async function seed() {
           bedNumber: `B${b}`,
           bedType: 'standard',
           status: b <= actualOccupied ? 'occupied' : 'vacant',
-          rentAmount: 7000 + f * 1000,
+          rentAmount: 10500,
         }).run();
       }
     }
@@ -216,8 +216,8 @@ async function seed() {
       gender: r.gender,
       occupation: r.occ,
       moveInDate: '2026-01-15',
-      rentAmount: 7000 + (i % 5) * 1000,
-      depositPaid: 15000,
+      rentAmount: 10500,
+      depositPaid: 5000,
       status: 'active',
       mealPreferences: JSON.stringify({
         breakfast: true,
@@ -236,11 +236,38 @@ async function seed() {
   console.log('  ✅ Linked resident user to tenant profile (Amit Patel)');
 
   // ── Rent Payments ────────────────────────────────────────────────────────
-  const months = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06'];
+  const months = ['2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07'];
   for (const month of months) {
     for (let i = 0; i < residents.length; i++) {
-      const isPaid = Math.random() > 0.2;
-      const paidAmount = isPaid ? 8000 : (Math.random() > 0.5 ? 4000 : 0);
+      const isLastMonth = month === '2026-07';
+      // For current month (July), some are paid, some overdue, some pending
+      let isPaid: boolean;
+      let paymentStatus: string;
+      
+      if (isLastMonth) {
+        // Current month: realistic mix
+        const rand = Math.random();
+        if (rand < 0.5) {
+          isPaid = true;
+          paymentStatus = 'paid';
+        } else if (rand < 0.7) {
+          isPaid = false;
+          paymentStatus = 'overdue'; // Past due date (5th)
+        } else if (rand < 0.85) {
+          isPaid = false;
+          paymentStatus = 'pending';
+        } else {
+          isPaid = false;
+          paymentStatus = 'partial';
+        }
+      } else {
+        // Past months: mostly paid
+        isPaid = Math.random() > 0.1;
+        paymentStatus = isPaid ? 'paid' : 'pending';
+      }
+      
+      const paidAmount = isPaid ? 10500 : (paymentStatus === 'partial' ? 5250 : 0);
+      
       db.insert(schema.rentPayments).values({
         id: uuidv4(),
         tenantId,
@@ -251,16 +278,16 @@ async function seed() {
         monthYear: month,
         dueDate: `${month}-05`,
         paidDate: isPaid ? `${month}-03` : null,
-        rentAmount: 8000,
-        totalAmount: 8000,
+        rentAmount: 10500,
+        totalAmount: 10500,
         paidAmount,
-        balanceAmount: 8000 - paidAmount,
-        paymentStatus: isPaid ? 'paid' : paidAmount > 0 ? 'partial' : 'pending',
+        balanceAmount: 10500 - paidAmount,
+        paymentStatus,
         paymentMethod: isPaid ? (Math.random() > 0.5 ? 'upi_direct' : 'neft_imps') : null,
       }).run();
     }
   }
-  console.log('  ✅ Created rent payments for 6 months');
+  console.log('  ✅ Created rent payments for 12 months (with overdue for current month)');
 
   // ── Complaints ───────────────────────────────────────────────────────────
   const complaintData = [
