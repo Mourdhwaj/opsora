@@ -4,10 +4,13 @@ import { Building, LayoutGrid, UtensilsCrossed, Droplets, Zap, UserPlus, Archive
 import { PageHeader, MoreGrid } from '../../src/components';
 import { useAuth } from '../../src/services/auth';
 import { theme } from '../../src/lib/theme';
+import { useResponsive } from '../../src/lib/useResponsive';
 
 export default function MoreScreen() {
   const { logout } = useAuth();
   const router = useRouter();
+  const { width } = useResponsive();
+  const hp = Math.max(16, Math.round(width * 0.04));
 
   function handleLogout() {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -32,14 +35,14 @@ export default function MoreScreen() {
           { icon: <Settings size={24} color={theme.colors.primary} />, label: 'Settings', route: '/(owner)/more' },
         ]}
       />
-      <LogoutButton onPress={handleLogout} />
+      <LogoutButton onPress={handleLogout} hp={hp} />
     </ScrollView>
   );
 }
 
-function LogoutButton({ onPress }: { onPress: () => void }) {
+function LogoutButton({ onPress, hp }: { onPress: () => void; hp: number }) {
   return (
-    <TouchableOpacity style={styles.logoutButton} onPress={onPress}>
+    <TouchableOpacity style={[styles.logoutButton, { marginHorizontal: hp }]} onPress={onPress}>
       <Text style={styles.logoutText}>Logout</Text>
     </TouchableOpacity>
   );
@@ -47,6 +50,6 @@ function LogoutButton({ onPress }: { onPress: () => void }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
-  logoutButton: { margin: theme.spacing.lg, borderRadius: theme.borderRadius.lg, padding: theme.spacing.md, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.danger },
+  logoutButton: { borderRadius: theme.borderRadius.lg, padding: theme.spacing.md, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.danger },
   logoutText: { color: theme.colors.danger, fontSize: 16, fontFamily: theme.font.semiBold },
 });

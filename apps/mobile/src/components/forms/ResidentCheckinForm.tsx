@@ -97,7 +97,7 @@ export function ResidentCheckinForm({ onClose }: ResidentCheckinFormProps) {
   const availableBeds = selectedRoom?.beds?.filter((b: any) => b.status === 'vacant') || [];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Check-in Resident</Text>
 
       <View style={styles.stepRow}>

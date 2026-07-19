@@ -19,6 +19,20 @@ const db = drizzle(sqlite, { schema });
 async function seed() {
   console.log('🌱 Seeding database...');
 
+  // ── Clear existing data ──────────────────────────────────────────────────
+  console.log('  🗑️  Clearing existing data...');
+  sqlite.pragma('foreign_keys = OFF');
+  const tables = [
+    'activity_logs', 'visitors', 'staff', 'electricity_readings', 'electricity_meters',
+    'water_readings', 'water_tanks', 'complaints', 'rent_payments', 'tenant_profiles',
+    'beds', 'rooms', 'floors', 'properties', 'users', 'tenants',
+  ];
+  for (const table of tables) {
+    sqlite.exec(`DELETE FROM "${table}"`);
+  }
+  sqlite.pragma('foreign_keys = ON');
+  console.log('  ✅ Cleared all tables');
+
   // ── Tenant (Organization) ───────────────────────────────────────────────
   const tenantId = uuidv4();
   db.insert(schema.tenants).values({
@@ -147,7 +161,7 @@ async function seed() {
           roomId,
           bedNumber: `B${b}`,
           bedType: 'standard',
-          status: b <= actualOccupied ? 'occupied' : 'vacant',
+          status: 'vacant',
           rentAmount: 10500,
         }).run();
       }
@@ -228,6 +242,15 @@ async function seed() {
   }
   console.log(`  ✅ Created ${residents.length} tenant profiles`);
 
+  // Mark assigned beds as occupied
+  for (let i = 0; i < residents.length; i++) {
+    db.update(schema.beds)
+      .set({ status: 'occupied', updatedAt: new Date().toISOString() })
+      .where(eq(schema.beds.id, bedIds[i]))
+      .run();
+  }
+  console.log('  ✅ Marked 28 beds as occupied');
+
   // ── Link resident user to tenant profile ────────────────────────────────
   db.update(schema.users)
     .set({ tenantProfileId: tenantProfileIds[0] })
@@ -236,24 +259,37 @@ async function seed() {
   console.log('  ✅ Linked resident user to tenant profile (Amit Patel)');
 
   // ── Rent Payments ────────────────────────────────────────────────────────
-  const months = ['2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07'];
+  const months = ['2025-02', '2025-03', '2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07'];
   for (const month of months) {
     for (let i = 0; i < residents.length; i++) {
       const isLastMonth = month === '2026-07';
-      // For current month (July), some are paid, some overdue, some pending
+      const isSecondLast = month === '2026-06';
       let isPaid: boolean;
       let paymentStatus: string;
       
       if (isLastMonth) {
         // Current month: realistic mix
         const rand = Math.random();
-        if (rand < 0.5) {
+        if (rand < 0.45) {
           isPaid = true;
           paymentStatus = 'paid';
-        } else if (rand < 0.7) {
+        } else if (rand < 0.65) {
           isPaid = false;
-          paymentStatus = 'overdue'; // Past due date (5th)
-        } else if (rand < 0.85) {
+          paymentStatus = 'overdue';
+        } else if (rand < 0.82) {
+          isPaid = false;
+          paymentStatus = 'pending';
+        } else {
+          isPaid = false;
+          paymentStatus = 'partial';
+        }
+      } else if (isSecondLast) {
+        // Last month: most paid, some stragglers
+        const rand = Math.random();
+        if (rand < 0.85) {
+          isPaid = true;
+          paymentStatus = 'paid';
+        } else if (rand < 0.92) {
           isPaid = false;
           paymentStatus = 'pending';
         } else {
@@ -261,12 +297,21 @@ async function seed() {
           paymentStatus = 'partial';
         }
       } else {
-        // Past months: mostly paid
-        isPaid = Math.random() > 0.1;
-        paymentStatus = isPaid ? 'paid' : 'pending';
+        // Older months: mostly paid, occasional defaulters
+        const rand = Math.random();
+        if (rand < 0.92) {
+          isPaid = true;
+          paymentStatus = 'paid';
+        } else if (rand < 0.97) {
+          isPaid = false;
+          paymentStatus = 'overdue';
+        } else {
+          isPaid = false;
+          paymentStatus = 'pending';
+        }
       }
       
-      const paidAmount = isPaid ? 10500 : (paymentStatus === 'partial' ? 5250 : 0);
+      const paidAmount = isPaid ? 10500 : (paymentStatus === 'partial' ? Math.floor(10500 * (0.3 + Math.random() * 0.4)) : 0);
       
       db.insert(schema.rentPayments).values({
         id: uuidv4(),
@@ -287,7 +332,7 @@ async function seed() {
       }).run();
     }
   }
-  console.log('  ✅ Created rent payments for 12 months (with overdue for current month)');
+  console.log('  ✅ Created rent payments for 18 months (Feb 2025 - Jul 2026)');
 
   // ── Complaints ───────────────────────────────────────────────────────────
   const complaintData = [

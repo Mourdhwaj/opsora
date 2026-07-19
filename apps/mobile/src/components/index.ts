@@ -28,3 +28,5 @@ export { ResidentCard } from './checkin/ResidentCard';
 export { ReviewCard } from './checkin/ReviewCard';
 export { NeumorphicTab } from './NeumorphicTab';
 export { AnimatedCard } from './AnimatedCard';
+export { MetricGrid } from './MetricGrid';
+export { ComingSoon } from './ComingSoon';

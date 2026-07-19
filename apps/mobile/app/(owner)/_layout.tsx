@@ -58,6 +58,30 @@ export default function OwnerLayout() {
           tabBarIcon: ({ color, size }) => <Grid2x2 size={size} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="pending-tenants"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="paid-tenants"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="checkout"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { ChevronDown, CheckCircle2 } from 'lucide-react-native';
 import { theme } from '../../lib/theme';
 
@@ -12,16 +13,45 @@ interface CollapsibleSectionProps {
 }
 
 export function CollapsibleSection({ title, icon, isExpanded, onToggle, isComplete, children }: CollapsibleSectionProps) {
+  const heightAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const chevronAnim = useRef(new Animated.Value(0)).current;
+  const contentRef = useRef<View>(null);
+  const measuredHeight = useRef(0);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.measure((_x: number, _y: number, w: number, h: number) => {
+        if (h > 0) measuredHeight.current = h;
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const targetHeight = isExpanded ? measuredHeight.current || 200 : 0;
+    Animated.parallel([
+      Animated.timing(heightAnim, { toValue: targetHeight, duration: 250, useNativeDriver: false }),
+      Animated.timing(opacityAnim, { toValue: isExpanded ? 1 : 0, duration: 200, useNativeDriver: false }),
+      Animated.spring(chevronAnim, { toValue: isExpanded ? 1 : 0, damping: 10, stiffness: 100, useNativeDriver: true }),
+    ]).start();
+  }, [isExpanded]);
+
+  const chevronRotation = chevronAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.header} onPress={onToggle} activeOpacity={0.6}>
+      <TouchableOpacity style={styles.header} onPress={onToggle} activeOpacity={0.8}>
         <View style={styles.headerLeft}>{icon}<Text style={styles.title}>{title}</Text></View>
         <View style={styles.headerRight}>
           {isComplete && <CheckCircle2 size={18} color={theme.colors.success} />}
-          <ChevronDown size={18} color={theme.colors.textMuted} style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }} />
+          <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
+            <ChevronDown size={18} color={theme.colors.textMuted} />
+          </Animated.View>
         </View>
       </TouchableOpacity>
-      {isExpanded && <View style={styles.content}>{children}</View>}
+      <Animated.View ref={contentRef} style={{ height: heightAnim, opacity: opacityAnim, overflow: 'hidden' }}>
+        <View style={styles.content}>{children}</View>
+      </Animated.View>
     </View>
   );
 }

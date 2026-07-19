@@ -94,8 +94,10 @@ export interface RentPayment {
   paidAmount: number;
   balanceAmount: number;
   paymentStatus: string;
+  paymentMethod?: string;
   tenantName?: string;
   roomNumber?: string;
+  tenantPhone?: string;
 }
 
 export interface Complaint {

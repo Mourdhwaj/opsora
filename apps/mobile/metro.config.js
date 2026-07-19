@@ -7,12 +7,15 @@ const appNodeModules = path.resolve(projectRoot, 'node_modules');
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [workspaceRoot];
-
-config.resolver.nodeModulesPaths = [
-  appNodeModules,
-  path.resolve(workspaceRoot, 'node_modules'),
-];
+// Only use workspace root in local development, not in EAS Build
+const fs = require('fs');
+if (fs.existsSync(path.join(workspaceRoot, 'package.json'))) {
+  config.watchFolders = [workspaceRoot];
+  config.resolver.nodeModulesPaths = [
+    appNodeModules,
+    path.resolve(workspaceRoot, 'node_modules'),
+  ];
+}
 
 const defaultResolveRequest = require('metro-resolver').resolve;
 

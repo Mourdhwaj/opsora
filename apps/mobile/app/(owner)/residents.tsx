@@ -8,6 +8,7 @@ import { ResidentCheckinForm } from '../../src/components/forms/ResidentCheckinF
 import { api } from '../../src/services/api';
 import { formatDate, getTimeParams } from '../../src/lib/utils';
 import { theme } from '../../src/lib/theme';
+import { useResponsive } from '../../src/lib/useResponsive';
 import type { TenantProfile } from '../../src/types';
 
 const STATUS_FILTERS = [
@@ -32,6 +33,8 @@ export default function ResidentsList() {
   const [page, setPage] = useState(1);
   const [showCheckin, setShowCheckin] = useState(false);
   const router = useRouter();
+  const { width } = useResponsive();
+  const hp = Math.max(16, Math.round(width * 0.04));
 
   const timeParams = getTimeParams(timeFilter);
 
@@ -84,7 +87,7 @@ export default function ResidentsList() {
 
         <TimeFilter options={TIME_FILTERS} selected={timeFilter} onSelect={v => { setTimeFilter(v); setPage(1); }} />
 
-        <Text style={styles.countText}>
+        <Text style={[styles.countText, { marginHorizontal: hp }]}>
           Showing {filtered.length} of {total} active resident{total !== 1 ? 's' : ''}
         </Text>
 
@@ -93,7 +96,7 @@ export default function ResidentsList() {
         ) : (
           filtered.map(resident => (
             <TouchableOpacity key={resident.id} onPress={() => router.push(`/(details)/residents/${resident.id}`)}>
-              <Card style={styles.card}>
+              <Card style={[styles.card, { marginHorizontal: hp }]}>
                 <View style={styles.cardHeader}>
                   <View style={styles.avatar}>
                     <User size={22} color="#FFFFFF" />
@@ -131,8 +134,8 @@ const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: theme.colors.background },
   container: { flex: 1 },
   headerBtn: { backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.full, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  countText: { fontSize: 13, color: theme.colors.textMuted, paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.sm },
-  card: { marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.sm },
+  countText: { fontSize: 13, color: theme.colors.textMuted, marginBottom: theme.spacing.sm },
+  card: { marginBottom: theme.spacing.sm },
   cardHeader: { flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   info: { flex: 1 },

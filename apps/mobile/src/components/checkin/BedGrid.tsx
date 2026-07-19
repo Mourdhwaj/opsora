@@ -39,10 +39,10 @@ function RoomCard({ room, group, assignedResidents, onAssignBed, onUnassignBed }
         <Text style={styles.roomMeta}>{room.roomType} · {room.floorName} · Rs.{room.rentPerBed}/mo</Text>
       </View>
       <View style={styles.bedGrid}>
-        {room.vacantBedIds.map(bed => {
+        {room.vacantBedIds.map((bed, idx) => {
           const status = getBedStatus(bed.bedId, assignedResidents, room, group);
           return (
-            <BedSquare key={bed.bedId} bedId={bed.bedId} bedNumber={bed.bedNumber} status={status}
+            <BedSquare key={bed.bedId} bedId={bed.bedId} bedNumber={bed.bedNumber} status={status} index={idx}
               onPress={(id) => status === 'selected' ? onUnassignBed(id) : onAssignBed(group, room, { bedId: id, bedNumber: bed.bedNumber })} />
           );
         })}

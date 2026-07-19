@@ -24,7 +24,7 @@ export function ResidentCard({ resident, index, total, onUpdate, onPrev, onNext 
   return (
     <View style={styles.container}>
       <Text style={styles.progress}>Resident {index + 1} of {total}</Text>
-      <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 80 }}>
+      <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 100 }}>
         <CollapsibleSection title="Personal" icon={<User size={18} color={theme.colors.primary} />} isExpanded={!!expandedSections.personal} onToggle={() => toggleSection('personal')} isComplete={personalComplete}>
           <Field label="Full Name *" value={resident.fullName} onChangeText={(t) => onUpdate('fullName', t)} placeholder="Enter full name" error={!resident.fullName?.trim() && personalComplete === false} />
           <Field label="Phone *" value={resident.phone} onChangeText={(t) => onUpdate('phone', t)} placeholder="Phone number" keyboardType="phone-pad" />

@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Animated } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { User, Heart, Building, ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react-native';
@@ -35,6 +35,30 @@ function CounterRow({ label, icon, count, onIncrement, onDecrement }: {
   );
 }
 
+function AnimatedStepIndicator({ name, index, step }: { name: string; index: number; step: number }) {
+  const scale = useRef(new Animated.Value(index === step ? 1 : 0.9)).current;
+  const isActive = index === step;
+  const isCompleted = index < step;
+
+  useEffect(() => {
+    Animated.spring(scale, { toValue: isActive ? 1 : 0.9, damping: 10, stiffness: 500, useNativeDriver: true }).start();
+  }, [isActive]);
+
+  return (
+    <View style={s.stepIndicator}>
+      <Animated.View style={[
+        s.stepDot,
+        isCompleted && s.stepDotActive,
+        isActive && s.stepDotCurrent,
+        { transform: [{ scale }] },
+      ]}>
+        {isCompleted ? <CheckCircle size={14} color="#fff" /> : <Text style={[s.stepDotText, isActive && s.stepDotTextActive]}>{index + 1}</Text>}
+      </Animated.View>
+      <Text style={[s.stepLabel, isActive && s.stepLabelActive]}>{name}</Text>
+    </View>
+  );
+}
+
 export default function GroupCheckinScreen() {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -46,6 +70,8 @@ export default function GroupCheckinScreen() {
   const [suggesting, setSuggesting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentResidentIndex, setCurrentResidentIndex] = useState(0);
+  const stepOpacity = useRef(new Animated.Value(1)).current;
+  const stepTranslateX = useRef(new Animated.Value(0)).current;
 
   const { data: properties } = useQuery({
     queryKey: ['properties-list'],
@@ -106,16 +132,12 @@ export default function GroupCheckinScreen() {
     <View style={s.wrapper}>
       <View style={s.stepsRow}>
         {STEPS.map((name, i) => (
-          <View key={name} style={s.stepIndicator}>
-            <View style={[s.stepDot, i <= step && s.stepDotActive, i === step && s.stepDotCurrent]}>
-              {i < step ? <CheckCircle size={14} color="#fff" /> : <Text style={[s.stepDotText, i <= step && s.stepDotTextActive]}>{i + 1}</Text>}
-            </View>
-            <Text style={[s.stepLabel, i === step && s.stepLabelActive]}>{name}</Text>
-          </View>
+          <AnimatedStepIndicator key={name} name={name} index={i} step={step} />
         ))}
       </View>
 
       <ScrollView style={s.scrollArea} contentContainerStyle={{ paddingBottom: 100 }}>
+        <View>
         {step === 0 && (
           <Card style={s.stepCard}>
             <Text style={s.stepTitle}>New Group Check-in</Text>
@@ -170,6 +192,7 @@ export default function GroupCheckinScreen() {
             {residents.map((r, i) => <ReviewCard key={i} resident={r} index={i} onPress={() => { setStep(2); setCurrentResidentIndex(i); }} />)}
           </Card>
         )}
+        </View>
       </ScrollView>
 
       <View style={s.navBar}>

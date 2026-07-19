@@ -1,11 +1,13 @@
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Linking, Platform, StatusBar } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, MessageCircle, Clock, AlertCircle } from 'lucide-react-native';
+import { useState } from 'react';
+import { ArrowLeft, MessageCircle, Clock, AlertCircle, Share2 } from 'lucide-react-native';
 import { Card, LoadingSkeleton, EmptyState, ErrorState, StatusBadge } from '../../src/components';
 import { api } from '../../src/services/api';
 import { formatCurrency, formatDate } from '../../src/lib/utils';
 import { theme } from '../../src/lib/theme';
+import { useResponsive } from '../../src/lib/useResponsive';
 
 interface PendingTenant {
   id: string;
@@ -21,15 +23,35 @@ interface PendingTenant {
 
 export default function PendingTenants() {
   const router = useRouter();
+  const { width } = useResponsive();
+  const hp = Math.max(16, Math.round(width * 0.04));
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['pending-tenants'],
     queryFn: () => api.get('/dashboard/pending-tenants').then(r => r.data || r),
   });
 
-  const handleWhatsAppReminder = (phone: string, name: string, amount: number) => {
+  const generateUpiLink = (tenant: PendingTenant) => {
+    const upiId = 'owner@upi';
+    const amount = tenant.balanceAmount;
+    const name = encodeURIComponent('Opsora PG');
+    const note = encodeURIComponent(`Rent for ${tenant.name} - Room ${tenant.roomNumber}`);
+    return `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
+  };
+
+  const generatePaymentUrl = (tenant: PendingTenant) => {
+    const amount = tenant.balanceAmount;
+    const name = encodeURIComponent(tenant.name);
+    const room = encodeURIComponent(tenant.roomNumber);
+    return `https://opsora.app/pay?name=${name}&room=${room}&amount=${amount}`;
+  };
+
+  const handleWhatsAppReminder = (phone: string, name: string, amount: number, roomNumber: string) => {
     const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
-    const message = `Dear ${name},\n\nThis is a reminder that your rent payment of ₹${amount.toLocaleString('en-IN')} for ${currentMonth} is pending.\n\nPlease make the payment at your earliest convenience.\n\nRegards,\nOpsora Team`;
+    const upiLink = generateUpiLink({ name, roomNumber, balanceAmount: amount } as PendingTenant);
+    const paymentUrl = generatePaymentUrl({ name, roomNumber, balanceAmount: amount } as PendingTenant);
+    
+    const message = `Dear ${name},\n\nThis is a reminder that your rent payment of ₹${amount.toLocaleString('en-IN')} for ${currentMonth} is pending.\n\n📱 *Pay via UPI:* ${upiLink}\n💳 *Pay Online:* ${paymentUrl}\n\nPlease make the payment at your earliest convenience.\n\nRegards,\nOpsora Team`;
     const encodedMessage = encodeURIComponent(message);
     const phoneUrl = `whatsapp://send?phone=${phone.replace(/[^0-9]/g, '')}&text=${encodedMessage}`;
     Linking.openURL(phoneUrl).catch(() => {
@@ -41,20 +63,32 @@ export default function PendingTenants() {
     const tenants = data?.tenants || [];
     tenants.forEach((t: PendingTenant) => {
       if (t.phone) {
-        handleWhatsAppReminder(t.phone, t.name, t.balanceAmount);
+        handleWhatsAppReminder(t.phone, t.name, t.balanceAmount, t.roomNumber);
       }
     });
+  };
+
+  const handleSharePayment = async (tenant: PendingTenant) => {
+    const upiLink = generateUpiLink(tenant);
+    const paymentUrl = generatePaymentUrl(tenant);
+    const message = `Payment Details for ${tenant.name} (Room ${tenant.roomNumber}):\n\nAmount Due: ₹${tenant.balanceAmount.toLocaleString('en-IN')}\n\nUPI: ${upiLink}\nOnline: ${paymentUrl}`;
+    
+    try {
+      const { Share } = await import('react-native');
+      await Share.share({ message, title: `Payment - ${tenant.name}` });
+    } catch (error) {
+      console.log('Share cancelled');
+    }
   };
 
   if (isLoading) return <LoadingSkeleton />;
   if (error) return <ErrorState message="Failed to load pending tenants" onRetry={refetch} />;
 
   const tenants = data?.tenants || [];
-  const summary = data?.summary || {};
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingHorizontal: hp, paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + theme.spacing.md : theme.spacing.lg }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <ArrowLeft size={24} color={theme.colors.text} />
         </TouchableOpacity>
@@ -73,10 +107,12 @@ export default function PendingTenants() {
         contentContainerStyle={{ paddingBottom: 80 }}
       >
         {tenants.length === 0 ? (
-          <EmptyState title="No pending tenants" message="All tenants have paid for this month" />
+          <View style={{ paddingHorizontal: hp, paddingTop: theme.spacing.xl }}>
+            <EmptyState title="No pending tenants" message="All tenants have paid for this month" />
+          </View>
         ) : (
           tenants.map((tenant: PendingTenant) => (
-            <Card key={tenant.id} style={styles.tenantCard}>
+            <Card key={tenant.id} style={[styles.tenantCard, { marginHorizontal: hp }]}>
               <View style={styles.cardHeader}>
                 <View style={styles.iconWrap}>
                   {tenant.status === 'overdue' ? (
@@ -113,15 +149,24 @@ export default function PendingTenants() {
 
               <View style={styles.cardFooter}>
                 <Text style={styles.dueDate}>Due: {formatDate(tenant.dueDate)}</Text>
-                {tenant.phone && (
+                <View style={styles.actionButtons}>
                   <TouchableOpacity
-                    style={styles.whatsappButton}
-                    onPress={() => handleWhatsAppReminder(tenant.phone, tenant.name, tenant.balanceAmount)}
+                    style={styles.shareButton}
+                    onPress={() => handleSharePayment(tenant)}
                   >
-                    <MessageCircle size={14} color="#FFFFFF" />
-                    <Text style={styles.whatsappButtonText}>Remind</Text>
+                    <Share2 size={14} color={theme.colors.primary} />
+                    <Text style={styles.shareButtonText}>Share</Text>
                   </TouchableOpacity>
-                )}
+                  {tenant.phone && (
+                    <TouchableOpacity
+                      style={styles.whatsappButton}
+                      onPress={() => handleWhatsAppReminder(tenant.phone, tenant.name, tenant.balanceAmount, tenant.roomNumber)}
+                    >
+                      <MessageCircle size={14} color="#FFFFFF" />
+                      <Text style={styles.whatsappButtonText}>Remind</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             </Card>
           ))
@@ -137,9 +182,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
     paddingBottom: theme.spacing.md,
+    backgroundColor: theme.colors.background,
   },
   backButton: { padding: 8 },
   headerTitle: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.text, flex: 1, marginLeft: 8 },
@@ -154,7 +198,7 @@ const styles = StyleSheet.create({
   },
   remindAllText: { fontSize: 13, fontWeight: '600', color: '#FFFFFF' },
   container: { flex: 1 },
-  tenantCard: { marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.sm },
+  tenantCard: { marginBottom: theme.spacing.sm },
   cardHeader: { flexDirection: 'row', alignItems: 'center' },
   iconWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: theme.colors.dangerSurface, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   info: { flex: 1 },
@@ -165,6 +209,17 @@ const styles = StyleSheet.create({
   amount: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.text, marginTop: 2 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
   dueDate: { fontSize: 12, color: theme.colors.textMuted },
+  actionButtons: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: theme.colors.primarySurface,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: theme.borderRadius.full,
+  },
+  shareButtonText: { fontSize: 12, fontWeight: '600', color: theme.colors.primary },
   whatsappButton: {
     flexDirection: 'row',
     alignItems: 'center',

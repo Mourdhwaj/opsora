@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { getStatusColor } from '../lib/utils';
 
 interface BadgeProps {
@@ -16,8 +17,30 @@ export function Badge({ label, color = '#6b7280' }: BadgeProps) {
 }
 
 export function StatusBadge({ status }: { status: string }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const prevStatus = useRef(status);
+
   const label = status?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || status;
-  return <Badge label={label} color={getStatusColor(status)} />;
+  const color = getStatusColor(status);
+
+  useEffect(() => {
+    if (prevStatus.current === status) return;
+    const isSuccess = status === 'paid' || status === 'resolved';
+    if (isSuccess) {
+      Animated.sequence([
+        Animated.spring(scale, { toValue: 1.05, damping: 6, stiffness: 400, useNativeDriver: true }),
+        Animated.spring(scale, { toValue: 1, damping: 8, stiffness: 400, useNativeDriver: true }),
+      ]).start();
+    }
+    prevStatus.current = status;
+  }, [status]);
+
+  return (
+    <Animated.View style={[styles.badge, { backgroundColor: color + '20', transform: [{ scale }] }]}>
+      <View style={[styles.dot, { backgroundColor: color }]} />
+      <Text style={[styles.text, { color }]}>{label}</Text>
+    </Animated.View>
+  );
 }
 
 const styles = StyleSheet.create({

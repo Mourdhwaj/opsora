@@ -8,6 +8,7 @@ import { CreateComplaintForm } from '../../src/components/forms/CreateComplaintF
 import { api } from '../../src/services/api';
 import { formatDate, getPriorityColor, getTimeParams } from '../../src/lib/utils';
 import { theme } from '../../src/lib/theme';
+import { useResponsive } from '../../src/lib/useResponsive';
 import type { Complaint } from '../../src/types';
 
 const STATUS_FILTERS = [
@@ -42,6 +43,8 @@ export default function ComplaintsList() {
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
   const router = useRouter();
+  const { width } = useResponsive();
+  const hp = Math.max(16, Math.round(width * 0.04));
 
   const timeParams = getTimeParams(timeFilter);
 
@@ -92,7 +95,7 @@ export default function ComplaintsList() {
         refreshControl={<RefreshControl refreshing={isFetching} onRefresh={() => { setPage(1); refetch(); }} />}
         contentContainerStyle={{ paddingBottom: 80 }}
       >
-        <View style={styles.summaryRow}>
+        <View style={[styles.summaryRow, { paddingHorizontal: hp }]}>
           <View style={[styles.summaryCard, { backgroundColor: theme.colors.warningSurface }]}>
             <Text style={[styles.summaryValue, { color: theme.colors.warning }]}>{openCount}</Text>
             <Text style={styles.summaryLabel}>Open</Text>
@@ -123,7 +126,7 @@ export default function ComplaintsList() {
           onSelect={v => { setTimeFilter(v); setPage(1); }}
         />
 
-        <Text style={styles.countText}>
+        <Text style={[styles.countText, { marginHorizontal: hp }]}>
           Showing {filtered.length} of {total} issue{total !== 1 ? 's' : ''}
         </Text>
 
@@ -131,7 +134,7 @@ export default function ComplaintsList() {
           <EmptyState title="No issues found" message="All clear!" />
         ) : (
           filtered.map(complaint => (
-            <Card key={complaint.id} style={styles.card}>
+            <Card key={complaint.id} style={[styles.card, { marginHorizontal: hp }]}>
               <TouchableOpacity
                 style={styles.cardContent}
                 onPress={() => router.push(`/(details)/complaints/${complaint.id}`)}
@@ -178,12 +181,12 @@ const styles = StyleSheet.create({
   wrapper: { flex: 1, backgroundColor: theme.colors.background },
   container: { flex: 1 },
   addButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center' },
-  summaryRow: { flexDirection: 'row', gap: theme.spacing.sm, paddingHorizontal: theme.spacing.lg, paddingTop: theme.spacing.sm },
+  summaryRow: { flexDirection: 'row', gap: theme.spacing.sm, paddingTop: theme.spacing.sm },
   summaryCard: { flex: 1, borderRadius: theme.borderRadius.lg, padding: theme.spacing.md, alignItems: 'center' },
   summaryValue: { fontSize: 22, fontFamily: theme.font.extraBold },
   summaryLabel: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 },
-  countText: { fontSize: 13, color: theme.colors.textMuted, paddingHorizontal: theme.spacing.lg, marginBottom: theme.spacing.sm },
-  card: { marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.sm },
+  countText: { fontSize: 13, color: theme.colors.textMuted, marginBottom: theme.spacing.sm },
+  card: { marginBottom: theme.spacing.sm },
   cardContent: {},
   cardHeader: { flexDirection: 'row', alignItems: 'center' },
   iconWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: theme.colors.primarySurface, justifyContent: 'center', alignItems: 'center', marginRight: 12 },

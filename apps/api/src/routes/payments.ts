@@ -2,24 +2,28 @@ import { authenticate } from '../lib/auth';
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../lib/db';
-import { rentPayments, tenantProfiles } from '../lib/schema';
-import { eq, and, like, desc, sql } from 'drizzle-orm';
+import { rentPayments, tenantProfiles, rooms } from '../lib/schema';
+import { eq, and, desc, sql, gte, lte } from 'drizzle-orm';
 import { createPaymentSchema, parseBody } from '../types';
 
 export async function paymentRoutes(app: FastifyInstance) {
-  // List payments
+  // List payments with joined tenant info
   app.get('/payments', { preHandler: [authenticate] }, async (request, reply) => {
     const raw = request.query as Record<string, string>;
     const page = Number(raw.page) || 1;
     const limit = Number(raw.limit) || 20;
-    const { propertyId, monthYear, status } = raw as { propertyId?: string; monthYear?: string; status?: string };
+    const { propertyId, monthYear, status, startDate, endDate } = raw as {
+      propertyId?: string; monthYear?: string; status?: string; startDate?: string; endDate?: string;
+    };
     const tenantId = request.user!.tenantId;
     const offset = (page - 1) * limit;
 
-    let conditions = [eq(rentPayments.tenantId, tenantId)];
+    let conditions: any[] = [eq(rentPayments.tenantId, tenantId)];
     if (propertyId) conditions.push(eq(rentPayments.propertyId, propertyId));
     if (monthYear) conditions.push(eq(rentPayments.monthYear, monthYear));
     if (status) conditions.push(eq(rentPayments.paymentStatus, status));
+    if (startDate) conditions.push(gte(rentPayments.paidDate, startDate));
+    if (endDate) conditions.push(lte(rentPayments.paidDate, endDate));
 
     const data = db.select().from(rentPayments)
       .where(and(...conditions))
@@ -30,7 +34,20 @@ export async function paymentRoutes(app: FastifyInstance) {
     const total = db.select({ count: sql<number>`count(*)` }).from(rentPayments)
       .where(and(...conditions)).get()?.count ?? 0;
 
-    return reply.send({ data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    const enriched = data.map(payment => {
+      const profile = db.select().from(tenantProfiles)
+        .where(eq(tenantProfiles.id, payment.tenantProfileId)).get();
+      const room = profile?.roomId ? db.select().from(rooms)
+        .where(eq(rooms.id, profile.roomId)).get() : null;
+      return {
+        ...payment,
+        tenantName: profile?.fullName || 'Unknown',
+        roomNumber: room?.roomNumber || 'N/A',
+        tenantPhone: profile?.phone || '',
+      };
+    });
+
+    return reply.send({ data: enriched, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   });
 
   // Create payment record (owner/admin/staff only)
@@ -42,7 +59,6 @@ export async function paymentRoutes(app: FastifyInstance) {
     if (!body) return;
     const tenantId = request.user!.tenantId;
 
-    // Get tenant profile to calculate total
     const profile = db.select().from(tenantProfiles).where(eq(tenantProfiles.id, body.tenantProfileId)).get();
     if (!profile) {
       return reply.status(404).send({ error: 'Resident not found' });
@@ -122,7 +138,7 @@ export async function paymentRoutes(app: FastifyInstance) {
     const { propertyId, monthYear } = request.query as { propertyId?: string; monthYear?: string };
     const tenantId = request.user!.tenantId;
 
-    let conditions = [eq(rentPayments.tenantId, tenantId)];
+    let conditions: any[] = [eq(rentPayments.tenantId, tenantId)];
     if (propertyId) conditions.push(eq(rentPayments.propertyId, propertyId));
     if (monthYear) conditions.push(eq(rentPayments.monthYear, monthYear));
 

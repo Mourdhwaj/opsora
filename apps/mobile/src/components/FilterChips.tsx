@@ -1,15 +1,30 @@
-import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useRef } from 'react';
+import { ScrollView, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
 import { theme } from '../lib/theme';
 
 interface FilterChipsProps { options: Array<{ label: string; value: string }>; selected: string; onSelect: (v: string) => void; }
+
+function AnimatedChip({ label, isSelected, onPress }: { label: string; isSelected: boolean; onPress: () => void }) {
+  const pressScale = useRef(new Animated.Value(1)).current;
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={() => Animated.spring(pressScale, { toValue: 0.95, damping: 8, stiffness: 500, useNativeDriver: true }).start()}
+      onPressOut={() => Animated.spring(pressScale, { toValue: 1, damping: 8, stiffness: 500, useNativeDriver: true }).start()}
+    >
+      <Animated.View style={[styles.chip, isSelected && styles.chipActive, { transform: [{ scale: pressScale }] }]}>
+        <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>{label}</Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
 
 export function FilterChips({ options, selected, onSelect }: FilterChipsProps) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.container}>
       {options.map(o => (
-        <TouchableOpacity key={o.value} style={[styles.chip, selected === o.value && styles.chipActive]} onPress={() => onSelect(o.value)}>
-          <Text style={[styles.chipText, selected === o.value && styles.chipTextActive]}>{o.label}</Text>
-        </TouchableOpacity>
+        <AnimatedChip key={o.value} label={o.label} isSelected={selected === o.value} onPress={() => onSelect(o.value)} />
       ))}
     </ScrollView>
   );

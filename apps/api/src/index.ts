@@ -20,6 +20,7 @@ import { paymentProofRoutes } from './routes/payments-proof';
 import { staffPortalRoutes } from './routes/staff-portal';
 import { archiveRoutes } from './routes/archive';
 import { batchPropertyRoutes } from './routes/properties-batch';
+import { invoiceRoutes } from './routes/invoices';
 import multipart from '@fastify/multipart';
 import { uploadRoutes } from './routes/upload';
 import { db } from './lib/db';
@@ -58,7 +59,7 @@ async function main() {
   });
 
   // ── Plugins ──────────────────────────────────────────────────────────────
-  const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3002')
+  const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3002,http://localhost:8081')
     .split(',').map(s => s.trim());
 
   await app.register(cors, {
@@ -217,6 +218,7 @@ async function main() {
   await app.register(uploadRoutes);
   await app.register(archiveRoutes);
   await app.register(batchPropertyRoutes);
+  await app.register(invoiceRoutes);
 
   // WebSocket connection tracking
 interface WebSocketClient {
