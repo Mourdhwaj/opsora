@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button, Input } from '../src/components';
@@ -9,8 +9,15 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    if (user.role === 'owner' || user.role === 'admin') router.replace('/(owner)/dashboard');
+    else if (user.role === 'resident') router.replace('/(tenant)/dashboard');
+    else if (user.role === 'staff') router.replace('/(staff)/dashboard');
+  }, [user, authLoading, router]);
 
   async function handleLogin() {
     if (!email || !password) {
@@ -19,13 +26,9 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
-      const { role } = await login(email, password);
-      if (role === 'owner' || role === 'admin') router.replace('/(owner)/dashboard');
-      else if (role === 'resident') router.replace('/(tenant)/dashboard');
-      else if (role === 'staff') router.replace('/(staff)/dashboard');
-      else Alert.alert('Error', 'Unknown user role');
+      await login(email, password);
     } catch (err: any) {
-      Alert.alert('Login Failed', err.response?.data?.error || err.message || 'Invalid credentials');
+      Alert.alert('Login Failed', err.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }

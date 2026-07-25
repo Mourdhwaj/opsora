@@ -1,11 +1,10 @@
 import axios, { AxiosError } from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import auth from '@react-native-firebase/auth';
 import { Platform } from 'react-native';
 
 const getBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
   if (Platform.OS === 'android') return 'http://10.0.2.2:3001';
-  // For iOS simulator use localhost, for real device use your computer's IP
   return 'http://localhost:3001';
 };
 
@@ -13,13 +12,14 @@ const API_BASE_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 8000,
+  timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync('opsora_token');
-  if (token) {
+  const currentUser = auth().currentUser;
+  if (currentUser) {
+    const token = await currentUser.getIdToken();
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -29,8 +29,7 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      SecureStore.deleteItemAsync('opsora_token');
-      SecureStore.deleteItemAsync('opsora_role');
+      auth().signOut();
     }
     return Promise.reject(error);
   }
