@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-15T00:00:00Z",
+  "title": "Design System: Opsora",
+  "extensions": {
+    "colorMeta": {
+      "canvas": { "role": "neutral", "displayName": "Canvas", "canonical": "#F7F6F3", "tonalRamp": ["#1a1918", "#2d2c2b", "#4a4948", "#6b6a69", "#8f8e8d", "#b5b4b3", "#d9d8d7", "#f7f6f3"] },
+      "surface": { "role": "neutral", "displayName": "Surface", "canonical": "#FFFFFF", "tonalRamp": ["#e8e8e8", "#ededed", "#f2f2f2", "#f7f7f7", "#fafafa", "#fcfcfc", "#fefefe", "#ffffff"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#111111", "tonalRamp": ["#111111", "#1f1f1f", "#333333", "#555555", "#787774", "#a0a0a0", "#c8c8c8", "#eaeaea"] },
+      "accent": { "role": "primary", "displayName": "Off-Black Accent", "canonical": "#111111", "tonalRamp": ["#111111", "#1f1f1f", "#2f3437", "#444444", "#5a5a5a", "#777777", "#aaaaaa", "#dddddd"] },
+      "danger": { "role": "status", "displayName": "Danger", "canonical": "#9F2F2D", "tonalRamp": ["#5c1a19", "#7a2322", "#9F2F2D", "#b84442", "#cc6665", "#e09998", "#f0cccc", "#fdebec"] },
+      "warning": { "role": "status", "displayName": "Warning", "canonical": "#956400", "tonalRamp": ["#4a3200", "#6b4900", "#956400", "#b37d1a", "#cc9933", "#e0b866", "#f0d999", "#fbf3db"] },
+      "info": { "role": "status", "displayName": "Info", "canonical": "#1F6C9F", "tonalRamp": ["#0f3650", "#174d72", "#1F6C9F", "#3a86b8", "#5aa0cc", "#80bae0", "#b0d8f0", "#e1f3fe"] },
+      "success": { "role": "status", "displayName": "Success", "canonical": "#346538", "tonalRamp": ["#1a331c", "#264b28", "#346538", "#4a7d4e", "#66996a", "#88b88c", "#aad0ae", "#edf3ec"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headlines and page titles." },
+      "body": { "displayName": "Body", "purpose": "Primary text, descriptions, paragraphs." },
+      "label": { "displayName": "Label", "purpose": "Buttons, badges, navigation, input labels." },
+      "mono": { "displayName": "Mono", "purpose": "Code, technical data, tabular numbers." }
+    },
+    "shadows": [
+      { "name": "ambient", "value": "0 1px 2px 0 rgba(0,0,0,0.03)", "purpose": "Subtle resting state for cards and panels." },
+      { "name": "card-hover", "value": "0 2px 8px rgba(0,0,0,0.04)", "purpose": "Interactive lift on hover." },
+      { "name": "modal", "value": "0 24px 48px -12px rgba(0,0,0,0.10)", "purpose": "Dialogs and overlays." },
+      { "name": "dropdown", "value": "0 4px 12px rgba(0,0,0,0.08)", "purpose": "Floating menus and popovers." }
+    ],
+    "motion": [
+      { "name": "ease-spring", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Primary easing for animations and transitions." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for state transitions." },
+      { "name": "ease-out", "value": "cubic-bezier(0, 0, 0.2, 1)", "purpose": "Exit animations." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Micro-interactions (hover, focus)." },
+      { "name": "duration-normal", "value": "200ms", "purpose": "Standard transitions." },
+      { "name": "duration-slow", "value": "300ms", "purpose": "Page transitions, modals." },
+      { "name": "duration-slower", "value": "600ms", "purpose": "Entrance animations." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action button. Off-black background, white text.",
+      "html": "<button class=\"ds-btn-primary\">Sign in</button>",
+      "css": ".ds-btn-primary { background: var(--color-accent); color: #ffffff; padding: 0 16px; height: 40px; font-size: 14px; font-weight: 500; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: background 0.2s, transform 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; } .ds-btn-primary:hover { background: var(--color-accent-hover); } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary action. White background with border.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: #ffffff; color: var(--color-ink); padding: 0 16px; height: 40px; font-size: 14px; font-weight: 500; border-radius: 6px; border: 1px solid var(--color-border); cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; } .ds-btn-secondary:hover { background: var(--color-canvas); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Text input with border, focus ring, and error state.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"you@company.com\" />",
+      "css": ".ds-input { width: 100%; height: 48px; padding: 0 16px; font-size: 14px; color: var(--color-ink); background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: 12px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; } .ds-input::placeholder { color: var(--color-ink-muted); } .ds-input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(17,17,17,0.1); } .ds-input.ds-input-error { border-color: var(--color-danger); background: var(--color-danger-light); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Standard content container. Flat at rest with border.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Card Title</h3><p class=\"ds-card-body\">Card content goes here.</p></div>",
+      "css": ".ds-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 24px; } .ds-card-title { font-size: 14px; font-weight: 600; color: var(--color-ink); margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border); } .ds-card-body { font-size: 14px; color: var(--color-ink); line-height: 1.65; }"
+    },
+    {
+      "name": "Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-sidebar",
+      "description": "Sidebar navigation item with active state.",
+      "html": "<a class=\"ds-nav-item\" href=\"/dashboard\">Dashboard</a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; font-size: 14px; font-weight: 500; color: var(--color-ink-secondary); border-radius: 8px; text-decoration: none; transition: background 0.15s, color 0.15s; } .ds-nav-item:hover { background: var(--color-canvas); color: var(--color-ink); } .ds-nav-item.ds-nav-active { background: var(--color-canvas); color: var(--color-ink); }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Status indicator pill. Uppercase, small text.",
+      "html": "<span class=\"ds-badge ds-badge-success\">Active</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 9999px; } .ds-badge-success { background: var(--color-success-light); color: var(--color-success); } .ds-badge-warning { background: var(--color-warning-light); color: var(--color-warning); } .ds-badge-danger { background: var(--color-danger-light); color: var(--color-danger); } .ds-badge-info { background: var(--color-info-light); color: var(--color-info); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Modern Ledger",
+    "overview": "Opsora's design is a structured, data-first system that treats information density and visual clarity as inseparable goals. The aesthetic is precise and professional — every element earns its place through hierarchy, not decoration. The palette is anchored by a single off-black accent (#111111) used sparingly for primary actions, against a near-white canvas and pure white surfaces. Color is functional, never decorative.",
+    "keyCharacteristics": [
+      "Off-black accent carries all primary action states; its rarity is the point",
+      "Typography hierarchy through weight and size, never through color alone",
+      "Spatial rhythm via consistent spacing scale and generous white space",
+      "Functional color: status semantics only, no decorative palettes",
+      "Layered depth through subtle shadows that respond to interaction",
+      "Refined, restrained feedback on every interactive element"
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "The off-black accent (#111111) is the only primary action color. Status colors appear in small functional badges and indicators only. Any screen where the accent occupies more than 15% of surface area is over-decorated.", "section": "colors" },
+      { "name": "The Functional Color Rule", "body": "Color communicates status, not mood. Each status color maps to one semantic meaning: danger = error/destructive, warning = pending/attention, info = neutral/informational, success = complete/confirmed. Never use status colors for decoration.", "section": "colors" },
+      { "name": "The Weight Rule", "body": "Hierarchy is built through font-weight and size contrast, never through color alone. Ink (#111111) is the only text color for primary content.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Shadows appear only on interaction (hover, focus) or for genuinely floating elements (modals, dropdowns). Cards at rest use a 1px border, not a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use the off-black accent (#111111) as the single primary action color",
+      "Do maintain 7:1 contrast ratio for body text (WCAG AAA) and 4.5:1 for large text",
+      "Do build hierarchy through weight (400 → 600 → 700) and size, not through color shifts",
+      "Do keep cards flat at rest with a 1px border; add shadows only on hover or for floating elements",
+      "Do use the full spacing scale to create rhythmic, intentional layouts",
+      "Do include prefers-reduced-motion alternatives for every animation",
+      "Do keep touch targets at minimum 44px for the mobile resident portal"
+    ],
+    "donts": [
+      "Don't use gradients, glassmorphism, or decorative blur effects anywhere",
+      "Don't use generic SaaS admin templates with bland card grids",
+      "Don't use warm cream/sand/beige as a body background",
+      "Don't use border-left or border-right greater than 1px as a colored accent",
+      "Don't use gradient text (background-clip: text + gradient)",
+      "Don't use numbers as section markers (01 / 02 / 03) unless the sequence carries real information",
+      "Don't pair two similar fonts (two geometric sans-serifs)",
+      "Don't exceed 6rem on display headings",
+      "Don't use border-radius greater than 16px on cards",
+      "Don't animate CSS layout properties (height, width)"
+    ]
+  }
+}

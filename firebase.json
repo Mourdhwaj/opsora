@@ -1,0 +1,21 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": {
+    "source": "apps/api/functions",
+    "runtime": "nodejs18",
+    "ignore": ["node_modules", ".git"]
+  },
+  "hosting": {
+    "public": "apps/web/.next",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

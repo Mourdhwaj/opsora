@@ -8,10 +8,9 @@ Opsora is a multi-tenant PG/hostel management SaaS (residents, rooms/beds, rent 
 
 ## Monorepo layout
 
-Turborepo + npm workspaces (`apps/*`, `packages/*`):
+Turborepo + npm workspaces (`apps/*`):
 - `apps/api` — Fastify backend (port **3001**), Drizzle ORM over **better-sqlite3** (`apps/api/opsora.db`).
 - `apps/web` — Next.js 16 App Router frontend (port **3000**), React 19, Tailwind v4, recharts, lucide-react.
-- `packages/shared` — placeholder, currently empty. There is no shared types package; web and api duplicate their own type definitions (`apps/web/src/lib/api.ts` mirrors the API response shapes by hand).
 
 ## Commands
 

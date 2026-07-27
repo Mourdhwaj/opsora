@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: check if user belongs to tenant
+    function belongsToTenant(tenantId) {
+      return isAuthenticated() && request.auth.token.tenantId == tenantId;
+    }
+
+    // Tenants
+    match /tenants/{tenantId} {
+      allow read: if belongsToTenant(tenantId);
+      allow write: if false; // Admin only via Cloud Functions
+
+      // Properties
+      match /properties/{propertyId} {
+        allow read: if belongsToTenant(tenantId);
+        allow write: if belongsToTenant(tenantId);
+      }
+
+      // People (users, residents, staff)
+      match /people/{personId} {
+        allow read: if belongsToTenant(tenantId);
+        allow create: if belongsToTenant(tenantId);
+        allow update: if belongsToTenant(tenantId);
+        allow delete: if false;
+      }
+
+      // Financials (payments, invoices, receipts)
+      match /financials/{docId} {
+        allow read: if belongsToTenant(tenantId);
+        allow write: if belongsToTenant(tenantId);
+      }
+
+      // Operations (complaints, tasks, visitors)
+      match /operations/{docId} {
+        allow read: if belongsToTenant(tenantId);
+        allow write: if belongsToTenant(tenantId);
+      }
+
+      // IoT readings
+      match /iot/{readingId} {
+        allow read: if belongsToTenant(tenantId);
+        allow write: if false; // Only Cloud Functions write IoT data
+      }
+
+      // Food (polls, menus, attendance)
+      match /food/{docId} {
+        allow read: if belongsToTenant(tenantId);
+        allow write: if belongsToTenant(tenantId);
+      }
+
+      // Config
+      match /config/{configId} {
+        allow read: if belongsToTenant(tenantId);
+        allow write: if false; // Admin only via Cloud Functions
+      }
+    }
+  }
+}

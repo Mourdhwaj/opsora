@@ -21,18 +21,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
-        const token = await firebaseUser.getIdToken();
+        const token = await firebaseUser.getIdToken(true);
         await SecureStore.setItemAsync('opsora_token', token);
 
-        const userDoc = await firestore()
-          .collection('tenants')
-          .doc('default')
-          .collection('people')
-          .doc(firebaseUser.uid)
-          .get();
+        const tokenResult = await firebaseUser.getIdTokenResult(true);
+        const claims = tokenResult.claims as any;
+        const tenantId = claims.tenantId;
 
-        if (userDoc.exists()) {
-          setUser({ id: firebaseUser.uid, ...userDoc.data() } as User);
+        if (tenantId) {
+          const personDoc = await firestore()
+            .collection('tenants')
+            .doc(tenantId)
+            .collection('people')
+            .doc(firebaseUser.uid)
+            .get();
+
+          if (personDoc.exists()) {
+            setUser({ id: firebaseUser.uid, ...personDoc.data(), tenantId } as User);
+          } else if (firebaseUser.email) {
+            const snap = await firestore()
+              .collection('tenants')
+              .doc(tenantId)
+              .collection('people')
+              .where('email', '==', firebaseUser.email)
+              .limit(1)
+              .get();
+            if (!snap.empty) {
+              const doc = snap.docs[0];
+              setUser({ id: doc.id, ...doc.data(), tenantId } as User);
+            }
+          }
         }
       } else {
         await SecureStore.deleteItemAsync('opsora_token');
@@ -46,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const result = await auth().signInWithEmailAndPassword(email, password);
-    const token = await result.user.getIdToken();
+    const token = await result.user.getIdToken(true);
     await SecureStore.setItemAsync('opsora_token', token);
   };
 

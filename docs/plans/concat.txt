@@ -1,0 +1,8 @@
+file 'brag-output-ep01/brag-ep01.mp4'
+file 'brag-output-ep02/brag-ep02.mp4'
+file 'brag-output-ep03/brag-ep03.mp4'
+file 'brag-output-ep04/brag-ep04.mp4'
+file 'brag-output-ep05/brag-ep05.mp4'
+file 'brag-output-ep06/brag-ep06.mp4'
+file 'brag-output-ep07/brag-ep07.mp4'
+file 'brag-output-ep08/brag-ep08.mp4'

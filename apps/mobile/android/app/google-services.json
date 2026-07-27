@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "79561541664",
+    "project_id": "opsora-7b594",
+    "storage_bucket": "opsora-7b594.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:79561541664:android:f4acf45193e74fbf195445",
+        "android_client_info": {
+          "package_name": "com.opsora.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc1wqVdNo8QW3oN7-2jXT0n-hMc-EMwVM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

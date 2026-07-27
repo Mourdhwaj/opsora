@@ -1,0 +1,374 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Canvas & Surface ──────────────────────────────────────────────────── */
+  --color-canvas: #FBF9F4;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F6F3EC;
+  --color-surface-active: #EEEDEA;
+
+  /* ── Ink (Text) ────────────────────────────────────────────────────────── */
+  --color-ink: #2C2620;
+  --color-ink-secondary: #7A7268;
+  --color-ink-muted: #A39D94;
+  --color-ink-faint: #D5D0C8;
+
+  /* ── Border ────────────────────────────────────────────────────────────── */
+  --color-border: #E8E4DC;
+  --color-border-subtle: rgba(232, 228, 220, 0.5);
+  --color-border-strong: #D4CFC6;
+
+  /* ── Accent (Olive Green) ──────────────────────────────────────────────── */
+  --color-accent: #5F6B3A;
+  --color-accent-light: rgba(95, 107, 58, 0.10);
+  --color-accent-hover: #4F5A30;
+  --color-accent-dark: #3F4926;
+
+  /* ── Secondary (Saffron) ───────────────────────────────────────────────── */
+  --color-secondary: #C5831A;
+  --color-secondary-light: rgba(197, 131, 26, 0.10);
+  --color-secondary-hover: #A97016;
+
+  /* ── Danger (Earthy Red) ───────────────────────────────────────────────── */
+  --color-danger: #B84233;
+  --color-danger-light: rgba(184, 66, 51, 0.08);
+  --color-danger-hover: #9A3628;
+
+  /* ── Warning (Saffron) ─────────────────────────────────────────────────── */
+  --color-warning: #C5831A;
+  --color-warning-light: rgba(197, 131, 26, 0.10);
+
+  /* ── Info (Muted Teal) ─────────────────────────────────────────────────── */
+  --color-info: #4A7C8A;
+  --color-info-light: rgba(74, 124, 138, 0.10);
+
+  /* ── Success (Olive) ───────────────────────────────────────────────────── */
+  --color-success: #5F6B3A;
+  --color-success-light: rgba(95, 107, 58, 0.10);
+
+  /* ── Typography ────────────────────────────────────────────────────────── */
+  --font-sans: "Geist", "Geist UI", "SF Pro Display", system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-newsreader), "Newsreader", "Instrument Serif", serif;
+  --font-mono: "Geist Mono", "SF Mono", "Fira Code", monospace;
+
+  /* ── Radius ────────────────────────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ───────────────────────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px 0 rgba(44, 38, 32, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(44, 38, 32, 0.06), 0 1px 2px -1px rgba(44, 38, 32, 0.04);
+  --shadow-md: 0 4px 20px rgba(44, 38, 32, 0.06);
+  --shadow-lg: 0 8px 30px rgba(44, 38, 32, 0.08);
+  --shadow-xl: 0 16px 40px rgba(44, 38, 32, 0.10);
+  --shadow-card: none;
+  --shadow-card-hover: 0 4px 24px rgba(95, 107, 58, 0.08);
+  --shadow-modal: 0 24px 48px -12px rgba(44, 38, 32, 0.12);
+  --shadow-dropdown: 0 8px 30px rgba(44, 38, 32, 0.10);
+
+  /* ── Spacing ───────────────────────────────────────────────────────────── */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* ── Z-Index Scale ─────────────────────────────────────────────────────── */
+  --z-base: 0;
+  --z-dropdown: 40;
+  --z-sticky: 50;
+  --z-overlay: 60;
+  --z-modal: 70;
+  --z-toast: 80;
+
+  /* ── Transitions ───────────────────────────────────────────────────────── */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 600ms;
+}
+
+/* ── Base Layer ──────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.65;
+    letter-spacing: -0.011em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  p, li, dd, dt {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: var(--radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-muted);
+  }
+}
+
+/* ── Component Utilities ─────────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .max-w-xs { max-width: 20rem; }
+  .max-w-sm { max-width: 24rem; }
+  .max-w-md { max-width: 28rem; }
+  .max-w-lg { max-width: 32rem; }
+  .max-w-xl { max-width: 36rem; }
+  .max-w-2xl { max-width: 42rem; }
+  .max-w-3xl { max-width: 48rem; }
+  .max-w-4xl { max-width: 56rem; }
+  .max-w-5xl { max-width: 64rem; }
+  .max-w-6xl { max-width: 72rem; }
+  .max-w-7xl { max-width: 80rem; }
+  .max-w-full { max-width: 100%; }
+  .max-w-none { max-width: none; }
+  .max-w-min { max-width: min-content; }
+  .max-w-max { max-width: max-content; }
+  .max-w-fit { max-width: fit-content; }
+  .max-w-prose { max-width: 65ch; }
+  .max-w-screen-sm { max-width: 640px; }
+  .max-w-screen-md { max-width: 768px; }
+  .max-w-screen-lg { max-width: 1024px; }
+  .max-w-screen-xl { max-width: 1280px; }
+  .max-w-screen-2xl { max-width: 1536px; }
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* ── Animation Classes ───────────────────────────────────────────────────── */
+.animate-fade-in {
+  animation: fade-in var(--duration-slower) var(--ease-spring) both;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left var(--duration-slower) var(--ease-spring) both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right var(--duration-slower) var(--ease-spring) both;
+}
+
+.animate-scale-in {
+  animation: scale-in var(--duration-slow) var(--ease-spring) both;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-canvas) 25%,
+    var(--color-surface) 50%,
+    var(--color-canvas) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+/* ── Stagger delays for lists ────────────────────────────────────────────── */
+.stagger-1 { animation-delay: 80ms; }
+.stagger-2 { animation-delay: 160ms; }
+.stagger-3 { animation-delay: 240ms; }
+.stagger-4 { animation-delay: 320ms; }
+.stagger-5 { animation-delay: 400ms; }
+.stagger-6 { animation-delay: 480ms; }
+.stagger-7 { animation-delay: 560ms; }
+.stagger-8 { animation-delay: 640ms; }
+
+/* ── Hover transitions ───────────────────────────────────────────────────── */
+.transition-base {
+  transition: all var(--duration-normal) var(--ease-in-out);
+}
+
+.transition-fast {
+  transition: all var(--duration-fast) var(--ease-in-out);
+}
+
+.transition-slow {
+  transition: all var(--duration-slow) var(--ease-in-out);
+}
+
+/* ── Card hover effect ───────────────────────────────────────────────────── */
+.hover-lift {
+  transition: transform var(--duration-normal) var(--ease-spring),
+              box-shadow var(--duration-normal) var(--ease-spring);
+}
+
+.hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.hover-lift:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-in-left,
+  .animate-slide-in-right,
+  .animate-scale-in,
+  .animate-shimmer,
+  .animate-pulse-dot,
+  .animate-bounce-subtle {
+    animation: none;
+  }
+
+  .hover-lift:hover {
+    transform: none;
+  }
+
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ── Print styles ────────────────────────────────────────────────────────── */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

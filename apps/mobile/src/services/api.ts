@@ -37,6 +37,15 @@ api.interceptors.response.use(
 
 export { api, API_BASE_URL };
 
+export async function uploadFile(uri: string, path: string): Promise<string> {
+  const storage = (await import('@react-native-firebase/storage')).default;
+  const response = await fetch(uri);
+  const blob = await response.blob();
+  const ref = storage().ref(path);
+  await ref.put(blob);
+  return ref.getDownloadURL();
+}
+
 export interface ApiResponse<T> {
   data: T;
   pagination?: {
